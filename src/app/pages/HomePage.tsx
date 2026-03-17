@@ -7,6 +7,11 @@ import { ApiProfessional, ApiService, fetchProfessionals, fetchServices } from '
 import { ServiceCard } from '../components/ServiceCard';
 import { ProfessionalCard } from '../components/ProfessionalCard';
 
+const HERO_VIDEO_URL =
+  'https://videos.pexels.com/video-files/5927793/5927793-hd_1920_1080_25fps.mp4';
+const HERO_POSTER_URL =
+  'https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=1600';
+
 export function HomePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -51,9 +56,9 @@ export function HomePage() {
           muted
           loop
           playsInline
+          poster={HERO_POSTER_URL}
         >
-          {/* Remplace la source ci-dessous par ta vraie vidéo de présentation */}
-          <source src="/videos/probeaute-hero.mp4" type="video/mp4" />
+          <source src={HERO_VIDEO_URL} type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-black/10" />
       </div>
