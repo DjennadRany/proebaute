@@ -150,13 +150,13 @@ export function BookingPage() {
 
             {service && (
               <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h4 className="font-medium text-foreground mb-1">{service.title}</h4>
                     <p className="text-sm text-muted-foreground mb-2">{service.description}</p>
                     <Badge variant="secondary">{service.category}</Badge>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right">
                     <div className="text-xl font-bold text-foreground">{service.price}€</div>
                     <div className="text-sm text-muted-foreground">{service.duration} min</div>
                   </div>
@@ -192,13 +192,13 @@ export function BookingPage() {
               </span>
               Choisir un créneau horaire
             </h3>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {timeSlots.map((time) => (
                 <button
                   key={time}
                   onClick={() => setSelectedTime(time)}
                   disabled={!selectedDate}
-                  className={`py-3 px-4 rounded-lg border text-sm font-medium transition-all ${
+                  className={`rounded-lg border px-3 py-3 text-sm font-medium transition-all ${
                     selectedTime === time
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-card text-foreground border-border hover:border-primary hover:bg-accent'

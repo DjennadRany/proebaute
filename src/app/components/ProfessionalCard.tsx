@@ -33,10 +33,10 @@ export function ProfessionalCard({
 
   return (
     <div className="bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-border">
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="flex items-start gap-4 mb-4">
           <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-300 flex items-center justify-center text-xl font-semibold text-white overflow-hidden">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-300 flex items-center justify-center text-lg sm:text-xl font-semibold text-white overflow-hidden">
               {logoSrc ? (
                 <img
                   src={logoSrc}
@@ -56,7 +56,7 @@ export function ProfessionalCard({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-foreground mb-1 flex items-center gap-2">
+              <h3 className="font-semibold text-foreground mb-1 flex items-center gap-2 min-w-0 break-words">
                 {professional.professionalName}
               </h3>
               {onToggleFavorite && (
@@ -74,7 +74,7 @@ export function ProfessionalCard({
               )}
             </div>
             <p className="text-sm text-muted-foreground mb-2">{professional.specialty}</p>
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-wrap items-center gap-3 text-sm">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 <span className="font-medium">{professional.ratingAverage}</span>

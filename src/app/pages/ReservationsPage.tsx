@@ -81,9 +81,9 @@ export function ReservationsPage() {
                   />
                 </div>
               )}
-              <div className="flex items-start justify-between gap-4 p-5">
+              <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
                     <Badge variant="secondary" className="text-xs">
                       {formatDate(booking.bookingDate)}
                     </Badge>
@@ -110,7 +110,7 @@ export function ReservationsPage() {
                   <p className="text-sm text-muted-foreground mb-2">
                     avec {professional?.professionalName ?? '—'}
                   </p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
                       {service?.duration ?? '—'} min
@@ -121,11 +121,11 @@ export function ReservationsPage() {
                   </div>
                 </div>
                 {booking.status !== 'cancelled' && booking.status !== 'declined' && (
-                  <Link to={`/reservations/${booking._id}`}>
+                  <Link to={`/reservations/${booking._id}`} className="w-full sm:w-auto">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-full px-4"
+                      className="w-full rounded-full px-4 sm:w-auto"
                     >
                       Plus de détails
                     </Button>

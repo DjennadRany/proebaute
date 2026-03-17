@@ -116,6 +116,127 @@ export interface ApiUser {
   phone?: string;
 }
 
+export interface ClientSignupPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  password: string;
+  birthDate?: string;
+  city: string;
+  postalCode: string;
+  streetAddress: string;
+  bookingPreference: 'home' | 'salon' | 'both';
+  beautyFrequency: 'occasionnel' | 'regulier' | 'evenement';
+  acceptsHomeVisit: boolean;
+  notes?: string;
+}
+
+export interface ProfessionalSignupPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  password: string;
+  companyName: string;
+  siren: string;
+  specialty: string;
+  bio: string;
+  streetAddress: string;
+  city: string;
+  postalCode: string;
+  serviceMode: 'home' | 'salon' | 'both';
+  travelRadiusKm: number;
+  notes?: string;
+}
+
+function toApiUser(profile: {
+  id: string;
+  role: 'client' | 'professional';
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string | null;
+}): ApiUser {
+  return {
+    _id: profile.id,
+    role: profile.role,
+    firstName: profile.first_name,
+    lastName: profile.last_name,
+    email: profile.email,
+    phone: profile.phone ?? undefined,
+  };
+}
+
+async function upsertUserProfile(payload: {
+  authId: string;
+  role: 'client' | 'professional';
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+}): Promise<ApiUser> {
+  const profileRow = {
+    id: payload.authId,
+    role: payload.role,
+    first_name: payload.firstName,
+    last_name: payload.lastName,
+    email: payload.email,
+    phone: payload.phone ?? null,
+  };
+
+  const { error } = await supabase
+    .from('users')
+    .upsert(profileRow, { onConflict: 'id' });
+
+  if (error) throw error;
+
+  return toApiUser({
+    id: profileRow.id,
+    role: profileRow.role,
+    first_name: profileRow.first_name,
+    last_name: profileRow.last_name,
+    email: profileRow.email,
+    phone: profileRow.phone,
+  });
+}
+
+async function upsertProfessionalProfile(payload: {
+  authId: string;
+  companyName: string;
+  specialty: string;
+  bio: string;
+  streetAddress: string;
+  city: string;
+  postalCode: string;
+  siren: string;
+}): Promise<void> {
+  const location = [payload.streetAddress.trim(), `${payload.postalCode.trim()} ${payload.city.trim()}`]
+    .filter(Boolean)
+    .join(', ');
+
+  const { error } = await supabase.from('professionals').upsert(
+    {
+      user_id: payload.authId,
+      professional_name: payload.companyName.trim(),
+      specialty: payload.specialty.trim(),
+      bio: payload.bio.trim(),
+      address: payload.streetAddress.trim(),
+      city: payload.city.trim(),
+      postal_code: payload.postalCode.trim(),
+      siren: payload.siren.trim(),
+      location,
+      rating_average: 0,
+      reviews_count: 0,
+      verified: false,
+      gallery: [],
+    },
+    { onConflict: 'user_id' },
+  );
+
+  if (error) throw error;
+}
+
 export async function login(email: string, password: string): Promise<ApiUser> {
   const {
     data: authData,
@@ -139,14 +260,198 @@ export async function login(email: string, password: string): Promise<ApiUser> {
     throw profileError ?? new Error('User profile not found');
   }
 
-  return {
-    _id: profile.id,
+  return toApiUser({
+    id: profile.id,
     role: profile.role as 'client' | 'professional',
-    firstName: profile.first_name,
-    lastName: profile.last_name,
+    first_name: profile.first_name,
+    last_name: profile.last_name,
     email: profile.email,
     phone: profile.phone ?? undefined,
+  });
+}
+
+export async function signUpClientAccount(payload: ClientSignupPayload): Promise<{
+  user: ApiUser | null;
+  requiresEmailConfirmation: boolean;
+}> {
+  const email = payload.email.trim().toLowerCase();
+  const firstName = payload.firstName.trim();
+  const lastName = payload.lastName.trim();
+  const phone = payload.phone?.trim() || undefined;
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password: payload.password,
+    options: {
+      data: {
+        role: 'client',
+        first_name: firstName,
+        last_name: lastName,
+        phone,
+        birth_date: payload.birthDate || null,
+        city: payload.city.trim(),
+        postal_code: payload.postalCode.trim(),
+        street_address: payload.streetAddress.trim(),
+        booking_preference: payload.bookingPreference,
+        beauty_frequency: payload.beautyFrequency,
+        accepts_home_visit: payload.acceptsHomeVisit,
+        notes: payload.notes?.trim() || null,
+        onboarding_completed: true,
+      },
+    },
+  });
+
+  if (error || !data.user) {
+    throw error ?? new Error('Impossible de créer le compte');
+  }
+
+  let apiUser: ApiUser = {
+    _id: data.user.id,
+    role: 'client',
+    firstName,
+    lastName,
+    email,
+    phone,
   };
+
+  try {
+    apiUser = await upsertUserProfile({
+      authId: data.user.id,
+      role: 'client',
+      firstName,
+      lastName,
+      email,
+      phone,
+    });
+  } catch (profileError) {
+    // Le profil peut aussi être créé automatiquement par un trigger SQL côté Supabase.
+    // On ne bloque pas la création du compte Auth si le profil applicatif
+    // est déjà inséré par la base ou si l'email doit encore être confirmé.
+    console.warn('Profil public.users non upsert côté client', profileError);
+  }
+
+  if (data.session) {
+    return { user: apiUser, requiresEmailConfirmation: false };
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password: payload.password,
+  });
+
+  if (!signInError) {
+    return { user: apiUser, requiresEmailConfirmation: false };
+  }
+
+  return { user: null, requiresEmailConfirmation: true };
+}
+
+export async function signUpProfessionalAccount(payload: ProfessionalSignupPayload): Promise<{
+  user: ApiUser | null;
+  requiresEmailConfirmation: boolean;
+}> {
+  const email = payload.email.trim().toLowerCase();
+  const firstName = payload.firstName.trim();
+  const lastName = payload.lastName.trim();
+  const phone = payload.phone?.trim() || undefined;
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password: payload.password,
+    options: {
+      data: {
+        role: 'professional',
+        first_name: firstName,
+        last_name: lastName,
+        phone,
+        company_name: payload.companyName.trim(),
+        siren: payload.siren.trim(),
+        specialty: payload.specialty.trim(),
+        street_address: payload.streetAddress.trim(),
+        city: payload.city.trim(),
+        postal_code: payload.postalCode.trim(),
+        service_mode: payload.serviceMode,
+        travel_radius_km: payload.travelRadiusKm,
+        notes: payload.notes?.trim() || null,
+        onboarding_completed: true,
+      },
+    },
+  });
+
+  if (error || !data.user) {
+    throw error ?? new Error('Impossible de créer le compte professionnel');
+  }
+
+  let apiUser: ApiUser = {
+    _id: data.user.id,
+    role: 'professional',
+    firstName,
+    lastName,
+    email,
+    phone,
+  };
+
+  try {
+    apiUser = await upsertUserProfile({
+      authId: data.user.id,
+      role: 'professional',
+      firstName,
+      lastName,
+      email,
+      phone,
+    });
+  } catch (profileError) {
+    console.warn('Profil public.users non upsert côté pro', profileError);
+  }
+
+  try {
+    await upsertProfessionalProfile({
+      authId: data.user.id,
+      companyName: payload.companyName,
+      specialty: payload.specialty,
+      bio: payload.bio,
+      streetAddress: payload.streetAddress,
+      city: payload.city,
+      postalCode: payload.postalCode,
+      siren: payload.siren,
+    });
+  } catch (professionalError) {
+    console.warn('Fiche public.professionals non upsert côté pro', professionalError);
+  }
+
+  if (data.session) {
+    return { user: apiUser, requiresEmailConfirmation: false };
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password: payload.password,
+  });
+
+  if (!signInError) {
+    return { user: apiUser, requiresEmailConfirmation: false };
+  }
+
+  return { user: null, requiresEmailConfirmation: true };
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  const redirectTo =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/login?mode=reset`
+      : undefined;
+
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    email.trim().toLowerCase(),
+    redirectTo ? { redirectTo } : undefined,
+  );
+
+  if (error) throw error;
+}
+
+export async function updateAccountPassword(password: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
 }
 
 export async function fetchServices(professionalId?: string): Promise<ApiService[]> {

@@ -158,23 +158,23 @@ export function MessagesPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8 flex items-center justify-between gap-4">
+      <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Messages</h1>
           <p className="text-muted-foreground">Communiquez avec vos professionnels</p>
         </div>
-        <Link to="/messages/archives">
-          <Button variant="outline" className="gap-2">
+        <Link to="/messages/archives" className="w-full sm:w-auto">
+          <Button variant="outline" className="gap-2 w-full sm:w-auto">
             <Archive className="w-4 h-4" />
             Voir les archives
           </Button>
         </Link>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border overflow-hidden h-[calc(100vh-16rem)]">
-        <div className="grid grid-cols-12 h-full">
+      <div className="bg-card rounded-2xl border border-border overflow-hidden min-h-[70dvh] md:h-[calc(100dvh-16rem)]">
+        <div className="grid h-full grid-cols-1 md:grid-cols-12">
           {/* Conversations List */}
-          <div className="col-span-4 border-r border-border flex flex-col">
+          <div className="col-span-12 border-b border-border md:col-span-4 md:border-b-0 md:border-r flex flex-col max-h-[40dvh] md:max-h-none">
             {/* Search */}
             <div className="p-4 border-b border-border">
               <div className="relative">
@@ -232,12 +232,12 @@ export function MessagesPage() {
           </div>
 
           {/* Chat Area */}
-          <div className="col-span-8 flex flex-col">
+          <div className="col-span-12 md:col-span-8 flex flex-col min-h-[40dvh]">
             {activeConversation ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b border-border flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="p-4 border-b border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-300 to-purple-300 flex items-center justify-center text-sm font-medium text-white">
                       {(otherUserName || '??')
                         .split(' ')
@@ -255,7 +255,7 @@ export function MessagesPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -288,7 +288,7 @@ export function MessagesPage() {
                         <MoreVertical className="w-5 h-5" />
                       </Button>
                       {showActions && activeConversation && (
-                        <div className="absolute right-0 mt-2 w-56 bg-popover border border-border rounded-lg shadow-lg text-sm z-20">
+                        <div className="absolute right-0 mt-2 w-56 max-w-[80vw] bg-popover border border-border rounded-lg shadow-lg text-sm z-20">
                           <button
                             className="w-full text-left px-3 py-2 hover:bg-accent"
                             onClick={async () => {
@@ -381,7 +381,7 @@ export function MessagesPage() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
                   <div className="flex justify-center">
                     <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
                       {formatDate(conversationMessages[0]?.createdAt || new Date().toISOString())}
@@ -401,7 +401,7 @@ export function MessagesPage() {
                         key={message._id}
                         className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div className={`max-w-[70%] ${isOwnMessage ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                        <div className={`max-w-[85%] sm:max-w-[70%] ${isOwnMessage ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                           <div
                             className={`rounded-2xl px-4 py-2.5 ${
                               isOwnMessage
@@ -424,7 +424,7 @@ export function MessagesPage() {
 
                 {/* Message Input */}
                 <div className="p-4 border-t border-border">
-                  <div className="flex gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <Input
                       type="text"
                       placeholder="Écrire un message..."
@@ -438,7 +438,7 @@ export function MessagesPage() {
                       }}
                       className="flex-1"
                     />
-                    <Button onClick={handleSendMessage} disabled={!messageInput.trim()}>
+                    <Button onClick={handleSendMessage} disabled={!messageInput.trim()} className="w-full sm:w-auto">
                       <Send className="w-4 h-4" />
                     </Button>
                   </div>

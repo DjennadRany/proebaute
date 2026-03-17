@@ -272,9 +272,9 @@ export function ServiceDetail() {
           </div>
 
           <div className="mb-6">
-            <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <div className="flex items-center gap-2 mb-2">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
                   <Badge variant="secondary">{service.category}</Badge>
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -283,7 +283,7 @@ export function ServiceDetail() {
                 </div>
                 <h1 className="text-3xl font-bold text-foreground mb-2">{service.title}</h1>
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 <div className="text-3xl font-bold text-foreground">{service.price}€</div>
                 <div className="text-sm text-muted-foreground">{service.duration} minutes</div>
               </div>
@@ -307,7 +307,7 @@ export function ServiceDetail() {
               <h2 className="text-lg font-semibold text-foreground mb-4">
                 À propos du professionnel
               </h2>
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col items-start gap-4 sm:flex-row">
                 <div className="relative">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-300 flex items-center justify-center text-xl font-semibold text-white">
                     {(
@@ -326,26 +326,26 @@ export function ServiceDetail() {
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground mb-1">
                     {professional.professionalName}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-3">{professional.specialty}</p>
                   <p className="text-sm text-muted-foreground mb-4">{professional.bio}</p>
-                  <div className="flex items-center gap-4 text-sm">
+                  <div className="flex flex-wrap items-center gap-3 text-sm">
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                       <span className="font-medium">{professional.ratingAverage}</span>
                       <span className="text-muted-foreground">({professional.reviewsCount} avis)</span>
                     </div>
-                    <div className="flex items-center gap-1 text-muted-foreground">
+                    <div className="flex items-center gap-1 text-muted-foreground min-w-0">
                       <MapPin className="w-4 h-4" />
-                      <span>{professional.location}</span>
+                      <span className="break-words">{professional.location}</span>
                     </div>
                   </div>
                 </div>
-                <Link to={`/professionals/${professional._id}`}>
-                  <Button variant="outline">Voir le profil</Button>
+                <Link to={`/professionals/${professional._id}`} className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto">Voir le profil</Button>
                 </Link>
               </div>
             </div>

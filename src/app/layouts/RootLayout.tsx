@@ -33,6 +33,11 @@ const navigationAccount = [
   { name: 'Paramètres', href: '/settings', icon: Settings },
 ];
 
+const guestNavigation = [
+  { name: 'Accueil', href: '/', icon: LogIn },
+  { name: 'Connexion', href: '/login', icon: LogIn },
+];
+
 export function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -48,6 +53,11 @@ export function RootLayout() {
       }
     }
   }, [user, location.pathname, navigate]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setUserMenuOpen(false);
+  }, [location.pathname]);
 
   const initials = user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : '';
 
@@ -180,30 +190,45 @@ export function RootLayout() {
               )}
 
               {/* Burger button - mobile & tablet */}
-              {user && (
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center rounded-full border border-border p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground md:hidden"
-                  onClick={() => setMobileMenuOpen((open) => !open)}
-                  aria-label="Ouvrir le menu de navigation"
-                >
-                  <span className="sr-only">Menu</span>
-                  <div className="space-y-0.5">
-                    <span className={`block h-[2px] w-4 rounded-full bg-current transition-transform ${mobileMenuOpen ? 'translate-y-[3px] rotate-45' : ''}`} />
-                    <span className={`block h-[2px] w-4 rounded-full bg-current transition-opacity ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`} />
-                    <span className={`block h-[2px] w-4 rounded-full bg-current transition-transform ${mobileMenuOpen ? '-translate-y-[3px] -rotate-45' : ''}`} />
-                  </div>
-                </button>
-              )}
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-full border border-border p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground md:hidden"
+                onClick={() => setMobileMenuOpen((open) => !open)}
+                aria-label="Ouvrir le menu de navigation"
+                aria-expanded={mobileMenuOpen}
+              >
+                <span className="sr-only">Menu</span>
+                <div className="space-y-0.5">
+                  <span className={`block h-[2px] w-4 rounded-full bg-current transition-transform ${mobileMenuOpen ? 'translate-y-[3px] rotate-45' : ''}`} />
+                  <span className={`block h-[2px] w-4 rounded-full bg-current transition-opacity ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`} />
+                  <span className={`block h-[2px] w-4 rounded-full bg-current transition-transform ${mobileMenuOpen ? '-translate-y-[3px] -rotate-45' : ''}`} />
+                </div>
+              </button>
             </div>
           </div>
         </div>
 
         {/* Mobile / tablet dropdown menu */}
-        {user && mobileMenuOpen && (
+        {mobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-card">
-            <div className="mx-auto max-w-6xl px-4 py-2 space-y-1">
-              {navigationMain.map((item) => {
+            <div className="mx-auto max-w-6xl px-4 py-3 space-y-2">
+              {user && (
+                <div className="mb-3 rounded-xl border border-border bg-accent/40 px-3 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#e8c1b7] to-[#6c5ce7] text-sm font-medium text-white">
+                      {initials}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(user ? navigationMain : guestNavigation).map((item) => {
                 const isActive =
                   item.href === '/'
                     ? location.pathname === '/'
@@ -226,32 +251,35 @@ export function RootLayout() {
                 );
               })}
 
-              {/* Mon compte section */}
-              <p className="mt-2 mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/80">
-                Mon compte
-              </p>
-              {navigationAccount.map((item) => {
-                const isActive =
-                  item.href === '/'
-                    ? location.pathname === '/'
-                    : location.pathname.startsWith(item.href);
+              {user && (
+                <>
+                  <p className="mt-2 mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/80">
+                    Mon compte
+                  </p>
+                  {navigationAccount.map((item) => {
+                    const isActive =
+                      item.href === '/'
+                        ? location.pathname === '/'
+                        : location.pathname.startsWith(item.href);
 
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                    }`}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm ${
+                          isActive
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                </>
+              )}
 
               {/* Connexion / Déconnexion in mobile menu */}
               <div className="pt-1 border-t border-border/70 mt-2">

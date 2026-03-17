@@ -22,7 +22,7 @@ export function SocialActionBar({
   onShare,
 }: SocialActionBarProps) {
   return (
-    <div className="flex items-center gap-6 py-4 border-y border-border">
+    <div className="flex flex-wrap items-center gap-3 py-4 border-y border-border sm:gap-6">
       <button
         onClick={onLike}
         className={`flex items-center gap-2 transition-colors ${
@@ -52,7 +52,7 @@ export function SocialActionBar({
 
       <button
         onClick={onShare}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors ml-auto"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors ml-0 sm:ml-auto"
       >
         <Share2 className="w-5 h-5" />
       </button>

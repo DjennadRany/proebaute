@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import probeauteLogo from '../../../asset/probeaute_logo_transparent.png';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -7,10 +8,38 @@ import { ApiProfessional, ApiService, fetchProfessionals, fetchServices } from '
 import { ServiceCard } from '../components/ServiceCard';
 import { ProfessionalCard } from '../components/ProfessionalCard';
 
-const HERO_VIDEO_URL =
-  'https://videos.pexels.com/video-files/5927793/5927793-hd_1920_1080_25fps.mp4';
-const HERO_POSTER_URL =
-  'https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=1600';
+const HERO_SLIDES = [
+  {
+    title: 'Coiffure',
+    caption: 'Brushing, coupe, coloration et soins capillaires.',
+    image:
+      'https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  },
+  {
+    title: 'Barbe',
+    caption: 'Taille précise, contour et rituels barber premium.',
+    image:
+      'https://images.pexels.com/photos/1805600/pexels-photo-1805600.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  },
+  {
+    title: 'Esthétique',
+    caption: 'Soin du visage, glow skin et mise en beauté.',
+    image:
+      'https://images.pexels.com/photos/5927793/pexels-photo-5927793.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  },
+  {
+    title: 'Ongles',
+    caption: 'Manucure, nail art et finitions impeccables.',
+    image:
+      'https://images.pexels.com/photos/3997386/pexels-photo-3997386.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  },
+  {
+    title: 'Épilation',
+    caption: 'Prestations ciblées à domicile ou en institut.',
+    image:
+      'https://images.pexels.com/photos/6621461/pexels-photo-6621461.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  },
+];
 
 export function HomePage() {
   const { user } = useAuth();
@@ -19,6 +48,7 @@ export function HomePage() {
   const [city, setCity] = useState('Paris');
   const [services, setServices] = useState<ApiService[]>([]);
   const [professionals, setProfessionals] = useState<ApiProfessional[]>([]);
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -28,6 +58,14 @@ export function HomePage() {
       setServices(s);
       setProfessionals(p);
     });
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveHeroIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 3500);
+
+    return () => window.clearInterval(timer);
   }, []);
 
   const handleClientClick = () => {
@@ -47,41 +85,59 @@ export function HomePage() {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-card border border-border">
-      {/* Vidéo de fond */}
-      <div className="absolute inset-0 -z-10">
-        <video
-          className="h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster={HERO_POSTER_URL}
-        >
-          <source src={HERO_VIDEO_URL} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-black/10" />
-      </div>
+    <div className="space-y-0">
+      <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 z-0">
+          {HERO_SLIDES.map((slide, index) => (
+            <div
+              key={slide.title}
+              className={`absolute inset-0 transition-opacity duration-1000 ${
+                index === activeHeroIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <img
+                src={slide.image}
+                alt={slide.title}
+                className="hero-slide-zoom h-full w-full object-cover"
+              />
+            </div>
+          ))}
+        </div>
 
-      <div className="relative px-6 py-10 sm:px-10 sm:py-14 lg:px-16 lg:py-18 text-white grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-center">
+        <div className="relative z-10 min-h-[520px] px-6 py-10 sm:px-10 sm:py-14 lg:px-16 lg:py-18 text-white grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-center">
         {/* Bloc gauche : texte principal */}
         <div className="space-y-6 max-w-xl">
-          <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            ProBeauté · Beauty on demand
-          </p>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight">
+          <div className="inline-flex items-center gap-4 rounded-[28px] border border-white/35 bg-white/78 px-4 py-3 backdrop-blur">
+            <img
+              src={probeauteLogo}
+              alt="Logo ProBeauté"
+              className="h-16 w-auto object-contain"
+            />
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-foreground/60">
+                ProBeauté
+              </p>
+              <p className="text-sm text-foreground/90">
+                {HERO_SLIDES[activeHeroIndex].title} · {HERO_SLIDES[activeHeroIndex].caption}
+              </p>
+            </div>
+          </div>
+          <div className="inline-block rounded-[32px] bg-white/74 px-5 py-4 backdrop-blur-sm shadow-[0_20px_80px_rgba(255,255,255,0.45)]">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight text-foreground">
             Réservez vos soins beauté
             <br />
             <span className="text-primary-foreground bg-gradient-to-r from-[#e8c1b7] via-[#d9a5a5] to-[#6c5ce7] bg-clip-text text-transparent">
               à domicile, en toute confiance.
             </span>
           </h1>
-          <p className="text-sm sm:text-base text-white/80 max-w-lg">
+          </div>
+          <div className="inline-block max-w-lg rounded-[28px] bg-white/72 px-5 py-4 backdrop-blur-sm shadow-[0_18px_60px_rgba(255,255,255,0.35)]">
+          <p className="text-sm sm:text-base text-foreground/80 max-w-lg">
             ProBeauté connecte les meilleurs professionnels près de chez vous avec des clientes
             qui veulent gagner du temps sans sacrifier la qualité. Coiffure, ongles, make-up,
             soins du visage… choisissez, réservez, profitez.
           </p>
+          </div>
 
           {user ? (
             <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -95,7 +151,7 @@ export function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-full border-white/40 bg-white/10 px-6 py-2.5 text-sm font-semibold text-white hover:bg-white/20"
+                className="rounded-full border-white/70 bg-white/70 px-6 py-2.5 text-sm font-semibold text-foreground hover:bg-white/85"
                 onClick={() => navigate('/services')}
               >
                 Explorer les services
@@ -103,7 +159,7 @@ export function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-full border-white/40 bg-white/10 px-6 py-2.5 text-sm font-semibold text-white hover:bg-white/20"
+                className="rounded-full border-white/70 bg-white/70 px-6 py-2.5 text-sm font-semibold text-foreground hover:bg-white/85"
                 onClick={() => navigate('/reservations')}
               >
                 Mes réservations
@@ -121,7 +177,7 @@ export function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-full border-white/60 bg-white/10 px-6 py-2.5 text-sm font-semibold text-white hover:bg-white/20"
+                className="rounded-full border-white/70 bg-white/70 px-6 py-2.5 text-sm font-semibold text-foreground hover:bg-white/85"
                 onClick={handleProClick}
               >
                 Je suis pro beauté
@@ -129,15 +185,31 @@ export function HomePage() {
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-white/70">
+          <div className="inline-flex flex-wrap items-center gap-4 rounded-full bg-white/72 px-4 py-2 text-xs text-foreground/70 backdrop-blur-sm">
             <span>· RDV confirmés en quelques clics</span>
             <span>· Notes & avis clients</span>
             <span>· Paiement sécurisé</span>
           </div>
+          <div className="flex flex-wrap gap-2 pt-1">
+            {HERO_SLIDES.map((slide, index) => (
+              <button
+                key={slide.title}
+                type="button"
+                onClick={() => setActiveHeroIndex(index)}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur transition ${
+                  index === activeHeroIndex
+                    ? 'bg-white text-foreground'
+                    : 'bg-white/65 text-foreground hover:bg-white/80'
+                }`}
+              >
+                {slide.title}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Bloc droit : résumé mode connecté / non connecté */}
-        <div className="rounded-2xl bg-card/90 backdrop-blur border border-white/10 p-5 sm:p-6 text-sm text-foreground shadow-xl">
+        <div className="rounded-2xl bg-card/94 backdrop-blur border border-white/35 p-5 sm:p-6 text-sm text-foreground shadow-xl">
           {user ? (
             <div className="space-y-4">
               <p className="text-xs font-medium text-primary tracking-wide uppercase">
@@ -248,9 +320,10 @@ export function HomePage() {
           )}
         </div>
       </div>
+      </section>
 
       {/* Hub combiné Services + Pros visible depuis la home */}
-      <div className="relative border-t border-border/60 bg-background/80 px-6 pb-8 pt-6 sm:px-10 lg:px-16">
+      <div className="relative z-10 bg-background px-6 pb-8 pt-6 sm:px-10 lg:px-16">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold text-foreground">

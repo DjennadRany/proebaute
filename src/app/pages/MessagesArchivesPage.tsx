@@ -48,14 +48,14 @@ export function MessagesArchivesPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Archives</h1>
           <p className="text-muted-foreground">
             Retrouvez ici vos conversations archivées et réactivez-les en un clic.
           </p>
         </div>
-        <Button variant="outline" onClick={() => navigate('/messages')}>
+        <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate('/messages')}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour aux messages
         </Button>
@@ -85,9 +85,9 @@ export function MessagesArchivesPage() {
           {filtered.map((conversation) => (
             <div
               key={conversation._id}
-              className="p-4 flex items-center justify-between hover:bg-accent transition-colors"
+              className="p-4 flex flex-col gap-4 hover:bg-accent transition-colors sm:flex-row sm:items-center sm:justify-between"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-300 to-purple-300 flex items-center justify-center text-sm font-medium text-white flex-shrink-0">
                   {(conversation.otherUserName || '??')
                     .split(' ')
@@ -96,8 +96,8 @@ export function MessagesArchivesPage() {
                     .slice(0, 2)
                     .toUpperCase()}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
+                <div className="min-w-0">
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
                     <h3 className="font-medium text-foreground">
                       {conversation.otherUserName ||
                         (conversation.otherUserId
@@ -113,10 +113,11 @@ export function MessagesArchivesPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                 <Button
                   variant="outline"
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() =>
                     navigate(`/messages?conversationId=${encodeURIComponent(conversation._id)}`)
                   }
@@ -125,6 +126,7 @@ export function MessagesArchivesPage() {
                 </Button>
                 <Button
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={async () => {
                     await unarchiveConversation(conversation._id);
                     setConversations((prev) =>

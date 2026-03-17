@@ -63,14 +63,14 @@ export function ProfilePage() {
         <p className="text-muted-foreground">Gérez vos informations personnelles</p>
       </div>
 
-      <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-2xl p-8 mb-8 border border-border">
-        <div className="flex items-start gap-6">
+      <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-2xl p-5 sm:p-8 mb-8 border border-border">
+        <div className="flex flex-col items-start gap-6 sm:flex-row">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-300 to-purple-300 flex items-center justify-center text-3xl font-semibold text-white">
             {user.firstName.charAt(0)}
             {user.lastName.charAt(0)}
           </div>
           <div className="flex-1">
-            <div className="flex items-start justify-between gap-4 mb-3">
+            <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-1">
                   {user.firstName} {user.lastName}
@@ -91,7 +91,7 @@ export function ProfilePage() {
                   )}
                 </div>
               </div>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Edit2 className="w-4 h-4 mr-2" />
                 Modifier
               </Button>
@@ -120,7 +120,7 @@ export function ProfilePage() {
       </div>
 
       <Tabs defaultValue="bookings" className="w-full">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 grid w-full grid-cols-1 sm:grid-cols-3">
           <TabsTrigger value="bookings">Réservations</TabsTrigger>
           <TabsTrigger value="reviews">Avis</TabsTrigger>
           <TabsTrigger value="info">Informations</TabsTrigger>
@@ -135,9 +135,9 @@ export function ProfilePage() {
               {bookings.length > 0 ? (
                 bookings.map((b) => (
                   <div key={b.booking._id} className="p-6 hover:bg-accent transition-colors">
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
                           <Badge
                             variant={
                               b.booking.status === 'confirmed'
@@ -162,8 +162,8 @@ export function ProfilePage() {
                           {b.service?.title ?? 'Service'}
                         </p>
                       </div>
-                      <Link to={`/reservations/${b.booking._id}`}>
-                        <Button variant="outline" size="sm">
+                      <Link to={`/reservations/${b.booking._id}`} className="w-full sm:w-auto">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
                           Voir détails
                         </Button>
                       </Link>

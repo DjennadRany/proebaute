@@ -81,7 +81,7 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold text-foreground">Mes avis</h2>
         <Badge variant="outline">{reviews.length} avis</Badge>
       </div>

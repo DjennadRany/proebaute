@@ -77,11 +77,11 @@ export function FavoritesPage() {
       </div>
 
       <Tabs defaultValue="services" className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="services" className="min-w-[150px]">
+        <TabsList className="mb-6 grid w-full grid-cols-2">
+          <TabsTrigger value="services" className="min-w-0">
             Services ({favoriteServices.length})
           </TabsTrigger>
-          <TabsTrigger value="professionals" className="min-w-[150px]">
+          <TabsTrigger value="professionals" className="min-w-0">
             Professionnels ({favoriteProfessionals.length})
           </TabsTrigger>
         </TabsList>

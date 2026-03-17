@@ -66,7 +66,7 @@ export function ServiceCard({
               bg-gradient-to-t from-white/70 via-white/40 to-white/20
               backdrop-blur-md
               border-t border-border
-              p-4
+              p-3 sm:p-4
               translate-y-0
               opacity-100
               md:translate-y-full
@@ -84,7 +84,7 @@ export function ServiceCard({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-3">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="text-xs">
                 {service.category}
               </Badge>
@@ -95,7 +95,7 @@ export function ServiceCard({
             </div>
 
             {professional && (
-              <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border">
+              <div className="mb-3 flex items-center gap-2 border-b border-border pb-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center text-sm font-medium">
                   {(
                     professional.professionalName ||
@@ -114,8 +114,8 @@ export function ServiceCard({
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 text-muted-foreground">
+            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -131,7 +131,7 @@ export function ServiceCard({
                   <span className="text-xs">{service.reviewsCount}</span>
                 </div>
               </div>
-              <div className="flex flex-col items-end">
+              <div className="flex flex-col items-start sm:items-end">
                 <span className="text-lg font-semibold text-foreground">{service.price}€</span>
                 <span className="text-xs text-muted-foreground">{service.duration} min</span>
               </div>

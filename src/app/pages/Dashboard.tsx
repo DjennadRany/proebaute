@@ -110,7 +110,7 @@ export function Dashboard() {
 
       {/* Upcoming Bookings */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-xl font-semibold text-foreground">
             Prochaines réservations
           </h2>
@@ -139,9 +139,9 @@ export function Dashboard() {
                   key={booking._id}
                   className="bg-card rounded-xl p-5 border border-border hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="mb-2 flex flex-wrap items-center gap-2">
                         <Badge variant="secondary" className="text-xs">
                           {formattedDate}
                         </Badge>
@@ -155,7 +155,7 @@ export function Dashboard() {
                       <p className="text-sm text-muted-foreground mb-2">
                         avec {professional.professionalName}
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
                           <span>{service.duration} min</span>
@@ -165,9 +165,9 @@ export function Dashboard() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Link to={`/reservations/${booking._id}`}>
-                        <Button variant="outline" size="sm">
+                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                      <Link to={`/reservations/${booking._id}`} className="w-full sm:w-auto">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
                           Plus de détails
                         </Button>
                       </Link>
@@ -175,6 +175,7 @@ export function Dashboard() {
                         <Button
                           variant="outline"
                           size="sm"
+                          className="w-full sm:w-auto"
                           onClick={async () => {
                             try {
                               const convId = await openOrCreateConversation(user._id, professional.userId!);

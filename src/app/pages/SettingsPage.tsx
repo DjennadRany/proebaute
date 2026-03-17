@@ -67,7 +67,7 @@ export function SettingsPage() {
             </div>
           </div>
           <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1">
                 <Label htmlFor="email-notifications" className="text-foreground cursor-pointer">
                   Notifications par email
@@ -83,7 +83,7 @@ export function SettingsPage() {
               />
             </div>
             <Separator />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1">
                 <Label htmlFor="booking-notifications" className="text-foreground cursor-pointer">
                   Notifications de réservation
@@ -99,7 +99,7 @@ export function SettingsPage() {
               />
             </div>
             <Separator />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1">
                 <Label htmlFor="messages-notifications" className="text-foreground cursor-pointer">
                   Notifications de messages
@@ -115,7 +115,7 @@ export function SettingsPage() {
               />
             </div>
             <Separator />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1">
                 <Label htmlFor="marketing-notifications" className="text-foreground cursor-pointer">
                   Offres promotionnelles
@@ -149,7 +149,7 @@ export function SettingsPage() {
             </div>
           </div>
           <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1">
                 <Label htmlFor="profile-visibility" className="text-foreground cursor-pointer">
                   Profil public
@@ -165,7 +165,7 @@ export function SettingsPage() {
               />
             </div>
             <Separator />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1">
                 <Label htmlFor="show-reviews" className="text-foreground cursor-pointer">
                   Afficher mes avis publiquement

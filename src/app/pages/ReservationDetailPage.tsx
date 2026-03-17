@@ -140,8 +140,8 @@ export function ReservationDetailPage() {
       )}
 
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
-        <div className="p-6 border-b border-border">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="p-6 border-b border-border">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
             <Badge
               variant={
                 booking.status === 'confirmed'
@@ -173,13 +173,13 @@ export function ReservationDetailPage() {
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-start gap-3 text-sm">
             <Calendar className="w-5 h-5 text-muted-foreground" />
             <span>{formatDate()} à {booking.timeSlot}</span>
           </div>
           {service && (
             <>
-              <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-start gap-3 text-sm">
                 <Clock className="w-5 h-5 text-muted-foreground" />
                 <span>{service.duration} minutes</span>
               </div>
@@ -190,7 +190,7 @@ export function ReservationDetailPage() {
             </>
           )}
           {professional && (
-            <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-start gap-3 text-sm">
               <MapPin className="w-5 h-5 text-muted-foreground" />
               <span>{professional.location}</span>
             </div>
@@ -220,14 +220,14 @@ export function ReservationDetailPage() {
                   Ouvrir l’itinéraire
                 </Button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Link to={`/professionals/${professional._id}`}>
-                  <Button size="sm" variant="ghost">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Link to={`/professionals/${professional._id}`} className="w-full sm:w-auto">
+                  <Button size="sm" variant="ghost" className="w-full sm:w-auto">
                     Voir le profil du professionnel
                   </Button>
                 </Link>
-                <Link to={`/booking?professionalId=${professional._id}`}>
-                  <Button size="sm" variant="outline">
+                <Link to={`/booking?professionalId=${professional._id}`} className="w-full sm:w-auto">
+                  <Button size="sm" variant="outline" className="w-full sm:w-auto">
                     Réserver un nouveau rendez-vous avec ce professionnel
                   </Button>
                 </Link>
@@ -319,9 +319,10 @@ export function ReservationDetailPage() {
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Button
                   size="sm"
+                  className="w-full sm:w-auto"
                   disabled={!editDate || !editTime}
                   onClick={async () => {
                     if (!editDate || !editTime) return;
@@ -355,6 +356,7 @@ export function ReservationDetailPage() {
                 <Button
                   size="sm"
                   variant="outline"
+                  className="w-full sm:w-auto"
                   onClick={() => {
                     setIsEditing(false);
                     setEditDate(new Date(booking.bookingDate));

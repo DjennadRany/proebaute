@@ -109,8 +109,8 @@ export function ProfessionalProfile() {
         </Button>
       </Link>
 
-      <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-2xl p-8 mb-8 border border-border">
-        <div className="flex items-start gap-6">
+      <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-2xl p-5 sm:p-8 mb-8 border border-border">
+        <div className="flex flex-col items-start gap-6 sm:flex-row">
           <div className="relative">
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-300 flex items-center justify-center text-3xl font-semibold text-white">
               {professional.professionalName.split(' ').map((n) => n[0]).join('')}
@@ -123,11 +123,11 @@ export function ProfessionalProfile() {
           </div>
 
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               {professional.professionalName}
             </h1>
             <p className="text-lg text-muted-foreground mb-3">{professional.specialty}</p>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1">
                 <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                 <span className="text-lg font-semibold">{professional.ratingAverage}</span>
@@ -143,10 +143,10 @@ export function ProfessionalProfile() {
               {professional.bio || 'Aucune description'}
             </p>
 
-            <div className="flex gap-3 items-center flex-wrap">
+              <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:flex-wrap">
               {services.length > 0 && (
-                <Link to={`/booking/${services[0]._id}`}>
-                  <Button size="lg">
+                <Link to={`/booking/${services[0]._id}`} className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto">
                     <Calendar className="w-5 h-5 mr-2" />
                     Réserver un créneau
                   </Button>
@@ -164,6 +164,7 @@ export function ProfessionalProfile() {
                       console.error('Erreur ouverture conversation', e);
                     }
                   }}
+                  className="w-full sm:w-auto"
                 >
                   <MessageCircle className="w-5 h-5 mr-2" />
                   Message
@@ -173,7 +174,7 @@ export function ProfessionalProfile() {
                 <button
                   type="button"
                   onClick={handleToggleFavoriteProfessional}
-                  className={`ml-2 inline-flex items-center justify-center w-10 h-10 rounded-full border transition-colors ${
+                  className={`inline-flex items-center justify-center w-10 h-10 rounded-full border transition-colors ${
                     isFavorited
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-card text-muted-foreground border-border hover:bg-accent'
@@ -188,14 +189,14 @@ export function ProfessionalProfile() {
       </div>
 
       <Tabs defaultValue="services" className="w-full">
-        <TabsList className="w-full justify-start mb-6">
-          <TabsTrigger value="services" className="flex-1 max-w-xs">
+        <TabsList className="mb-6 grid w-full grid-cols-1 sm:grid-cols-3">
+          <TabsTrigger value="services" className="flex-1">
             Services ({services.length})
           </TabsTrigger>
-          <TabsTrigger value="reviews" className="flex-1 max-w-xs">
+          <TabsTrigger value="reviews" className="flex-1">
             Avis ({reviews.length})
           </TabsTrigger>
-          <TabsTrigger value="about" className="flex-1 max-w-xs">
+          <TabsTrigger value="about" className="flex-1">
             À propos
           </TabsTrigger>
         </TabsList>
@@ -303,7 +304,7 @@ export function ProfessionalProfile() {
               </div>
             </div>
 
-            <div className="bg-card rounded-xl p-6 border border-border flex items-center justify-between">
+            <div className="bg-card rounded-xl p-6 border border-border flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Engagement des clients</h3>
                 <p className="text-sm text-muted-foreground">
