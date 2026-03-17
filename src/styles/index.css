@@ -1,0 +1,71 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* Custom scrollbar styles */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Premium gradient backgrounds - ProBeauté */
+.gradient-premium {
+  background: linear-gradient(135deg, #e8c1b7 0%, #d9a5a5 40%, #f7f7ff 75%, #6c5ce7 100%);
+}
+
+/* Liseré lumineux très léger pour les bannières (effet miroir) */
+@keyframes subtle-sheen {
+  0% {
+    transform: translateX(-130%) skewX(-12deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.3;
+  }
+  80% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(130%) skewX(-12deg);
+    opacity: 0;
+  }
+}
+
+.sheen-light {
+  position: absolute;
+  inset-block: 0;
+  width: 28%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  opacity: 0.25;
+  pointer-events: none;
+  animation: subtle-sheen 3s linear infinite;
+  animation-delay: 1.2s;
+}
+
+@layer utilities {
+  @media (min-width: 64rem) {
+    .lg\:h-16 {
+      height: calc(var(--spacing) * 24);
+    }
+
+    .lg\:px-8 {
+      padding-inline: calc(var(--spacing) * 0);
+    }
+  }
+}

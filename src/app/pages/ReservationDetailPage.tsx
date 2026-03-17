@@ -1,0 +1,375 @@
+import { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router';
+import { ArrowLeft, Calendar, Clock, MapPin, AlertCircle } from 'lucide-react';
+import { getBookingDetail, cancelBooking, updateBooking, type BookingDetailResponse } from '../api/client';
+import { useAuth } from '../context/AuthContext';
+import { openOrCreateConversation } from '../utils/messaging';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Alert, AlertDescription } from '../components/ui/alert';
+
+export function ReservationDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [data, setData] = useState<BookingDetailResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editDate, setEditDate] = useState<Date | undefined>(undefined);
+  const [editTime, setEditTime] = useState<string>('');
+
+  useEffect(() => {
+    if (!id) return;
+    getBookingDetail(id)
+      .then(setData)
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  // initialise les valeurs d'édition quand les données sont chargées
+  useEffect(() => {
+    if (!data) return;
+    const { booking } = data;
+    setEditDate(new Date(booking.bookingDate));
+    setEditTime(booking.timeSlot);
+  }, [data]);
+
+  const handleCancel = () => {
+    if (!id || !data) return;
+    if (!window.confirm('Confirmer l\'annulation de cette réservation ?')) return;
+    setCancelling(true);
+    setCancelError(null);
+    cancelBooking(id)
+      .then(() => {
+        setData((prev) =>
+          prev ? { ...prev, booking: { ...prev.booking, status: 'cancelled' } } : null
+        );
+      })
+      .catch((e) => setCancelError(e instanceof Error ? e.message : 'Erreur'))
+      .finally(() => setCancelling(false));
+  };
+
+  if (loading || !id) {
+    return (
+      <div className="max-w-2xl mx-auto py-16 text-center text-muted-foreground">
+        {loading ? 'Chargement...' : 'ID manquant'}
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="max-w-2xl mx-auto py-16 text-center">
+        <p className="text-muted-foreground mb-4">Réservation introuvable</p>
+        <Link to="/reservations">
+          <Button>Retour aux réservations</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const { booking, service, professional } = data;
+  const formatDate = () =>
+    new Intl.DateTimeFormat('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(booking.bookingDate));
+
+  const canCancel =
+    booking.status === 'confirmed' || booking.status === 'pending';
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      {/* Hero bannière avec image du service + résumé lisible au-dessus */}
+      {service && (
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-muted">
+          {/* Image principale, un peu plus haute */}
+          <div className="h-[260px] sm:h-[300px] md:h-[340px] w-full">
+            <img
+              src={
+                service.media?.[0] && !service.media[0].includes('via.placeholder.com')
+                  ? service.media[0]
+                  : 'https://images.pexels.com/photos/3738341/pexels-photo-3738341.jpeg?auto=compress&cs=tinysrgb&w=1600'
+              }
+              alt={service.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Dégradés de fondu latéraux + léger effet miroir animé */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background via-background/40 to-transparent" />
+            <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background via-background/40 to-transparent" />
+            <div className="sheen-light" />
+          </div>
+
+          <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6">
+            <div className="flex justify-between items-start gap-3">
+              <Link to="/reservations">
+                <Button variant="ghost" size="sm" className="bg-black/40 text-white hover:bg-black/60">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Retour
+                </Button>
+              </Link>
+            </div>
+            <div className="max-w-xl">
+              <p className="text-xs text-white/80 mb-1">Service réservé</p>
+              <h1 className="text-lg sm:text-2xl font-semibold text-white line-clamp-2 mb-1">
+                {service.title}
+              </h1>
+              <p className="text-xs sm:text-sm text-white/80 line-clamp-2">
+                {professional?.professionalName && `${professional.professionalName} · `}
+                {formatDate()} · {booking.timeSlot}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!service && (
+        <Link to="/reservations">
+          <Button variant="ghost" size="sm" className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour aux réservations
+          </Button>
+        </Link>
+      )}
+
+      <div className="bg-card rounded-2xl border border-border overflow-hidden">
+        <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge
+              variant={
+                booking.status === 'confirmed'
+                  ? 'default'
+                  : booking.status === 'completed'
+                  ? 'secondary'
+                  : booking.status === 'cancelled'
+                  ? 'destructive'
+                  : 'outline'
+              }
+            >
+              {booking.status === 'confirmed'
+                ? 'Confirmé'
+                : booking.status === 'completed'
+                ? 'Terminé'
+                : booking.status === 'cancelled'
+                ? 'Annulé'
+                : booking.status}
+            </Badge>
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">
+            {service?.title ?? 'Réservation'}
+          </h1>
+          {professional && (
+            <p className="text-muted-foreground">
+              avec {professional.professionalName}
+            </p>
+          )}
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="flex items-center gap-3 text-sm">
+            <Calendar className="w-5 h-5 text-muted-foreground" />
+            <span>{formatDate()} à {booking.timeSlot}</span>
+          </div>
+          {service && (
+            <>
+              <div className="flex items-center gap-3 text-sm">
+                <Clock className="w-5 h-5 text-muted-foreground" />
+                <span>{service.duration} minutes</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Montant</span>
+                <span className="font-semibold">{booking.amount ?? service.price}€</span>
+              </div>
+            </>
+          )}
+          {professional && (
+            <div className="flex items-center gap-3 text-sm">
+              <MapPin className="w-5 h-5 text-muted-foreground" />
+              <span>{professional.location}</span>
+            </div>
+          )}
+
+          {/* Carte profil coiffeur + itinéraire */}
+          {professional && (
+            <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4 space-y-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Votre professionnel</p>
+                  <p className="font-semibold text-foreground">
+                    {professional.professionalName}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {professional.location}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const q = encodeURIComponent(professional.location || professional.professionalName || '');
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
+                  }}
+                >
+                  Ouvrir l’itinéraire
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link to={`/professionals/${professional._id}`}>
+                  <Button size="sm" variant="ghost">
+                    Voir le profil du professionnel
+                  </Button>
+                </Link>
+                <Link to={`/booking?professionalId=${professional._id}`}>
+                  <Button size="sm" variant="outline">
+                    Réserver un nouveau rendez-vous avec ce professionnel
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <strong>Politique d'annulation :</strong> Annulation gratuite jusqu'à 48h avant le
+              rendez-vous. Entre 24h et 48h, une pénalité partielle peut s'appliquer. Au-delà de
+              24h avant le rdv, l'annulation peut entraîner des frais.
+            </AlertDescription>
+          </Alert>
+
+            {cancelError && (
+            <Alert variant="destructive">
+              <AlertDescription>{cancelError}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            {canCancel && (
+              <Button
+                variant="destructive"
+                onClick={handleCancel}
+                disabled={cancelling}
+              >
+                {cancelling ? 'Annulation...' : 'Annuler la réservation'}
+              </Button>
+            )}
+
+            {booking.status !== 'cancelled' && booking.status !== 'completed' && (
+              <Button
+                variant="outline"
+                onClick={() => setIsEditing((prev) => !prev)}
+              >
+                {isEditing ? 'Fermer la modification' : 'Modifier la réservation'}
+              </Button>
+            )}
+
+            {user && professional?.userId && (
+              <Button
+                variant="outline"
+                className="sm:ml-auto"
+                onClick={async () => {
+                  try {
+                    const convId = await openOrCreateConversation(user._id, professional.userId!);
+                    navigate(`/messages?conversationId=${encodeURIComponent(convId)}`);
+                  } catch (e) {
+                    console.error('Erreur ouverture conversation', e);
+                    // Même en cas d'erreur backend, on renvoie vers la page Messages
+                    navigate('/messages');
+                  }
+                }}
+              >
+                Contacter le professionnel
+              </Button>
+            )}
+          </div>
+
+          {isEditing && (
+            <div className="mt-6 space-y-4 border-t border-border pt-4">
+              <p className="text-sm font-medium text-foreground">
+                Modifier la date et l’horaire de votre rendez-vous
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Nouvelle date</p>
+                  <input
+                    type="date"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                    value={editDate ? editDate.toISOString().slice(0, 10) : ''}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setEditDate(v ? new Date(v) : undefined);
+                    }}
+                    min={new Date().toISOString().slice(0, 10)}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Nouvel horaire</p>
+                  <input
+                    type="time"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                    value={editTime}
+                    onChange={(e) => setEditTime(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  disabled={!editDate || !editTime}
+                  onClick={async () => {
+                    if (!editDate || !editTime) return;
+                    try {
+                      const bookingDate = editDate.toISOString().slice(0, 10);
+                      await updateBooking(booking._id, {
+                        bookingDate,
+                        timeSlot: editTime,
+                      });
+                      setData((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              booking: {
+                                ...prev.booking,
+                                bookingDate,
+                                timeSlot: editTime,
+                              },
+                            }
+                          : prev,
+                      );
+                      setIsEditing(false);
+                    } catch (e) {
+                      console.error('Erreur mise à jour réservation', e);
+                      window.alert('Impossible de modifier la réservation pour le moment.');
+                    }
+                  }}
+                >
+                  Enregistrer les modifications
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditDate(new Date(booking.bookingDate));
+                    setEditTime(booking.timeSlot);
+                  }}
+                >
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Bouton contact désormais aligné avec les autres actions juste au-dessus */}
+    </div>
+  );
+}
