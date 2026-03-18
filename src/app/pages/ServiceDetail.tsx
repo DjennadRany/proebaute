@@ -175,7 +175,7 @@ export function ServiceDetail() {
             s._id === serviceId
               ? {
                   ...s,
-                  likesCount: s.likesCount + (res.liked ? 1 : -1),
+                  likesCount: (s.likesCount ?? 0) + (res.liked ? 1 : -1),
                 }
               : s
           )
@@ -305,7 +305,7 @@ export function ServiceDetail() {
             isLiked={isLiked}
             isFavorited={isFavorited}
             likesCount={likesCount != null ? likesCount : service.likesCount}
-            commentsCount={commentsCount != null ? commentsCount : service.commentsCount}
+            commentsCount={commentsCount != null ? commentsCount : service.reviewsCount}
             onLike={handleToggleLike}
             onComment={handleScrollToComments}
             onFavorite={handleToggleFavorite}

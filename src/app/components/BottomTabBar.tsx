@@ -20,7 +20,7 @@ export function BottomTabBar() {
   const location = useLocation();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-slate-950/96 px-2 pb-[calc(env(safe-area-inset-bottom)+0.4rem)] pt-2 backdrop-blur md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-30 w-full max-w-full border-t border-white/10 bg-slate-950/96 px-2 pb-[calc(env(safe-area-inset-bottom)+0.4rem)] pt-2 backdrop-blur md:hidden">
       <div className="mx-auto grid max-w-lg grid-cols-5 gap-1">
         {primaryItems.map((item) => {
           const isActive =

@@ -335,7 +335,7 @@ export function ServicesHub() {
                         s._id === serviceId
                           ? {
                               ...s,
-                              likesCount: s.likesCount + (res.liked ? 1 : -1),
+                              likesCount: (s.likesCount ?? 0) + (res.liked ? 1 : -1),
                             }
                           : s
                       )

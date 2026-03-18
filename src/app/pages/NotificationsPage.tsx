@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Bell, Calendar, MessageCircle, Star } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import {
   fetchBookingsByClient,
@@ -10,6 +11,7 @@ import { AppHeader } from '../components/AppHeader';
 import { AppCard } from '../components/AppCard';
 import { EmptyState } from '../components/EmptyState';
 import { StatusBadge } from '../components/StatusBadge';
+import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 
 type NotificationItem = {
   id: string;
@@ -19,6 +21,8 @@ type NotificationItem = {
   category: 'all' | 'booking' | 'message' | 'review';
   unread: boolean;
   typeLabel?: string;
+  href?: string;
+  imageSrc?: string | null;
 };
 
 const tabs = [
@@ -30,6 +34,7 @@ const tabs = [
 
 export function NotificationsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<(typeof tabs)[number]['id']>('all');
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,22 +50,33 @@ export function NotificationsPage() {
           fetchReviewsByClient(user._id).catch(() => []),
         ]);
 
-        const bookingItems: NotificationItem[] = bookings.slice(0, 5).map(({ booking, service }) => ({
-          id: `booking-${booking._id}`,
-          title:
-            booking.status === 'confirmed'
-              ? 'Réservation confirmée'
-              : booking.status === 'pending'
-              ? 'Réservation en attente'
-              : 'Mise à jour de réservation',
-          body: `${service?.title ?? 'Votre service'} · ${new Date(
-            booking.bookingDate,
-          ).toLocaleDateString('fr-FR')} à ${booking.timeSlot}`,
-          time: booking.bookingDate,
-          category: 'booking',
-          unread: booking.status === 'pending',
-          typeLabel: booking.status,
-        }));
+        const bookingItems: NotificationItem[] = bookings.slice(0, 5).map(({ booking, service }) => {
+          const primaryMedia = service?.media?.[0];
+          const imageSrc = service
+            ? primaryMedia && !primaryMedia.includes('via.placeholder.com')
+              ? primaryMedia
+              : 'https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=800'
+            : null;
+
+          return {
+            id: `booking-${booking._id}`,
+            title:
+              booking.status === 'confirmed'
+                ? 'Réservation confirmée'
+                : booking.status === 'pending'
+                ? 'Réservation en attente'
+                : 'Mise à jour de réservation',
+            body: `${service?.title ?? 'Votre service'} · ${new Date(
+              booking.bookingDate,
+            ).toLocaleDateString('fr-FR')} à ${booking.timeSlot}`,
+            time: booking.bookingDate,
+            category: 'booking',
+            unread: booking.status === 'pending',
+            typeLabel: booking.status,
+            href: `/reservations/${booking._id}`,
+            imageSrc,
+          };
+        });
 
         const messageItems: NotificationItem[] = conversations.slice(0, 5).map((conversation) => ({
           id: `message-${conversation._id}`,
@@ -71,6 +87,7 @@ export function NotificationsPage() {
           time: conversation.updatedAt ?? new Date().toISOString(),
           category: 'message',
           unread: true,
+          href: `/messages?conversationId=${encodeURIComponent(conversation._id)}`,
         }));
 
         const reviewItems: NotificationItem[] = reviews.slice(0, 5).map((review) => ({
@@ -80,6 +97,7 @@ export function NotificationsPage() {
           time: review.createdAt ?? new Date().toISOString(),
           category: 'review',
           unread: false,
+          href: review.serviceId ? `/services/${review.serviceId}#service-comments` : '/reviews',
         }));
 
         const merged = [...bookingItems, ...messageItems, ...reviewItems].sort(
@@ -137,29 +155,46 @@ export function NotificationsPage() {
           {filteredItems.map((item) => (
             <AppCard
               key={item.id}
-              className={`rounded-2xl p-4 sm:p-5 ${
+              className={`rounded-2xl p-0 overflow-hidden ${
                 item.unread ? 'border-primary/25 bg-primary/5' : ''
-              }`}
+              } ${item.href ? 'cursor-pointer hover:bg-accent/40 active:scale-[0.99] transition' : ''}`}
+              onClick={
+                item.href
+                  ? () => {
+                      navigate(item.href!);
+                    }
+                  : undefined
+              }
             >
-              <div className="flex items-start gap-4">
-                <div
-                  className={`mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
-                    item.category === 'booking'
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : item.category === 'message'
-                      ? 'bg-sky-50 text-sky-700'
-                      : 'bg-amber-50 text-amber-700'
-                  }`}
-                >
-                  {item.category === 'booking' ? (
-                    <Calendar className="h-5 w-5" />
-                  ) : item.category === 'message' ? (
-                    <MessageCircle className="h-5 w-5" />
-                  ) : (
-                    <Star className="h-5 w-5" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
+              <div className="flex min-h-[92px] items-stretch">
+                {item.imageSrc ? (
+                  <div className="w-[92px] shrink-0 bg-muted">
+                    <ImageWithFallback
+                      src={item.imageSrc}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className={`flex w-[92px] shrink-0 items-center justify-center ${
+                      item.category === 'booking'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : item.category === 'message'
+                        ? 'bg-sky-50 text-sky-700'
+                        : 'bg-amber-50 text-amber-700'
+                    }`}
+                  >
+                    {item.category === 'booking' ? (
+                      <Calendar className="h-5 w-5" />
+                    ) : item.category === 'message' ? (
+                      <MessageCircle className="h-5 w-5" />
+                    ) : (
+                      <Star className="h-5 w-5" />
+                    )}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1 p-4 sm:p-5">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <p className="font-semibold text-foreground">{item.title}</p>
                     {item.unread && <StatusBadge status="live" className="text-[10px]" />}

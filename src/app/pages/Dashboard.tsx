@@ -313,7 +313,7 @@ export function Dashboard() {
                     setRecentServices((prev) =>
                       prev.map((s) =>
                         s._id === serviceId
-                          ? { ...s, likesCount: s.likesCount + (res.liked ? 1 : -1) }
+                          ? { ...s, likesCount: (s.likesCount ?? 0) + (res.liked ? 1 : -1) }
                           : s
                       )
                     );

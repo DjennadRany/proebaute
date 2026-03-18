@@ -87,7 +87,8 @@ export function HomePage() {
 
   return (
     <div className="space-y-0">
-      <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
+      {/* Full-bleed hero aligned to RootLayout paddings (prevents mobile horizontal cut) */}
+      <section className="relative -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden">
         <div className="pointer-events-none absolute inset-0 z-0">
           {HERO_SLIDES.map((slide, index) => (
             <div
@@ -338,7 +339,7 @@ export function HomePage() {
       </section>
 
       {/* Hub combiné Services + Pros visible depuis la home */}
-      <div className="relative z-10 bg-background px-6 pb-8 pt-6 sm:px-10 lg:px-16">
+      <div className="relative z-10 bg-background pb-8 pt-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
@@ -374,7 +375,7 @@ export function HomePage() {
                 Aucun service en base pour le moment.
               </p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid w-full grid-cols-1 justify-items-stretch gap-4 sm:grid-cols-2">
                 {services
                   .filter((s) => {
                     const q = search.toLowerCase();
@@ -407,7 +408,7 @@ export function HomePage() {
                 Aucun professionnel en base pour le moment.
               </p>
             ) : (
-              <div className="space-y-3">
+              <div className="w-full space-y-3">
                 {professionals
                   .filter((p) => {
                     const q = search.toLowerCase();
