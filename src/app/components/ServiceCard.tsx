@@ -32,8 +32,8 @@ export function ServiceCard({
       : 'https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=800';
 
   return (
-    <Link to={user ? `/services/${service._id}` : '/login'}>
-      <div className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 border border-border bg-muted">
+    <Link to={user ? `/services/${service._id}` : '/login'} className="block w-full min-w-0">
+      <div className="group relative w-full min-w-0 rounded-xl overflow-hidden border border-border bg-muted shadow-sm transition-all duration-500 hover:shadow-lg">
         <ImageWithFallback
           src={safeImageSrc}
           alt={service.title}

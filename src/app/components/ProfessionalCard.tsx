@@ -32,7 +32,7 @@ export function ProfessionalCard({
   const logoSrc = (professional as any).gallery?.[0] as string | undefined;
 
   return (
-    <div className="bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-border">
+    <div className="w-full min-w-0 bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-border">
       <div className="p-4 sm:p-6">
         <div className="flex items-start gap-4 mb-4">
           <div className="relative">
@@ -103,7 +103,7 @@ export function ProfessionalCard({
           </Badge>
         </div>
 
-        <Link to={user ? `/professionals/${professional._id}` : '/login'}>
+        <Link to={user ? `/professionals/${professional._id}` : '/login'} className="block w-full">
           <Button className="w-full" variant="default">
             Voir le profil
           </Button>
