@@ -22,6 +22,8 @@ export function EntityAvatar({
   size = 'md',
   className,
 }: EntityAvatarProps) {
+  const safeImageSrc =
+    imageSrc && !imageSrc.includes('via.placeholder.com') ? imageSrc : null;
   const initials =
     name
       .split(' ')
@@ -38,8 +40,8 @@ export function EntityAvatar({
           sizeMap[size],
         )}
       >
-        {imageSrc ? (
-          <img src={imageSrc} alt={name} className="h-full w-full object-cover" />
+        {safeImageSrc ? (
+          <img src={safeImageSrc} alt={name} className="h-full w-full object-cover" />
         ) : (
           initials
         )}
