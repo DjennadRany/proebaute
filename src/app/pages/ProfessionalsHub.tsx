@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Search, MapPin, SlidersHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
 import { ProfessionalCard } from '../components/ProfessionalCard';
 import type { ApiProfessional } from '../api/client';
 import { fetchProfessionals, fetchFavorites, fetchLikes, toggleFavorite } from '../api/client';
@@ -10,10 +12,11 @@ import { Badge } from '../components/ui/badge';
 
 const specialties = [
   'Tous',
-  'Hair Stylist & Colorist',
-  'Esthetician & Spa Specialist',
-  'Nail Artist',
-  'Makeup Artist',
+  'Coiffure & beauté',
+  'Barbier',
+  'Esthétique',
+  'Prothésie ongulaire',
+  'Make-up',
 ];
 
 export function ProfessionalsHub() {
@@ -71,12 +74,11 @@ export function ProfessionalsHub() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Nos professionnels beauté</h1>
-        <p className="text-muted-foreground">
-          {professionals.length} professionnels à votre service
-        </p>
-      </div>
+      <AppHeader
+        eyebrow="Professionnels"
+        title="Nos professionnels beauté"
+        subtitle={`${professionals.length} professionnels disponibles pour vous accompagner à domicile ou en salon.`}
+      />
 
       <div className="mb-8 space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -90,12 +92,6 @@ export function ProfessionalsHub() {
               className="pl-10"
             />
           </div>
-          <Button variant="outline" size="icon" className="self-end sm:self-auto">
-            <MapPin className="w-5 h-5" />
-          </Button>
-          <Button variant="outline" size="icon" className="self-end sm:self-auto">
-            <SlidersHorizontal className="w-5 h-5" />
-          </Button>
         </div>
 
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -143,20 +139,22 @@ export function ProfessionalsHub() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 bg-card rounded-xl border border-border">
-          <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">Aucun professionnel trouvé</h3>
-          <p className="text-muted-foreground mb-4">Essayez de modifier vos critères de recherche</p>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedSpecialty('Tous');
-            }}
-          >
-            Réinitialiser les filtres
-          </Button>
-        </div>
+        <EmptyState
+          icon={Search}
+          title="Aucun professionnel trouvé"
+          description="Essayez de modifier votre recherche ou votre spécialité pour afficher d’autres profils."
+          action={
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedSpecialty('Tous');
+              }}
+            >
+              Réinitialiser les filtres
+            </Button>
+          }
+        />
       )}
     </div>
   );

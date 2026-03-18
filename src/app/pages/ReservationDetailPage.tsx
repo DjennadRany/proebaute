@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
 import { ArrowLeft, Calendar, Clock, MapPin, AlertCircle } from 'lucide-react';
 import { getBookingDetail, cancelBooking, updateBooking, type BookingDetailResponse } from '../api/client';
+import { AppCard } from '../components/AppCard';
+import { BookingSummary } from '../components/BookingSummary';
+import { StatusBadge } from '../components/StatusBadge';
 import { useAuth } from '../context/AuthContext';
 import { openOrCreateConversation } from '../utils/messaging';
 import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
 
 export function ReservationDetailPage() {
@@ -142,25 +144,7 @@ export function ReservationDetailPage() {
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
           <div className="p-6 border-b border-border">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <Badge
-              variant={
-                booking.status === 'confirmed'
-                  ? 'default'
-                  : booking.status === 'completed'
-                  ? 'secondary'
-                  : booking.status === 'cancelled'
-                  ? 'destructive'
-                  : 'outline'
-              }
-            >
-              {booking.status === 'confirmed'
-                ? 'Confirmé'
-                : booking.status === 'completed'
-                ? 'Terminé'
-                : booking.status === 'cancelled'
-                ? 'Annulé'
-                : booking.status}
-            </Badge>
+            <StatusBadge status={booking.status} />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
             {service?.title ?? 'Réservation'}
@@ -173,32 +157,20 @@ export function ReservationDetailPage() {
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="flex items-start gap-3 text-sm">
-            <Calendar className="w-5 h-5 text-muted-foreground" />
-            <span>{formatDate()} à {booking.timeSlot}</span>
-          </div>
-          {service && (
-            <>
-              <div className="flex items-start gap-3 text-sm">
-                <Clock className="w-5 h-5 text-muted-foreground" />
-                <span>{service.duration} minutes</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Montant</span>
-                <span className="font-semibold">{booking.amount ?? service.price}€</span>
-              </div>
-            </>
-          )}
-          {professional && (
-            <div className="flex items-start gap-3 text-sm">
-              <MapPin className="w-5 h-5 text-muted-foreground" />
-              <span>{professional.location}</span>
-            </div>
-          )}
+          <BookingSummary
+            title="Résumé de votre rendez-vous"
+            serviceName={service?.title ?? null}
+            professionalName={professional?.professionalName ?? null}
+            location={professional?.location ?? null}
+            dateLabel={formatDate()}
+            timeLabel={booking.timeSlot}
+            durationLabel={service ? `${service.duration} minutes` : null}
+            totalLabel={service ? `${booking.amount ?? service.price}€` : null}
+          />
 
           {/* Carte profil coiffeur + itinéraire */}
           {professional && (
-            <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4 space-y-3">
+            <AppCard tone="elevated" className="mt-4 rounded-2xl space-y-3 p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Votre professionnel</p>
@@ -232,7 +204,7 @@ export function ReservationDetailPage() {
                   </Button>
                 </Link>
               </div>
-            </div>
+            </AppCard>
           )}
 
           <Alert>

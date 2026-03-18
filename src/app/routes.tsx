@@ -11,6 +11,7 @@ import { ReservationsPage } from "./pages/ReservationsPage";
 import { ReservationDetailPage } from "./pages/ReservationDetailPage";
 import { MessagesPage } from "./pages/MessagesPage";
 import { MessagesArchivesPage } from "./pages/MessagesArchivesPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
 import { FavoritesPage } from "./pages/FavoritesPage";
 import { ReviewsPage } from "./pages/ReviewsPage";
 import { ProfilePage } from "./pages/ProfilePage";
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
       { path: "reservations/:id", Component: ReservationDetailPage },
       { path: "messages", Component: MessagesPage },
       { path: "messages/archives", Component: MessagesArchivesPage },
+      { path: "notifications", Component: NotificationsPage },
       { path: "favorites", Component: FavoritesPage },
       { path: "reviews", Component: ReviewsPage },
       { path: "profile", Component: ProfilePage },

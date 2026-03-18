@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import { useEffect, useState } from 'react';
 import {
+  Bell,
   LayoutDashboard,
   Scissors,
   Users,
@@ -15,6 +16,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { BottomTabBar } from '../components/BottomTabBar';
 import { Button } from '../components/ui/button';
 import probeauteLogo from '../../../asset/probeaute_logo_transparent.png';
 
@@ -26,6 +28,7 @@ const navigationMain = [
 ];
 
 const navigationAccount = [
+  { name: 'Notifications', href: '/notifications', icon: Bell },
   { name: 'Messages', href: '/messages', icon: MessageCircle },
   { name: 'Favoris', href: '/favorites', icon: Heart },
   { name: 'Avis', href: '/reviews', icon: Star },
@@ -312,11 +315,12 @@ export function RootLayout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 bg-background">
+      <main className="flex-1 bg-background pb-24 md:pb-0">
         <div className="mx-auto max-w-6xl px-4 pt-4 pb-6 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8 lg:pb-10">
           <Outlet />
         </div>
       </main>
+      {user && <BottomTabBar />}
     </div>
   );
 }

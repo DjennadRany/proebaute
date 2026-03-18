@@ -1,6 +1,7 @@
 import { Heart, MessageCircle, Star, Bookmark } from 'lucide-react';
 import { Link } from 'react-router';
 import type { ApiService, ApiProfessional } from '../api/client';
+import { EntityAvatar } from './EntityAvatar';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Badge } from './ui/badge';
 import { useAuth } from '../context/AuthContext';
@@ -96,15 +97,14 @@ export function ServiceCard({
 
             {professional && (
               <div className="mb-3 flex items-center gap-2 border-b border-border pb-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center text-sm font-medium">
-                  {(
+                <EntityAvatar
+                  name={
                     professional.professionalName ||
                     (professional as any).firstName ||
                     'P'
-                  )
-                    .trim()
-                    .charAt(0)}
-                </div>
+                  }
+                  size="sm"
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
                     {professional.professionalName}

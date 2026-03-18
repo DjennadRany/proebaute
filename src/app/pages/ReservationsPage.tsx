@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Calendar, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
+import { ListItemCard } from '../components/ListItemCard';
+import { StatusBadge } from '../components/StatusBadge';
 import { fetchBookingsByClient, type ApiBookingSummary } from '../api/client';
 import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
 
 export function ReservationsPage() {
   const { user } = useAuth();
@@ -44,22 +47,24 @@ export function ReservationsPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Mes réservations</h1>
-        <p className="text-muted-foreground">
-          Consultez et gérez vos rendez-vous
-        </p>
-      </div>
+      <AppHeader
+        eyebrow="Activité"
+        title="Mes réservations"
+        subtitle="Retrouvez vos prochains rendez-vous, leur statut et les actions utiles en un coup d’œil."
+      />
 
       <div className="space-y-4">
         {bookings.length === 0 ? (
-          <div className="bg-card rounded-xl border border-border p-12 text-center">
-            <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">Aucune réservation</p>
-            <Link to="/services">
-              <Button>Découvrir les services</Button>
-            </Link>
-          </div>
+          <EmptyState
+            icon={Calendar}
+            title="Aucune réservation pour le moment"
+            description="Explorez les services, trouvez votre prochain professionnel et revenez ici pour suivre vos rendez-vous."
+            action={
+              <Link to="/services">
+                <Button>Découvrir les services</Button>
+              </Link>
+            }
+          />
         ) : (
           bookings.map(({ booking, service, professional }) => {
             const safeImage =
@@ -68,9 +73,10 @@ export function ReservationsPage() {
                 : 'https://images.pexels.com/photos/3738341/pexels-photo-3738341.jpeg?auto=compress&cs=tinysrgb&w=1200';
 
             return (
-            <div
+            <ListItemCard
               key={booking._id}
-              className="bg-card rounded-xl border border-border hover:shadow-md overflow-hidden transition-shadow"
+              actionable
+              className="overflow-hidden rounded-2xl p-0"
             >
               {service && (
                 <div className="w-full h-40 sm:h-44 md:h-48">
@@ -84,25 +90,13 @@ export function ReservationsPage() {
               <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
+                    <span className="rounded-full bg-secondary/30 px-3 py-1 text-xs font-medium text-foreground">
                       {formatDate(booking.bookingDate)}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
+                    </span>
+                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                       {booking.timeSlot}
-                    </Badge>
-                    <Badge
-                      variant={
-                        booking.status === 'confirmed'
-                          ? 'default'
-                          : booking.status === 'completed'
-                          ? 'secondary'
-                          : booking.status === 'cancelled'
-                          ? 'destructive'
-                          : 'outline'
-                      }
-                    >
-                      {statusLabel[booking.status] ?? booking.status}
-                    </Badge>
+                    </span>
+                    <StatusBadge status={booking.status} className="text-[11px]" />
                   </div>
                   <h3 className="font-semibold text-foreground mb-1">
                     {service?.title ?? 'Service'}
@@ -132,7 +126,7 @@ export function ReservationsPage() {
                   </Link>
                 )}
               </div>
-            </div>
+            </ListItemCard>
             );
           })
         )}

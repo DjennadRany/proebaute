@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
-import { ArrowLeft, Clock, MapPin, Star, BadgeCheck } from 'lucide-react';
+import { Clock, MapPin, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AppCard } from '../components/AppCard';
+import { AppHeader } from '../components/AppHeader';
+import { BookingSummary } from '../components/BookingSummary';
+import { EmptyState } from '../components/EmptyState';
+import { EntityAvatar } from '../components/EntityAvatar';
 import {
   fetchServiceDetails,
   fetchServicesByCategory,
@@ -239,23 +244,29 @@ export function ServiceDetail() {
 
   if (!service) {
     return (
-      <div className="max-w-4xl mx-auto text-center py-16">
-        <h2 className="text-2xl font-bold text-foreground mb-4">Service non trouvé</h2>
-        <Link to="/services">
-          <Button>Retour aux services</Button>
-        </Link>
+      <div className="max-w-4xl mx-auto py-16">
+        <EmptyState
+          icon={MapPin}
+          title="Service non trouvé"
+          description="Ce service n’est plus disponible ou a été retiré du catalogue."
+          action={
+            <Link to="/services">
+              <Button>Retour aux services</Button>
+            </Link>
+          }
+        />
       </div>
     );
   }
 
   return (
     <div className="max-w-6xl mx-auto">
-      <Link to="/services">
-        <Button variant="ghost" size="sm" className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour aux services
-        </Button>
-      </Link>
+      <AppHeader
+        eyebrow="Fiche service"
+        title={service.title}
+        subtitle={service.description}
+        backTo="/services"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
@@ -271,7 +282,7 @@ export function ServiceDetail() {
             />
           </div>
 
-          <div className="mb-6">
+          <AppCard tone="elevated" className="mb-6 rounded-2xl">
             <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -288,9 +299,7 @@ export function ServiceDetail() {
                 <div className="text-sm text-muted-foreground">{service.duration} minutes</div>
               </div>
             </div>
-
-            <p className="text-muted-foreground leading-relaxed">{service.description}</p>
-          </div>
+          </AppCard>
 
           <SocialActionBar
             isLiked={isLiked}
@@ -303,29 +312,17 @@ export function ServiceDetail() {
           />
 
           {professional && (
-            <div className="mt-8 bg-card rounded-xl p-6 border border-border">
+            <AppCard tone="elevated" className="mt-8 rounded-2xl">
               <h2 className="text-lg font-semibold text-foreground mb-4">
                 À propos du professionnel
               </h2>
               <div className="flex flex-col items-start gap-4 sm:flex-row">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-300 flex items-center justify-center text-xl font-semibold text-white">
-                    {(
-                      professional.professionalName ||
-                      (professional as any).firstName ||
-                      'Pro'
-                    )
-                      .split(' ')
-                      .filter(Boolean)
-                      .map((n) => n[0])
-                      .join('')}
-                  </div>
-                  {professional.verified && (
-                    <div className="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-1">
-                      <BadgeCheck className="w-3.5 h-3.5 text-white" />
-                    </div>
-                  )}
-                </div>
+                <EntityAvatar
+                  name={professional.professionalName || (professional as any).firstName || 'Pro'}
+                  verified={professional.verified}
+                  imageSrc={professional.gallery?.[0] ?? null}
+                  size="md"
+                />
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground mb-1">
                     {professional.professionalName}
@@ -348,7 +345,7 @@ export function ServiceDetail() {
                   <Button variant="outline" className="w-full sm:w-auto">Voir le profil</Button>
                 </Link>
               </div>
-            </div>
+            </AppCard>
           )}
 
           <div className="mt-8" id="service-comments">
@@ -394,9 +391,11 @@ export function ServiceDetail() {
                   <ReviewCard key={review._id} review={toCardReview(review)} />
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  Aucun avis pour le moment.
-                </p>
+                <EmptyState
+                  icon={Star}
+                  title="Aucun avis pour le moment"
+                  description="Les prochains retours clients apparaîtront ici pour vous aider à choisir en confiance."
+                />
               )}
             </div>
           </div>
@@ -404,22 +403,20 @@ export function ServiceDetail() {
 
         <div className="lg:col-span-1">
           <div className="sticky top-8">
-            <div className="bg-card rounded-xl p-6 border border-border mb-6">
-              <h3 className="font-semibold text-foreground mb-4">Réserver ce service</h3>
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center gap-3 text-sm">
-                  <Clock className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-muted-foreground">Durée: {service.duration} minutes</span>
-                </div>
-                {professional && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <MapPin className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-muted-foreground">{professional.location}</span>
-                  </div>
-                )}
-              </div>
+            <BookingSummary
+              title="Réserver ce service"
+              serviceName={service.title}
+              professionalName={professional?.professionalName ?? null}
+              location={professional?.location ?? null}
+              durationLabel={`${service.duration} minutes`}
+              totalLabel={`${service.price}€`}
+            />
+            <AppCard tone="dark" className="mt-4 rounded-2xl">
+              <p className="text-sm text-white/80">
+                Confirmez votre prestation avec un professionnel noté et consultez son profil avant de réserver.
+              </p>
               <Link to={`/booking/${service._id}`}>
-                <Button className="w-full mb-3" size="lg">
+                <Button className="mt-5 w-full mb-3" size="lg">
                   Réserver - {service.price}€
                 </Button>
               </Link>
@@ -439,15 +436,15 @@ export function ServiceDetail() {
                   Contacter le professionnel
                 </Button>
               )}
-            </div>
+            </AppCard>
 
-            <div className="bg-muted/50 rounded-xl p-4 text-sm">
+            <AppCard className="mt-4 rounded-2xl bg-muted/50 text-sm">
               <h4 className="font-medium text-foreground mb-2">Politique d'annulation</h4>
               <p className="text-muted-foreground text-xs leading-relaxed">
                 Annulation gratuite jusqu'à 48h avant le rendez-vous. Au-delà, des frais de 50% du
                 montant de la prestation seront appliqués.
               </p>
-            </div>
+            </AppCard>
           </div>
         </div>
       </div>

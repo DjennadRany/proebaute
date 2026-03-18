@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Heart, MessageCircle, Star, TrendingUp, Clock } from 'lucide-react';
+import { Bell, Calendar, Heart, MessageCircle, Sparkles, Star, TrendingUp, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
+import { AppCard } from '../components/AppCard';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
+import { EntityAvatar } from '../components/EntityAvatar';
 import { StatCard } from '../components/StatCard';
 import { ServiceCard } from '../components/ServiceCard';
-import { Badge } from '../components/ui/badge';
+import { StatusBadge } from '../components/StatusBadge';
 import { Button } from '../components/ui/button';
 import {
   ApiBookingSummary,
@@ -30,6 +34,7 @@ export function Dashboard() {
   const [reviewsCount, setReviewsCount] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const nextBooking = upcomingBookings[0] ?? null;
 
   useEffect(() => {
     async function loadData() {
@@ -68,14 +73,65 @@ export function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Bonjour, {user.firstName} 👋
-        </h1>
-        <p className="text-muted-foreground">
-          Bienvenue sur votre tableau de bord beauté
-        </p>
-      </div>
+      <AppHeader
+        eyebrow="Votre espace"
+        title={`Bonjour, ${user.firstName}`}
+        subtitle="Gardez une vue instantanée sur votre activité du jour, vos réservations et vos services favoris."
+        action={
+          <div className="flex w-full gap-2 sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate('/notifications')}>
+              <Bell className="mr-2 h-4 w-4" />
+              Notifications
+            </Button>
+          </div>
+        }
+      />
+
+      <AppCard tone="premium" className="mb-8 grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        <div className="flex items-start gap-4">
+          <EntityAvatar
+            name={`${user.firstName} ${user.lastName}`}
+            size="lg"
+          />
+          <div className="min-w-0">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+                Tableau de bord
+              </p>
+              <StatusBadge status="online" />
+            </div>
+            <h2 className="text-2xl font-semibold text-foreground">
+              Votre activité beauté en un coup d’œil
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Consultez vos prochains rendez-vous, vos conversations et les services que vous suivez de près.
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <div className="rounded-2xl border border-border/80 bg-background/80 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Prochain rendez-vous</p>
+            <p className="mt-2 text-lg font-semibold text-foreground">
+              {nextBooking?.service?.title ?? 'Aucun rendez-vous confirmé'}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {nextBooking
+                ? `${new Date(nextBooking.booking.bookingDate).toLocaleDateString('fr-FR')} à ${nextBooking.booking.timeSlot}`
+                : 'Réservez votre prochaine prestation en quelques clics.'}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border/80 bg-background/80 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Favoris actifs</p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">{favoritesCount}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Services sauvegardés pour vos prochaines réservations.</p>
+          </div>
+          <div className="rounded-2xl border border-border/80 bg-background/80 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Conversations</p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">{conversationsCount}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Professionnels avec qui vous êtes déjà en contact.</p>
+          </div>
+        </div>
+      </AppCard>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -84,14 +140,14 @@ export function Dashboard() {
           value={upcomingBookings.length}
           icon={Calendar}
           description="Prochaines séances"
-          onClick={() => (window.location.href = '/reservations')}
+          onClick={() => navigate('/reservations')}
         />
         <StatCard
           title="Services favoris"
           value={favoritesCount}
           icon={Heart}
           description="Services sauvegardés"
-          onClick={() => (window.location.href = '/favorites')}
+          onClick={() => navigate('/favorites')}
         />
         <StatCard
           title="Messages"
@@ -135,19 +191,21 @@ export function Dashboard() {
               }).format(bookingDate);
 
               return (
-                <div
+                <AppCard
                   key={booking._id}
-                  className="bg-card rounded-xl p-5 border border-border hover:shadow-md transition-shadow"
+                  tone="elevated"
+                  className="rounded-2xl p-5"
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1">
                       <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">
+                        <StatusBadge status={booking.status} />
+                        <span className="rounded-full bg-secondary/40 px-3 py-1 text-xs font-medium text-foreground">
                           {formattedDate}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        </span>
+                        <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                           {booking.timeSlot}
-                        </Badge>
+                        </span>
                       </div>
                       <h3 className="font-semibold text-foreground mb-1">
                         {service.title}
@@ -190,19 +248,20 @@ export function Dashboard() {
                       )}
                     </div>
                   </div>
-                </div>
+                </AppCard>
               );
             })
           ) : (
-            <div className="text-center py-12 bg-card rounded-xl border border-border">
-              <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground mb-4">
-                Aucune réservation à venir
-              </p>
-              <Link to="/services">
-                <Button>Découvrir les services</Button>
-              </Link>
-            </div>
+            <EmptyState
+              icon={Calendar}
+              title="Aucune réservation à venir"
+              description="Explorez les services et réservez votre prochaine prestation beauté."
+              action={
+                <Link to="/services">
+                  <Button>Découvrir les services</Button>
+                </Link>
+              }
+            />
           )}
         </div>
       </div>
@@ -269,7 +328,7 @@ export function Dashboard() {
       {/* Quick Actions */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link to="/services" className="group">
-          <div className="bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl p-6 text-white hover:shadow-lg transition-shadow">
+          <div className="bg-gradient-to-br from-pink-500 to-rose-500 rounded-[28px] p-6 text-white hover:shadow-lg transition-shadow">
             <TrendingUp className="w-8 h-8 mb-3 opacity-90" />
             <h3 className="font-semibold mb-1">Découvrir les tendances</h3>
             <p className="text-sm opacity-90">Les services les plus populaires</p>
@@ -277,7 +336,7 @@ export function Dashboard() {
         </Link>
 
         <Link to="/professionals" className="group">
-          <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl p-6 text-white hover:shadow-lg transition-shadow">
+          <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-[28px] p-6 text-white hover:shadow-lg transition-shadow">
             <Star className="w-8 h-8 mb-3 opacity-90" />
             <h3 className="font-semibold mb-1">Top professionnels</h3>
             <p className="text-sm opacity-90">Les mieux notés près de chez vous</p>
@@ -285,10 +344,10 @@ export function Dashboard() {
         </Link>
 
         <Link to="/booking" className="group">
-          <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-6 text-white hover:shadow-lg transition-shadow">
-            <Calendar className="w-8 h-8 mb-3 opacity-90" />
+          <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-[28px] p-6 text-white hover:shadow-lg transition-shadow">
+            <Sparkles className="w-8 h-8 mb-3 opacity-90" />
             <h3 className="font-semibold mb-1">Réserver maintenant</h3>
-            <p className="text-sm opacity-90">Trouvez un créneau disponible</p>
+            <p className="text-sm opacity-90">Trouvez un créneau disponible et confirmez votre prochain soin.</p>
           </div>
         </Link>
       </div>

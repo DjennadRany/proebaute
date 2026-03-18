@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
-import { ArrowLeft, MapPin, Star, BadgeCheck, Calendar, MessageCircle, Heart, Bookmark } from 'lucide-react';
+import { MapPin, Star, BadgeCheck, Calendar, MessageCircle, Heart, Bookmark } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AppCard } from '../components/AppCard';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
+import { EntityAvatar } from '../components/EntityAvatar';
 import {
   fetchProfessionalById,
   fetchFavorites,
@@ -16,6 +20,7 @@ import { Button } from '../components/ui/button';
 import { ServiceCard } from '../components/ServiceCard';
 import { ReviewCard, type ReviewCardReview } from '../components/ReviewCard';
 import { Badge } from '../components/ui/badge';
+import { StatusBadge } from '../components/StatusBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { openOrCreateConversation } from '../utils/messaging';
 
@@ -91,36 +96,38 @@ export function ProfessionalProfile() {
 
   if (!professional) {
     return (
-      <div className="max-w-4xl mx-auto text-center py-16">
-        <h2 className="text-2xl font-bold text-foreground mb-4">Professionnel non trouvé</h2>
-        <Link to="/professionals">
-          <Button>Retour aux professionnels</Button>
-        </Link>
+      <div className="max-w-4xl mx-auto py-16">
+        <EmptyState
+          icon={MapPin}
+          title="Professionnel non trouvé"
+          description="Ce profil n’est plus disponible ou a été retiré de la plateforme."
+          action={
+            <Link to="/professionals">
+              <Button>Retour aux professionnels</Button>
+            </Link>
+          }
+        />
       </div>
     );
   }
 
   return (
     <div className="max-w-6xl mx-auto">
-      <Link to="/professionals">
-        <Button variant="ghost" size="sm" className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour aux professionnels
-        </Button>
-      </Link>
+      <AppHeader
+        eyebrow="Profil professionnel"
+        title={professional.professionalName}
+        subtitle={professional.bio || 'Découvrez les prestations, la localisation et les avis de ce professionnel.'}
+        backTo="/professionals"
+      />
 
-      <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-2xl p-5 sm:p-8 mb-8 border border-border">
+      <AppCard tone="premium" className="mb-8 rounded-[32px] bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20">
         <div className="flex flex-col items-start gap-6 sm:flex-row">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-300 flex items-center justify-center text-3xl font-semibold text-white">
-              {professional.professionalName.split(' ').map((n) => n[0]).join('')}
-            </div>
-            {professional.verified && (
-              <div className="absolute -bottom-2 -right-2 bg-blue-500 rounded-full p-1.5">
-                <BadgeCheck className="w-5 h-5 text-white" />
-              </div>
-            )}
-          </div>
+          <EntityAvatar
+            name={professional.professionalName}
+            imageSrc={professional.gallery?.[0] ?? null}
+            verified={professional.verified}
+            size="lg"
+          />
 
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
@@ -128,6 +135,7 @@ export function ProfessionalProfile() {
             </h1>
             <p className="text-lg text-muted-foreground mb-3">{professional.specialty}</p>
             <div className="flex flex-wrap items-center gap-3">
+              <StatusBadge status={professional.verified ? 'online' : 'pending'} />
               <div className="flex items-center gap-1">
                 <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                 <span className="text-lg font-semibold">{professional.ratingAverage}</span>
@@ -186,7 +194,7 @@ export function ProfessionalProfile() {
             </div>
           </div>
         </div>
-      </div>
+      </AppCard>
 
       <Tabs defaultValue="services" className="w-full">
         <TabsList className="mb-6 grid w-full grid-cols-1 sm:grid-cols-3">
@@ -239,9 +247,11 @@ export function ProfessionalProfile() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 bg-card rounded-xl border border-border">
-              <p className="text-muted-foreground">Aucun service disponible</p>
-            </div>
+            <EmptyState
+              icon={Calendar}
+              title="Aucun service disponible"
+              description="Ce professionnel n’a pas encore publié de prestation disponible."
+            />
           )}
         </TabsContent>
 
@@ -253,15 +263,17 @@ export function ProfessionalProfile() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 bg-card rounded-xl border border-border">
-              <p className="text-muted-foreground">Aucun avis pour le moment</p>
-            </div>
+            <EmptyState
+              icon={Star}
+              title="Aucun avis pour le moment"
+              description="Les prochains retours clients apparaîtront ici dès que des prestations seront réalisées."
+            />
           )}
         </TabsContent>
 
         <TabsContent value="about">
           <div className="max-w-3xl space-y-6">
-            <div className="bg-card rounded-xl p-6 border border-border">
+            <AppCard tone="elevated" className="rounded-2xl">
               <h3 className="font-semibold text-foreground mb-4">Informations</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
@@ -290,9 +302,9 @@ export function ProfessionalProfile() {
                   </div>
                 </div>
               </div>
-            </div>
+            </AppCard>
 
-            <div className="bg-card rounded-xl p-6 border border-border">
+            <AppCard tone="elevated" className="rounded-2xl">
               <h3 className="font-semibold text-foreground mb-3">Spécialités</h3>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">{professional.specialty}</Badge>
@@ -302,9 +314,9 @@ export function ProfessionalProfile() {
                   </Badge>
                 ))}
               </div>
-            </div>
+            </AppCard>
 
-            <div className="bg-card rounded-xl p-6 border border-border flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <AppCard tone="elevated" className="rounded-2xl flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Engagement des clients</h3>
                 <p className="text-sm text-muted-foreground">
@@ -315,7 +327,7 @@ export function ProfessionalProfile() {
                 <Heart className="w-5 h-5 text-red-500 fill-red-500" />
                 <span className="text-xl font-semibold text-foreground">{totalLikes}</span>
               </div>
-            </div>
+            </AppCard>
           </div>
         </TabsContent>
       </Tabs>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import probeauteLogo from '../../../asset/probeaute_logo_transparent.png';
 import { useAuth } from '../context/AuthContext';
+import { AppCard } from '../components/AppCard';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { ApiProfessional, ApiService, fetchProfessionals, fetchServices } from '../api/client';
@@ -206,10 +207,24 @@ export function HomePage() {
               </button>
             ))}
           </div>
+          <div className="grid max-w-lg gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl bg-white/72 px-4 py-3 text-foreground shadow-[0_16px_50px_rgba(255,255,255,0.18)] backdrop-blur-sm">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">À domicile</p>
+              <p className="mt-1 text-lg font-semibold">Prestations guidées</p>
+            </div>
+            <div className="rounded-2xl bg-white/72 px-4 py-3 text-foreground shadow-[0_16px_50px_rgba(255,255,255,0.18)] backdrop-blur-sm">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Confiance</p>
+              <p className="mt-1 text-lg font-semibold">Avis & profils vérifiés</p>
+            </div>
+            <div className="rounded-2xl bg-white/72 px-4 py-3 text-foreground shadow-[0_16px_50px_rgba(255,255,255,0.18)] backdrop-blur-sm">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Mobile-first</p>
+              <p className="mt-1 text-lg font-semibold">Réservation rapide</p>
+            </div>
+          </div>
         </div>
 
         {/* Bloc droit : résumé mode connecté / non connecté */}
-        <div className="rounded-2xl bg-card/94 backdrop-blur border border-white/35 p-5 sm:p-6 text-sm text-foreground shadow-xl">
+        <AppCard tone="premium" className="rounded-[32px] bg-card/94 text-sm text-foreground shadow-xl">
           {user ? (
             <div className="space-y-4">
               <p className="text-xs font-medium text-primary tracking-wide uppercase">
@@ -318,7 +333,7 @@ export function HomePage() {
               </p>
             </div>
           )}
-        </div>
+        </AppCard>
       </div>
       </section>
 

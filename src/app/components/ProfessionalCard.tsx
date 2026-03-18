@@ -1,6 +1,7 @@
 import { MapPin, Star, BadgeCheck, Heart, Bookmark } from 'lucide-react';
 import { Link } from 'react-router';
 import type { ApiProfessional } from '../api/client';
+import { EntityAvatar } from './EntityAvatar';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useAuth } from '../context/AuthContext';
@@ -24,35 +25,18 @@ export function ProfessionalCard({
 
   const displayName =
     professional.professionalName || (professional as any).firstName || 'Pro';
-  const initials = displayName
-    .split(' ')
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join('');
   const logoSrc = (professional as any).gallery?.[0] as string | undefined;
 
   return (
     <div className="w-full min-w-0 bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-border">
       <div className="p-4 sm:p-6">
         <div className="flex items-start gap-4 mb-4">
-          <div className="relative">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-300 flex items-center justify-center text-lg sm:text-xl font-semibold text-white overflow-hidden">
-              {logoSrc ? (
-                <img
-                  src={logoSrc}
-                  alt={professional.professionalName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                initials
-              )}
-            </div>
-            {professional.verified && (
-              <div className="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-1">
-                <BadgeCheck className="w-3.5 h-3.5 text-white" />
-              </div>
-            )}
-          </div>
+          <EntityAvatar
+            name={professional.professionalName}
+            imageSrc={logoSrc}
+            verified={professional.verified}
+            size="md"
+          />
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">

@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { Calendar as CalendarIcon, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AppCard } from '../components/AppCard';
+import { AppHeader } from '../components/AppHeader';
+import { BookingSummary } from '../components/BookingSummary';
 import { ApiProfessional, ApiService, createBooking, fetchServiceDetails, fetchServices } from '../api/client';
 import { Button } from '../components/ui/button';
 import { Calendar } from '../components/ui/calendar';
@@ -88,11 +91,19 @@ export function BookingPage() {
   };
 
   const canBook = selectedService && selectedDate && selectedTime;
+  const formattedSelectedDate = selectedDate
+    ? new Intl.DateTimeFormat('fr-FR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(selectedDate)
+    : null;
 
   if (bookingConfirmed) {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-card rounded-2xl p-12 text-center border border-border">
+        <AppCard tone="premium" className="items-center p-12 text-center">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
@@ -100,29 +111,26 @@ export function BookingPage() {
             Réservation confirmée ! 🎉
           </h2>
           <p className="text-muted-foreground mb-6">
-            Vous allez être redirigé vers votre tableau de bord...
+            Vous allez être redirigé vers vos réservations...
           </p>
-        </div>
+        </AppCard>
       </div>
     );
   }
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Réserver un rendez-vous
-        </h1>
-        <p className="text-muted-foreground">
-          Choisissez votre service, date et heure
-        </p>
-      </div>
+      <AppHeader
+        eyebrow="Réservation guidée"
+        title="Réserver un rendez-vous"
+        subtitle="Choisissez la prestation, la date et le créneau qui vous conviennent le mieux."
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Booking Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Service Selection */}
-          <div className="bg-card rounded-xl p-6 border border-border">
+          <AppCard tone="elevated" className="rounded-2xl">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                 1
@@ -150,7 +158,7 @@ export function BookingPage() {
             )}
 
             {service && (
-              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+              <div className="mt-4 rounded-2xl border border-border/70 bg-background/70 p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h4 className="font-medium text-foreground mb-1">{service.title}</h4>
@@ -164,10 +172,10 @@ export function BookingPage() {
                 </div>
               </div>
             )}
-          </div>
+          </AppCard>
 
           {/* Date Selection */}
-          <div className="bg-card rounded-xl p-6 border border-border">
+          <AppCard tone="elevated" className="rounded-2xl">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                 2
@@ -183,10 +191,10 @@ export function BookingPage() {
                 className="rounded-md border"
               />
             </div>
-          </div>
+          </AppCard>
 
           {/* Time Selection */}
-          <div className="bg-card rounded-xl p-6 border border-border">
+          <AppCard tone="elevated" className="rounded-2xl">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                 3
@@ -209,7 +217,7 @@ export function BookingPage() {
                 </button>
               ))}
             </div>
-          </div>
+          </AppCard>
 
           {/* Cancellation Policy */}
           <Alert>
@@ -224,75 +232,30 @@ export function BookingPage() {
         {/* Summary Sidebar */}
         <div className="lg:col-span-1">
           <div className="sticky top-8">
-            <div className="bg-card rounded-xl p-6 border border-border">
-              <h3 className="font-semibold text-foreground mb-4">Récapitulatif</h3>
-              
-              <div className="space-y-4 mb-6">
-                {professional && (
-                  <div className="pb-4 border-b border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Professionnel</p>
-                    <p className="font-medium text-foreground">{professional.professionalName}</p>
-                    <p className="text-sm text-muted-foreground">{professional.location}</p>
-                  </div>
-                )}
-
-                {service && (
-                  <div className="pb-4 border-b border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Service</p>
-                    <p className="font-medium text-foreground">{service.title}</p>
-                    <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span>{service.duration} minutes</span>
-                    </div>
-                  </div>
-                )}
-
-                {selectedDate && (
-                  <div className="pb-4 border-b border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Date</p>
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                      <p className="font-medium text-foreground">
-                        {new Intl.DateTimeFormat('fr-FR', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        }).format(selectedDate)}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {selectedTime && (
-                  <div className="pb-4 border-b border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Heure</p>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <p className="font-medium text-foreground">{selectedTime}</p>
-                    </div>
-                  </div>
-                )}
-
-                {service && (
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Prix</span>
-                      <span className="text-2xl font-bold text-foreground">{service.price}€</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
+            <BookingSummary
+              title="Récapitulatif"
+              serviceName={service?.title ?? null}
+              professionalName={professional?.professionalName ?? null}
+              location={professional?.location ?? null}
+              dateLabel={formattedSelectedDate}
+              timeLabel={selectedTime || null}
+              durationLabel={service ? `${service.duration} minutes` : null}
+              totalLabel={service ? `${service.price}€` : null}
+            />
+            <AppCard tone="dark" className="mt-4 rounded-2xl">
+              <p className="text-xs uppercase tracking-[0.18em] text-white/60">Validation</p>
+              <p className="mt-2 text-sm text-white/80">
+                Vous confirmez votre service, votre horaire et votre professionnel avant validation.
+              </p>
               <Button
-                className="w-full"
+                className="mt-5 w-full"
                 size="lg"
                 disabled={!canBook}
                 onClick={handleBooking}
               >
                 Confirmer la réservation
               </Button>
-            </div>
+            </AppCard>
 
           </div>
         </div>

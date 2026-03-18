@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
 import { ServiceCard } from '../components/ServiceCard';
 import { ApiService, ApiProfessional, fetchServices, fetchFavorites, toggleFavorite, fetchLikes, toggleLike, fetchProfessionals } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -74,18 +76,20 @@ export function ServicesHub() {
   const filteredServices = services.filter((service) => {
     const matchesCategory =
       selectedCategory === 'Tous' || service.category === selectedCategory;
+    const pro = proById[service.professionalId];
+    const proCity = pro?.city || pro?.location || '';
+    const matchesCity = !cityFilter.trim()
+      ? true
+      : proCity.toLowerCase().includes(cityFilter.toLowerCase());
 
     if (!searchQuery.trim()) {
-      return matchesCategory;
+      return matchesCategory && matchesCity;
     }
 
     const terms = searchQuery
       .toLowerCase()
       .split(/\s+/)
       .filter(Boolean);
-
-    const pro = proById[service.professionalId];
-    const proCity = pro?.city || pro?.location || '';
 
     const haystack = [
       service.title,
@@ -100,10 +104,6 @@ export function ServicesHub() {
     const matchesSearch = terms.every((term) => haystack.includes(term));
 
     // Filtre ville basé sur la ville / localisation du professionnel associé
-    const matchesCity = !cityFilter.trim()
-      ? true
-      : proCity.toLowerCase().includes(cityFilter.toLowerCase());
-
     return matchesCategory && matchesSearch && matchesCity;
   }).sort((a, b) => {
     const proA = proById[a.professionalId];
@@ -154,15 +154,11 @@ export function ServicesHub() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Découvrez nos services beauté
-        </h1>
-        <p className="text-muted-foreground">
-          {services.length} services disponibles
-        </p>
-      </div>
+      <AppHeader
+        eyebrow="Découverte"
+        title="Découvrez nos services beauté"
+        subtitle={`${services.length} services disponibles, triés pour vous aider à réserver plus vite près de chez vous.`}
+      />
 
       {/* Search and Filters */}
       <div className="mb-8 space-y-4">
@@ -351,24 +347,23 @@ export function ServicesHub() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 bg-card rounded-xl border border-border">
-          <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            Aucun service trouvé
-          </h3>
-          <p className="text-muted-foreground mb-4">
-            Essayez de modifier vos critères de recherche
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('Tous');
-            }}
-          >
-            Réinitialiser les filtres
-          </Button>
-        </div>
+        <EmptyState
+          icon={Search}
+          title="Aucun service trouvé"
+          description="Essayez de modifier votre recherche, votre ville ou votre catégorie pour afficher d’autres résultats."
+          action={
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedCategory('Tous');
+                setCityFilter('');
+              }}
+            >
+              Réinitialiser les filtres
+            </Button>
+          }
+        />
       )}
     </div>
   );
