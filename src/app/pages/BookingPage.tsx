@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { Calendar as CalendarIcon, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ApiProfessional, ApiService, createBooking, fetchServiceDetails, fetchServices } from '../api/client';
@@ -17,6 +17,7 @@ const timeSlots = [
 
 export function BookingPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { serviceId } = useParams();
   const location = useLocation();
   const search = new URLSearchParams(location.search);
@@ -78,7 +79,7 @@ export function BookingPage() {
       .then(() => {
         setBookingConfirmed(true);
         setTimeout(() => {
-          window.location.href = '/reservations';
+          navigate('/reservations', { replace: true });
         }, 1500);
       })
       .catch((e) => {
