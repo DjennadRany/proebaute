@@ -1,4 +1,6 @@
 import { Star } from 'lucide-react';
+import { AppCard } from './AppCard';
+import { EntityAvatar } from './EntityAvatar';
 
 export interface ReviewCardReview {
   rating: number;
@@ -25,15 +27,13 @@ export function ReviewCard({ review }: ReviewCardProps) {
   };
 
   return (
-    <div className="bg-card rounded-lg p-5 border border-border">
+    <AppCard tone="elevated" className="rounded-2xl p-5">
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center text-sm font-medium flex-shrink-0">
-          {(review.clientName || 'C').charAt(0)}
-        </div>
+        <EntityAvatar name={review.clientName || 'Client'} size="sm" />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <h4 className="font-medium text-foreground">{review.clientName ?? 'Client'}</h4>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
@@ -54,6 +54,6 @@ export function ReviewCard({ review }: ReviewCardProps) {
           </p>
         </div>
       </div>
-    </div>
+    </AppCard>
   );
 }

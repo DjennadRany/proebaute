@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
 import {
   fetchFavorites,
   fetchServiceDetails,
@@ -66,15 +68,11 @@ export function FavoritesPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-3">
-          <Heart className="w-8 h-8 text-red-500 fill-red-500" />
-          Mes favoris
-        </h1>
-        <p className="text-muted-foreground">
-          Retrouvez tous vos services et professionnels préférés
-        </p>
-      </div>
+      <AppHeader
+        eyebrow="Collection"
+        title="Mes favoris"
+        subtitle="Retrouvez vos services et professionnels préférés pour réserver plus vite."
+      />
 
       <Tabs defaultValue="services" className="w-full">
         <TabsList className="mb-6 grid w-full grid-cols-2">
@@ -114,13 +112,11 @@ export function FavoritesPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-card rounded-xl border border-border">
-              <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Aucun service favori</h3>
-              <p className="text-muted-foreground">
-                Ajoutez des services à vos favoris pour les retrouver facilement
-              </p>
-            </div>
+            <EmptyState
+              icon={Heart}
+              title="Aucun service favori"
+              description="Ajoutez des services à vos favoris pour les retrouver facilement lors de vos prochaines réservations."
+            />
           )}
         </TabsContent>
 
@@ -152,13 +148,11 @@ export function FavoritesPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-card rounded-xl border border-border">
-              <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Aucun professionnel favori</h3>
-              <p className="text-muted-foreground">
-                Ajoutez des professionnels à vos favoris pour les retrouver facilement
-              </p>
-            </div>
+            <EmptyState
+              icon={Heart}
+              title="Aucun professionnel favori"
+              description="Ajoutez des professionnels à vos favoris pour suivre ceux avec qui vous aimez réserver."
+            />
           )}
         </TabsContent>
       </Tabs>

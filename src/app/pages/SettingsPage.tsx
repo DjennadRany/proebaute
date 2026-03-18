@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Bell, Lock, Globe, Eye, Shield, Download, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AppCard } from '../components/AppCard';
+import { AppHeader } from '../components/AppHeader';
 import {
   fetchPrivacySettings,
   updatePrivacySettings,
@@ -43,16 +45,15 @@ export function SettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Paramètres</h1>
-        <p className="text-muted-foreground">
-          Gérez vos préférences et paramètres de confidentialité
-        </p>
-      </div>
+      <AppHeader
+        eyebrow="Préférences"
+        title="Paramètres"
+        subtitle="Personnalisez vos notifications, votre confidentialité et vos données personnelles depuis un espace structuré."
+      />
 
       <div className="space-y-6">
         {/* Notifications */}
-        <div className="bg-card rounded-xl border border-border">
+        <AppCard tone="elevated" className="rounded-2xl p-0 overflow-hidden">
           <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
@@ -131,10 +132,10 @@ export function SettingsPage() {
               />
             </div>
           </div>
-        </div>
+        </AppCard>
 
         {/* Privacy */}
-        <div className="bg-card rounded-xl border border-border">
+        <AppCard tone="elevated" className="rounded-2xl p-0 overflow-hidden">
           <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
@@ -181,10 +182,10 @@ export function SettingsPage() {
               />
             </div>
           </div>
-        </div>
+        </AppCard>
 
         {/* Security */}
-        <div className="bg-card rounded-xl border border-border">
+        <AppCard tone="elevated" className="rounded-2xl p-0 overflow-hidden">
           <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
@@ -208,10 +209,10 @@ export function SettingsPage() {
               Activer l'authentification à deux facteurs
             </Button>
           </div>
-        </div>
+        </AppCard>
 
         {/* GDPR / Data */}
-        <div className="bg-card rounded-xl border border-border">
+        <AppCard tone="elevated" className="rounded-2xl p-0 overflow-hidden">
           <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
@@ -271,10 +272,10 @@ export function SettingsPage() {
               La suppression de votre compte est irréversible et entraînera la perte de toutes vos données.
             </p>
           </div>
-        </div>
+        </AppCard>
 
         {/* Language & Region */}
-        <div className="bg-card rounded-xl border border-border">
+        <AppCard tone="elevated" className="rounded-2xl p-0 overflow-hidden">
           <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-pink-100 dark:bg-pink-900/30">
@@ -303,7 +304,7 @@ export function SettingsPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </AppCard>
       </div>
     </div>
   );

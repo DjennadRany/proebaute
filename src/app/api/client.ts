@@ -638,19 +638,76 @@ export async function fetchConversations(userId: string): Promise<ApiConversatio
 
   if (error) throw error;
 
-  return (data ?? []).map((c: any) => ({
-    _id: c.id,
-    participants: c.participants ?? [],
-    lastMessage: c.last_message ?? '',
-    updatedAt: c.updated_at,
-    otherUserId: null,
-    otherUserName: undefined,
-    otherUserRole: undefined,
-    otherUserPhone: null,
-    archived: c.archived ?? false,
-    blockedBy: c.blocked_by ?? [],
-    reportedBy: c.reported_by ?? [],
-  }));
+  const rows = (data ?? []) as any[];
+  const otherUserIds = Array.from(
+    new Set(
+      rows
+        .flatMap((c) => (c.participants ?? []).filter((participantId: string) => participantId !== userId))
+        .filter(Boolean),
+    ),
+  );
+
+  const profileMap = new Map<
+    string,
+    {
+      id: string;
+      first_name: string;
+      last_name: string;
+      role: 'client' | 'professional';
+      phone?: string | null;
+    }
+  >();
+  const professionalNameMap = new Map<string, string>();
+
+  if (otherUserIds.length > 0) {
+    const [{ data: profiles }, { data: professionalProfiles }] = await Promise.all([
+      supabase
+        .from('users')
+        .select('id, first_name, last_name, role, phone')
+        .in('id', otherUserIds),
+      supabase
+        .from('professionals')
+        .select('user_id, professional_name')
+        .in('user_id', otherUserIds),
+    ]);
+
+    (profiles ?? []).forEach((profile: any) => {
+      profileMap.set(profile.id, profile);
+    });
+
+    (professionalProfiles ?? []).forEach((professional: any) => {
+      professionalNameMap.set(professional.user_id, professional.professional_name);
+    });
+  }
+
+  return rows.map((c: any) => {
+    const participants = c.participants ?? [];
+    const otherUserId =
+      participants.find((participantId: string) => participantId !== userId) ?? null;
+    const otherProfile = otherUserId ? profileMap.get(otherUserId) : undefined;
+
+    const fallbackName = otherProfile
+      ? `${otherProfile.first_name ?? ''} ${otherProfile.last_name ?? ''}`.trim()
+      : undefined;
+    const otherUserName =
+      (otherUserId ? professionalNameMap.get(otherUserId) : undefined) ||
+      fallbackName ||
+      undefined;
+
+    return {
+      _id: c.id,
+      participants,
+      lastMessage: c.last_message ?? '',
+      updatedAt: c.updated_at,
+      otherUserId,
+      otherUserName,
+      otherUserRole: otherProfile?.role,
+      otherUserPhone: otherProfile?.phone ?? null,
+      archived: c.archived ?? false,
+      blockedBy: c.blocked_by ?? [],
+      reportedBy: c.reported_by ?? [],
+    };
+  });
 }
 
 export async function createConversation(payload: {

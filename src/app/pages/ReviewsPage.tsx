@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Star, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AppCard } from '../components/AppCard';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
 import { fetchReviewsByClient, type ApiReview } from '../api/client';
 import { ReviewCard, type ReviewCardReview } from '../components/ReviewCard';
 import { Badge } from '../components/ui/badge';
@@ -38,13 +41,14 @@ export function ReviewsPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Avis et évaluations</h1>
-        <p className="text-muted-foreground">Vos retours d'expérience sur les services</p>
-      </div>
+      <AppHeader
+        eyebrow="Confiance"
+        title="Avis et évaluations"
+        subtitle="Retrouvez vos retours clients et gardez une trace claire de votre expérience ProBeauté."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-card rounded-xl p-6 border border-border">
+        <AppCard tone="elevated" className="rounded-2xl">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
               <Star className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
@@ -54,9 +58,9 @@ export function ReviewsPage() {
               <p className="text-xs text-muted-foreground">Note moyenne</p>
             </div>
           </div>
-        </div>
+        </AppCard>
 
-        <div className="bg-card rounded-xl p-6 border border-border">
+        <AppCard tone="elevated" className="rounded-2xl">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
               <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -66,9 +70,9 @@ export function ReviewsPage() {
               <p className="text-xs text-muted-foreground">Avis donnés</p>
             </div>
           </div>
-        </div>
+        </AppCard>
 
-        <div className="bg-card rounded-xl p-6 border border-border">
+        <AppCard tone="elevated" className="rounded-2xl">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
               <Star className="w-5 h-5 text-green-600 dark:text-green-400 fill-green-600 dark:fill-green-400" />
@@ -78,7 +82,7 @@ export function ReviewsPage() {
               <p className="text-xs text-muted-foreground">Notes 5 étoiles</p>
             </div>
           </div>
-        </div>
+        </AppCard>
       </div>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -88,9 +92,11 @@ export function ReviewsPage() {
 
       <div className="space-y-4">
         {reviews.length === 0 ? (
-          <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
-            Aucun avis pour le moment
-          </div>
+          <EmptyState
+            icon={Star}
+            title="Aucun avis pour le moment"
+            description="Vos futurs retours et évaluations seront rassemblés ici dès que vous laisserez un commentaire."
+          />
         ) : (
           reviews.map((review) => (
             <ReviewCard key={review._id} review={toCardReview(review)} />

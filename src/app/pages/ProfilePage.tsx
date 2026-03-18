@@ -2,14 +2,19 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Mail, Phone, Calendar, Edit2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AppCard } from '../components/AppCard';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
+import { EntityAvatar } from '../components/EntityAvatar';
+import { StatusBadge } from '../components/StatusBadge';
 import {
   fetchUserProfile,
   fetchBookingsByClient,
   fetchReviewsByClient,
   fetchFavorites,
 } from '../api/client';
-import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 
 export function ProfilePage() {
@@ -58,26 +63,24 @@ export function ProfilePage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Mon profil</h1>
-        <p className="text-muted-foreground">Gérez vos informations personnelles</p>
-      </div>
+      <AppHeader
+        eyebrow="Compte"
+        title="Mon profil"
+        subtitle="Retrouvez vos informations, votre activité et vos préférences depuis un espace plus clair et plus premium."
+      />
 
-      <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 rounded-2xl p-5 sm:p-8 mb-8 border border-border">
+      <AppCard tone="premium" className="mb-8 rounded-[32px] bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20">
         <div className="flex flex-col items-start gap-6 sm:flex-row">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-300 to-purple-300 flex items-center justify-center text-3xl font-semibold text-white">
-            {user.firstName.charAt(0)}
-            {user.lastName.charAt(0)}
-          </div>
+          <EntityAvatar name={`${user.firstName} ${user.lastName}`} size="lg" />
           <div className="flex-1">
             <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-1">
                   {user.firstName} {user.lastName}
                 </h2>
-                <Badge variant="secondary" className="mb-3">
-                  Client
-                </Badge>
+                <div className="mb-3">
+                  <StatusBadge status="online" className="text-[11px]" />
+                </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="w-4 h-4" />
@@ -98,25 +101,25 @@ export function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
+      </AppCard>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-card rounded-xl p-6 border border-border text-center">
+        <AppCard tone="elevated" className="rounded-2xl p-6 text-center">
           <div className="text-3xl font-bold text-foreground mb-1">{bookingsCount}</div>
           <p className="text-sm text-muted-foreground">Réservations</p>
-        </div>
-        <div className="bg-card rounded-xl p-6 border border-border text-center">
+        </AppCard>
+        <AppCard tone="elevated" className="rounded-2xl p-6 text-center">
           <div className="text-3xl font-bold text-foreground mb-1">{completedCount}</div>
           <p className="text-sm text-muted-foreground">Terminées</p>
-        </div>
-        <div className="bg-card rounded-xl p-6 border border-border text-center">
+        </AppCard>
+        <AppCard tone="elevated" className="rounded-2xl p-6 text-center">
           <div className="text-3xl font-bold text-foreground mb-1">{reviewsCount}</div>
           <p className="text-sm text-muted-foreground">Avis donnés</p>
-        </div>
-        <div className="bg-card rounded-xl p-6 border border-border text-center">
+        </AppCard>
+        <AppCard tone="elevated" className="rounded-2xl p-6 text-center">
           <div className="text-3xl font-bold text-foreground mb-1">{favoritesCount}</div>
           <p className="text-sm text-muted-foreground">Favoris</p>
-        </div>
+        </AppCard>
       </div>
 
       <Tabs defaultValue="bookings" className="w-full">
@@ -127,7 +130,7 @@ export function ProfilePage() {
         </TabsList>
 
         <TabsContent value="bookings">
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <AppCard tone="elevated" className="rounded-2xl border border-border overflow-hidden p-0">
             <div className="p-6 border-b border-border">
               <h3 className="font-semibold text-foreground">Historique des réservations</h3>
             </div>
@@ -171,16 +174,20 @@ export function ProfilePage() {
                   </div>
                 ))
               ) : (
-                <div className="p-12 text-center text-muted-foreground">
-                  Aucune réservation
+                <div className="p-6">
+                  <EmptyState
+                    icon={Calendar}
+                    title="Aucune réservation"
+                    description="Votre historique de rendez-vous apparaîtra ici dès que vous réserverez un premier service."
+                  />
                 </div>
               )}
             </div>
-          </div>
+          </AppCard>
         </TabsContent>
 
         <TabsContent value="reviews">
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <AppCard tone="elevated" className="rounded-2xl border border-border overflow-hidden p-0">
             <div className="p-6 border-b border-border">
               <h3 className="font-semibold text-foreground">Mes avis</h3>
             </div>
@@ -210,14 +217,20 @@ export function ProfilePage() {
                   </div>
                 ))
               ) : (
-                <div className="p-12 text-center text-muted-foreground">Aucun avis</div>
+                <div className="p-6">
+                  <EmptyState
+                    icon={Edit2}
+                    title="Aucun avis"
+                    description="Vos avis clients apparaîtront ici après vos prochaines prestations."
+                  />
+                </div>
               )}
             </div>
-          </div>
+          </AppCard>
         </TabsContent>
 
         <TabsContent value="info">
-          <div className="bg-card rounded-xl border border-border p-6">
+          <AppCard tone="elevated" className="rounded-2xl">
             <h3 className="font-semibold text-foreground mb-6">Informations personnelles</h3>
             <div className="space-y-4 max-w-2xl">
               <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
@@ -244,7 +257,7 @@ export function ProfilePage() {
                 </div>
               </div>
             </div>
-          </div>
+          </AppCard>
         </TabsContent>
       </Tabs>
     </div>

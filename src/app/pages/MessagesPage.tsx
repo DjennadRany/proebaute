@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Send, Search, Phone, Video, MoreVertical, Archive } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AppCard } from '../components/AppCard';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
+import { EntityAvatar } from '../components/EntityAvatar';
 import {
   ApiConversation,
   ApiMessage,
@@ -15,7 +19,6 @@ import {
 } from '../api/client';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +38,7 @@ export function MessagesPage() {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [messageInput, setMessageInput] = useState('');
+  const [search, setSearch] = useState('');
   const [otherUserName, setOtherUserName] = useState<string>('Conversation');
   const [otherUserRole, setOtherUserRole] = useState<'client' | 'professional'>('professional');
   const [otherUserPhone, setOtherUserPhone] = useState<string | null>(null);
@@ -94,6 +98,15 @@ export function MessagesPage() {
     setOtherUserRole(activeConversation.otherUserRole ?? 'professional');
     setOtherUserPhone(activeConversation.otherUserPhone ?? null);
   }, [activeConversation?.otherUserId]);
+
+  const filteredConversations = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return conversations;
+    return conversations.filter((conversation) => {
+      const haystack = `${conversation.otherUserName ?? ''} ${conversation.lastMessage ?? ''}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [conversations, search]);
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !selectedConversation || !activeConversation) return;
@@ -158,20 +171,21 @@ export function MessagesPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Messages</h1>
-          <p className="text-muted-foreground">Communiquez avec vos professionnels</p>
-        </div>
-        <Link to="/messages/archives" className="w-full sm:w-auto">
+      <AppHeader
+        eyebrow="Messagerie"
+        title="Messages"
+        subtitle="Communiquez avec vos professionnels, retrouvez vos échanges actifs et répondez rapidement."
+        action={
+          <Link to="/messages/archives" className="w-full sm:w-auto">
           <Button variant="outline" className="gap-2 w-full sm:w-auto">
             <Archive className="w-4 h-4" />
             Voir les archives
           </Button>
         </Link>
-      </div>
+        }
+      />
 
-      <div className="bg-card rounded-2xl border border-border overflow-hidden min-h-[70dvh] md:h-[calc(100dvh-16rem)]">
+      <AppCard tone="elevated" className="rounded-[32px] overflow-hidden p-0 min-h-[70dvh] md:h-[calc(100dvh-16rem)]">
         <div className="grid h-full grid-cols-1 md:grid-cols-12">
           {/* Conversations List */}
           <div className="col-span-12 border-b border-border md:col-span-4 md:border-b-0 md:border-r flex flex-col max-h-[40dvh] md:max-h-none">
@@ -182,6 +196,8 @@ export function MessagesPage() {
                 <Input
                   type="text"
                   placeholder="Rechercher une conversation..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
                 />
               </div>
@@ -189,23 +205,24 @@ export function MessagesPage() {
 
             {/* Conversation Items */}
             <div className="flex-1 overflow-y-auto">
-              {conversations.map((conversation) => (
+              {filteredConversations.length === 0 ? (
+                <div className="p-4">
+                  <EmptyState
+                    icon={Search}
+                    title="Aucune conversation"
+                    description="Essayez une autre recherche ou commencez une conversation depuis une fiche professionnelle."
+                  />
+                </div>
+              ) : filteredConversations.map((conversation) => (
                 <button
                   key={conversation._id}
                   onClick={() => setSelectedConversation(conversation._id)}
-                  className={`w-full p-4 border-b border-border hover:bg-accent transition-colors text-left ${
+                  className={`w-full border-b border-border p-4 text-left transition-colors hover:bg-accent/60 ${
                     selectedConversation === conversation._id ? 'bg-accent' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-300 to-purple-300 flex items-center justify-center text-sm font-medium text-white flex-shrink-0">
-                      {(conversation.otherUserName || '??')
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .slice(0, 2)
-                        .toUpperCase()}
-                    </div>
+                    <EntityAvatar name={conversation.otherUserName || 'Conversation'} size="sm" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <h3 className="font-medium text-foreground truncate">
@@ -238,14 +255,7 @@ export function MessagesPage() {
                 {/* Chat Header */}
                 <div className="p-4 border-b border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-300 to-purple-300 flex items-center justify-center text-sm font-medium text-white">
-                      {(otherUserName || '??')
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .slice(0, 2)
-                        .toUpperCase()}
-                    </div>
+                    <EntityAvatar name={otherUserName || 'Conversation'} size="sm" />
                     <div>
                       <h3 className="font-semibold text-foreground">
                         {otherUserName}
@@ -403,10 +413,10 @@ export function MessagesPage() {
                       >
                         <div className={`max-w-[85%] sm:max-w-[70%] ${isOwnMessage ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                           <div
-                            className={`rounded-2xl px-4 py-2.5 ${
+                            className={`rounded-[22px] px-4 py-2.5 shadow-sm ${
                               isOwnMessage
                                 ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-foreground'
+                                : 'bg-muted/80 text-foreground'
                             }`}
                           >
                             <p className="text-sm">{message.content}</p>
@@ -445,23 +455,17 @@ export function MessagesPage() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-center p-8">
-                <div>
-                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Send className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Sélectionnez une conversation
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Choisissez une conversation pour commencer à discuter
-                  </p>
-                </div>
+              <div className="flex-1 p-8">
+                <EmptyState
+                  icon={Send}
+                  title="Sélectionnez une conversation"
+                  description="Choisissez une conversation dans la liste pour commencer à discuter avec un professionnel."
+                />
               </div>
             )}
           </div>
         </div>
-      </div>
+      </AppCard>
     </div>
   );
 }
