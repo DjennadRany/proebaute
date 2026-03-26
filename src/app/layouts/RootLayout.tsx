@@ -58,6 +58,30 @@ export function RootLayout() {
   }, [user, location.pathname, navigate]);
 
   useEffect(() => {
+    if (!user || user.role !== 'professional') return;
+    const clientHubPaths: Record<string, string> = {
+      '/dashboard': '/pro/dashboard',
+      '/services': '/pro/services',
+      '/reservations': '/pro/bookings',
+      '/messages': '/pro/messages',
+      '/reviews': '/pro/reviews',
+      '/profile': '/pro/profile',
+      '/settings': '/pro/settings',
+    };
+    if (location.pathname.startsWith('/messages')) {
+      const rest = location.pathname.slice('/messages'.length) || '';
+      navigate(`/pro/messages${rest}${location.search}`, { replace: true });
+      return;
+    }
+    if (location.pathname.startsWith('/reservations')) {
+      navigate('/pro/bookings', { replace: true });
+      return;
+    }
+    const next = clientHubPaths[location.pathname];
+    if (next) navigate(next, { replace: true });
+  }, [user, location.pathname, navigate]);
+
+  useEffect(() => {
     setMobileMenuOpen(false);
     setUserMenuOpen(false);
   }, [location.pathname]);

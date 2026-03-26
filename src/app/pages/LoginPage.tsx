@@ -355,8 +355,11 @@ export function LoginPage() {
     e.preventDefault();
     setError('');
     try {
-      await login(email.trim(), password);
-      navigate('/', { replace: true });
+      const loggedIn = await login(email.trim().toLowerCase(), password);
+      navigate(
+        loggedIn.role === 'professional' ? '/pro/dashboard' : '/dashboard',
+        { replace: true },
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Identifiants incorrects');
     }
@@ -451,7 +454,7 @@ export function LoginPage() {
 
       if (result.user) {
         persistUser(result.user);
-        navigate('/dashboard', { replace: true });
+        navigate(result.user.role === 'professional' ? '/pro/dashboard' : '/dashboard', { replace: true });
         return;
       }
 
@@ -504,13 +507,13 @@ export function LoginPage() {
 
       if (result.user) {
         persistUser(result.user);
-        navigate('/dashboard', { replace: true });
+        navigate('/pro/dashboard', { replace: true });
         return;
       }
 
       setSignupSuccess(
         result.requiresEmailConfirmation
-          ? 'Compte pro créé. Vérifiez votre boîte mail pour confirmer votre inscription avant de vous connecter.'
+          ? 'Compte pro créé. Vérifiez votre boîte mail pour confirmer l’email, puis connectez-vous : votre fiche (users / professionals) sera synchronisée automatiquement au premier login.'
           : 'Compte pro créé avec succès. Vous pouvez maintenant vous connecter.',
       );
       setSearchParams({ role: 'pro' });

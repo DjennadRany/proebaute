@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { Search, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AppCard } from '../components/AppCard';
@@ -13,6 +13,8 @@ import { Button } from '../components/ui/button';
 export function MessagesArchivesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const messagesBase = location.pathname.startsWith('/pro') ? '/pro/messages' : '/messages';
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [search, setSearch] = useState('');
 
@@ -57,7 +59,7 @@ export function MessagesArchivesPage() {
         title="Archives"
         subtitle="Retrouvez ici vos conversations archivées et réactivez-les en un clic."
         action={
-        <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate('/messages')}>
+        <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(messagesBase)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour aux messages
         </Button>
@@ -119,7 +121,7 @@ export function MessagesArchivesPage() {
                   size="sm"
                   className="w-full sm:w-auto"
                   onClick={() =>
-                    navigate(`/messages?conversationId=${encodeURIComponent(conversation._id)}`)
+                    navigate(`${messagesBase}?conversationId=${encodeURIComponent(conversation._id)}`)
                   }
                 >
                   Ouvrir

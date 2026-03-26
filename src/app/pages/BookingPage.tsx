@@ -1,22 +1,36 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
-import { Calendar as CalendarIcon, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AppCard } from '../components/AppCard';
 import { AppHeader } from '../components/AppHeader';
 import { BookingSummary } from '../components/BookingSummary';
-import { ApiProfessional, ApiService, createBooking, fetchServiceDetails, fetchServices } from '../api/client';
+import {
+  ApiProfessional,
+  ApiService,
+  createBooking,
+  fetchAvailableBookingTimeSlots,
+  fetchProfessionalById,
+  fetchServiceDetails,
+} from '../api/client';
 import { Button } from '../components/ui/button';
 import { Calendar } from '../components/ui/calendar';
 import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
-const timeSlots = [
-  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-  '17:00', '17:30', '18:00', '18:30',
-];
+function toLocalISODate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function startOfToday(): Date {
+  const t = new Date();
+  t.setHours(0, 0, 0, 0);
+  return t;
+}
 
 export function BookingPage() {
   const { user } = useAuth();
@@ -32,16 +46,19 @@ export function BookingPage() {
   const [service, setService] = useState<ApiService | null>(null);
   const [professional, setProfessional] = useState<ApiProfessional | null>(null);
   const [allServices, setAllServices] = useState<ApiService[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [slotsError, setSlotsError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
-      // Cas 1 : on a un service précis (depuis une card)
       if (selectedService) {
         try {
           const detail = await fetchServiceDetails(selectedService);
+          if (cancelled) return;
           setService(detail.service);
           setProfessional(detail.professional);
-          // Si on connaît le pro, on pourrait plus tard charger tous ses services ici
           setAllServices([detail.service]);
         } catch (e) {
           console.error('Erreur chargement service pour booking', e);
@@ -49,14 +66,17 @@ export function BookingPage() {
         return;
       }
 
-      // Cas 2 : on vient d'un profil pro sans serviceId => afficher tous ses services
       if (professionalIdFromQuery) {
         try {
-          const servicesForPro = await fetchServices(professionalIdFromQuery);
-          if (servicesForPro.length > 0) {
-            setAllServices(servicesForPro);
-            setSelectedService(servicesForPro[0]._id);
-            setService(servicesForPro[0]);
+          const { professional: pro, services } = await fetchProfessionalById(professionalIdFromQuery);
+          if (cancelled) return;
+          setProfessional(pro);
+          setAllServices(services);
+          if (services.length > 0) {
+            setSelectedService(services[0]!._id);
+            setService(services[0]!);
+          } else {
+            setService(null);
           }
         } catch (e) {
           console.error('Erreur chargement services du professionnel', e);
@@ -64,12 +84,56 @@ export function BookingPage() {
       }
     }
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [selectedService, professionalIdFromQuery]);
 
+  useEffect(() => {
+    if (!professional?._id || !service || !selectedDate) {
+      setAvailableSlots([]);
+      setSlotsError(null);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      setSlotsLoading(true);
+      setSlotsError(null);
+      try {
+        const dateStr = toLocalISODate(selectedDate);
+        const slots = await fetchAvailableBookingTimeSlots({
+          professionalId: professional._id,
+          bookingDate: dateStr,
+          serviceDurationMinutes: service.duration,
+        });
+        if (cancelled) return;
+        setAvailableSlots(slots);
+        setSelectedTime((prev) => (prev && slots.includes(prev) ? prev : ''));
+      } catch (e) {
+        if (cancelled) return;
+        console.error(e);
+        setAvailableSlots([]);
+        setSlotsError(e instanceof Error ? e.message : 'Impossible de charger les créneaux');
+      } finally {
+        if (!cancelled) setSlotsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [professional?._id, service?._id, service?.duration, selectedDate]);
+
   const handleBooking = () => {
+    if (!user) {
+      const redirect = encodeURIComponent(`${location.pathname}${location.search}`);
+      navigate(`/login?role=client&redirect=${redirect}`);
+      return;
+    }
     if (!selectedDate || !selectedTime || !service || !professional) return;
 
-    const bookingDate = selectedDate.toISOString().slice(0, 10); // YYYY-MM-DD
+    const bookingDate = toLocalISODate(selectedDate);
 
     createBooking({
       clientId: user._id,
@@ -90,7 +154,7 @@ export function BookingPage() {
       });
   };
 
-  const canBook = selectedService && selectedDate && selectedTime;
+  const canBook = Boolean(selectedService && selectedDate && selectedTime && service && professional);
   const formattedSelectedDate = selectedDate
     ? new Intl.DateTimeFormat('fr-FR', {
         weekday: 'long',
@@ -127,9 +191,7 @@ export function BookingPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Booking Form */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Service Selection */}
           <AppCard tone="elevated" className="rounded-2xl">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
@@ -137,8 +199,8 @@ export function BookingPage() {
               </span>
               Choisir un service
             </h3>
-            
-            {(professional || allServices.length > 0) ? (
+
+            {professional || allServices.length > 0 ? (
               <Select value={selectedService} onValueChange={setSelectedService}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez un service" />
@@ -153,7 +215,7 @@ export function BookingPage() {
               </Select>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Veuillez d'abord sélectionner un service depuis la page des services
+                Veuillez d&apos;abord sélectionner un service depuis la page des services
               </p>
             )}
 
@@ -174,7 +236,6 @@ export function BookingPage() {
             )}
           </AppCard>
 
-          {/* Date Selection */}
           <AppCard tone="elevated" className="rounded-2xl">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
@@ -187,13 +248,16 @@ export function BookingPage() {
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
-                disabled={(date) => date < new Date()}
+                disabled={(date) => {
+                  const day = new Date(date);
+                  day.setHours(0, 0, 0, 0);
+                  return day < startOfToday();
+                }}
                 className="rounded-md border"
               />
             </div>
           </AppCard>
 
-          {/* Time Selection */}
           <AppCard tone="elevated" className="rounded-2xl">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
@@ -201,35 +265,52 @@ export function BookingPage() {
               </span>
               Choisir un créneau horaire
             </h3>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {timeSlots.map((time) => (
-                <button
-                  key={time}
-                  onClick={() => setSelectedTime(time)}
-                  disabled={!selectedDate}
-                  className={`rounded-lg border px-3 py-3 text-sm font-medium transition-all ${
-                    selectedTime === time
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-card text-foreground border-border hover:border-primary hover:bg-accent'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {time}
-                </button>
-              ))}
-            </div>
+
+            {!selectedDate ? (
+              <p className="text-sm text-muted-foreground">Sélectionnez d&apos;abord une date.</p>
+            ) : slotsLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                Calcul des créneaux disponibles…
+              </div>
+            ) : slotsError ? (
+              <Alert variant="destructive">
+                <AlertDescription>{slotsError}</AlertDescription>
+              </Alert>
+            ) : availableSlots.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Aucun créneau libre ce jour-là pour cette prestation. Choisissez une autre date ou un autre service, ou
+                demandez au professionnel d&apos;ajouter des plages dans « Disponibilités ».
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {availableSlots.map((time) => (
+                  <button
+                    key={time}
+                    type="button"
+                    onClick={() => setSelectedTime(time)}
+                    className={`rounded-lg border px-3 py-3 text-sm font-medium transition-all ${
+                      selectedTime === time
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-card text-foreground border-border hover:border-primary hover:bg-accent'
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            )}
           </AppCard>
 
-          {/* Cancellation Policy */}
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              <strong>Politique d'annulation:</strong> Annulation gratuite jusqu'à 48h avant le rendez-vous.
+              <strong>Politique d&apos;annulation:</strong> Annulation gratuite jusqu&apos;à 48h avant le rendez-vous.
               Au-delà, des frais de 50% du montant seront appliqués.
             </AlertDescription>
           </Alert>
         </div>
 
-        {/* Summary Sidebar */}
         <div className="lg:col-span-1">
           <div className="sticky top-8">
             <BookingSummary
@@ -247,16 +328,20 @@ export function BookingPage() {
               <p className="mt-2 text-sm text-white/80">
                 Vous confirmez votre service, votre horaire et votre professionnel avant validation.
               </p>
+              {!user ? (
+                <p className="mt-3 text-xs text-amber-200/90">
+                  Connectez-vous pour finaliser la réservation.
+                </p>
+              ) : null}
               <Button
                 className="mt-5 w-full"
                 size="lg"
-                disabled={!canBook}
+                disabled={!canBook || slotsLoading}
                 onClick={handleBooking}
               >
-                Confirmer la réservation
+                {user ? 'Confirmer la réservation' : 'Se connecter pour réserver'}
               </Button>
             </AppCard>
-
           </div>
         </div>
       </div>

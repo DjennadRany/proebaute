@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useSearchParams, useLocation } from 'react-router';
 import { Send, Search, Phone, Video, MoreVertical, Archive } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AppCard } from '../components/AppCard';
@@ -33,6 +33,8 @@ import {
 
 export function MessagesPage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const messagesBase = location.pathname.startsWith('/pro') ? '/pro/messages' : '/messages';
   const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -174,9 +176,13 @@ export function MessagesPage() {
       <AppHeader
         eyebrow="Messagerie"
         title="Messages"
-        subtitle="Communiquez avec vos professionnels, retrouvez vos échanges actifs et répondez rapidement."
+        subtitle={
+          location.pathname.startsWith('/pro')
+            ? 'Échangez avec vos clientes, suivez vos conversations et répondez rapidement.'
+            : 'Communiquez avec vos professionnels, retrouvez vos échanges actifs et répondez rapidement.'
+        }
         action={
-          <Link to="/messages/archives" className="w-full sm:w-auto">
+          <Link to={`${messagesBase}/archives`} className="w-full sm:w-auto">
           <Button variant="outline" className="gap-2 w-full sm:w-auto">
             <Archive className="w-4 h-4" />
             Voir les archives

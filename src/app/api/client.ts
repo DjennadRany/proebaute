@@ -1,3 +1,4 @@
+import type { User as AuthUser } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient';
 
 // Helper: certaines tables ne sont pas encore créées en local.
@@ -5,6 +6,18 @@ import { supabase } from './supabaseClient';
 // on renvoie simplement des listes vides pour ne pas casser l'UI.
 function isMissingTableError(error: unknown): boolean {
   return typeof error === 'object' && error !== null && (error as any).code === 'PGRST205';
+}
+
+function isRlsOrPermissionError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const e = error as { code?: string; message?: string };
+  if (e.code === '42501' || e.code === 'PGRST301') return true;
+  const msg = String(e.message ?? '').toLowerCase();
+  return (
+    msg.includes('permission denied') ||
+    msg.includes('row-level security') ||
+    msg.includes('violates row-level security')
+  );
 }
 
 // Types alignés avec ton backend
@@ -51,6 +64,8 @@ export interface ApiBookingSummary {
   };
   service: ApiService | null;
   professional: ApiProfessional | null;
+  /** Présent pour les vues pro (réservations entrantes) */
+  clientDisplayName?: string;
 }
 
 export interface ApiConversation {
@@ -104,6 +119,15 @@ export interface BookingDetailResponse {
   booking: ApiBookingSummary['booking'] & { penaltyApplied?: unknown };
   service: ApiService | null;
   professional: ApiProfessional | null;
+}
+
+export interface ApiAvailabilitySlot {
+  id: string;
+  proId: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isActive: boolean;
 }
 
 // Auth
@@ -237,6 +261,58 @@ async function upsertProfessionalProfile(payload: {
   if (error) throw error;
 }
 
+/**
+ * Recrée les lignes public.users / public.professionals à partir des métadonnées Auth.
+ * Indispensable quand la confirmation email est activée : au signUp il n’y a souvent pas de session,
+ * donc les upserts initiaux échouent souvent (RLS) même si auth.users est bien créé.
+ */
+async function syncAppProfileFromAuthUser(authUser: AuthUser): Promise<void> {
+  const meta = (authUser.user_metadata ?? {}) as Record<string, unknown>;
+  const roleRaw = String(meta.role ?? 'client').toLowerCase();
+  const role: 'client' | 'professional' = roleRaw === 'professional' ? 'professional' : 'client';
+
+  const email = (authUser.email ?? '').trim().toLowerCase();
+  if (!email) return;
+
+  const firstName = String(meta.first_name ?? email.split('@')[0] ?? 'Utilisateur').trim();
+  const lastName = String(meta.last_name ?? '').trim();
+  const phone = meta.phone != null && String(meta.phone).trim() ? String(meta.phone).trim() : undefined;
+
+  await upsertUserProfile({
+    authId: authUser.id,
+    role,
+    firstName,
+    lastName,
+    email,
+    phone,
+  });
+
+  if (role !== 'professional') return;
+
+  const companyName = String(meta.company_name ?? '').trim();
+  const specialty = String(meta.specialty ?? '').trim();
+  const bio = String(meta.bio ?? '').trim();
+  const streetAddress = String(meta.street_address ?? '').trim();
+  const city = String(meta.city ?? '').trim();
+  const postalCode = String(meta.postal_code ?? '').trim();
+  const siren = String(meta.siren ?? '').trim();
+
+  if (!companyName || !specialty || !streetAddress || !city || !postalCode || !siren) {
+    return;
+  }
+
+  await upsertProfessionalProfile({
+    authId: authUser.id,
+    companyName,
+    specialty,
+    bio: bio || ' ',
+    streetAddress,
+    city,
+    postalCode,
+    siren,
+  });
+}
+
 export async function login(email: string, password: string): Promise<ApiUser> {
   const {
     data: authData,
@@ -247,17 +323,74 @@ export async function login(email: string, password: string): Promise<ApiUser> {
   });
 
   if (error || !authData.user) {
+    if (error) {
+      const err = error as { message?: string; code?: string };
+      const m = (err.message ?? '').toLowerCase();
+      if (
+        err.code === 'invalid_credentials' ||
+        m.includes('invalid login') ||
+        m.includes('invalid_grant')
+      ) {
+        throw new Error(
+          'Mot de passe incorrect, ou compte non confirmé, ou utilisateur absent de Supabase Authentication. ' +
+            'Une ligne dans public.users ne suffit pas : la connexion utilise auth.users (menu Authentication → Users). ' +
+            'Utilisez « Mot de passe oublié » ou réinitialisez le mot de passe depuis le dashboard Supabase.',
+        );
+      }
+    }
     throw error ?? new Error('Authentication failed');
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const authUser = authData.user;
+
+  let { data: profile, error: profileError } = await supabase
     .from('users')
     .select('*')
-    .eq('id', authData.user.id)
-    .single();
+    .eq('id', authUser.id)
+    .maybeSingle();
 
-  if (profileError || !profile) {
-    throw profileError ?? new Error('User profile not found');
+  if (profileError) {
+    throw profileError;
+  }
+
+  if (!profile) {
+    try {
+      await syncAppProfileFromAuthUser(authUser);
+    } catch (e) {
+      if (isRlsOrPermissionError(e)) {
+        throw new Error(
+          'Supabase refuse l’écriture sur public.users / public.professionals (RLS). Ouvrez le fichier scripts/supabase-rls-users-professionals.sql dans le dashboard Supabase → SQL, exécutez-le, puis reconnectez-vous.',
+        );
+      }
+      throw e;
+    }
+    const again = await supabase.from('users').select('*').eq('id', authUser.id).maybeSingle();
+    profile = again.data;
+    if (again.error) throw again.error;
+  }
+
+  if (!profile) {
+    throw new Error('User profile not found');
+  }
+
+  if (profile.role === 'professional') {
+    const { data: proRow } = await supabase
+      .from('professionals')
+      .select('id')
+      .eq('user_id', authUser.id)
+      .maybeSingle();
+    if (!proRow) {
+      try {
+        await syncAppProfileFromAuthUser(authUser);
+      } catch (e) {
+        if (isRlsOrPermissionError(e)) {
+          throw new Error(
+            'Supabase refuse l’écriture sur public.professionals (RLS). Exécutez scripts/supabase-rls-users-professionals.sql dans Supabase, puis reconnectez-vous.',
+          );
+        }
+        throw e;
+      }
+    }
   }
 
   return toApiUser({
@@ -314,23 +447,26 @@ export async function signUpClientAccount(payload: ClientSignupPayload): Promise
     phone,
   };
 
-  try {
-    apiUser = await upsertUserProfile({
-      authId: data.user.id,
-      role: 'client',
-      firstName,
-      lastName,
-      email,
-      phone,
-    });
-  } catch (profileError) {
-    // Le profil peut aussi être créé automatiquement par un trigger SQL côté Supabase.
-    // On ne bloque pas la création du compte Auth si le profil applicatif
-    // est déjà inséré par la base ou si l'email doit encore être confirmé.
-    console.warn('Profil public.users non upsert côté client', profileError);
-  }
+  const syncClientUserRow = async () => {
+    try {
+      apiUser = await upsertUserProfile({
+        authId: data.user!.id,
+        role: 'client',
+        firstName,
+        lastName,
+        email,
+        phone,
+      });
+    } catch (profileError) {
+      console.warn(
+        'Profil public.users — échec (souvent RLS). Voir scripts/supabase-rls-users-professionals.sql',
+        profileError,
+      );
+    }
+  };
 
   if (data.session) {
+    await syncClientUserRow();
     return { user: apiUser, requiresEmailConfirmation: false };
   }
 
@@ -340,7 +476,14 @@ export async function signUpClientAccount(payload: ClientSignupPayload): Promise
   });
 
   if (!signInError) {
+    await syncClientUserRow();
     return { user: apiUser, requiresEmailConfirmation: false };
+  }
+
+  if (import.meta.env.DEV) {
+    console.info(
+      '[Client signup] Pas de session : la ligne public.users sera créée au premier login (sync Auth).',
+    );
   }
 
   return { user: null, requiresEmailConfirmation: true };
@@ -367,6 +510,7 @@ export async function signUpProfessionalAccount(payload: ProfessionalSignupPaylo
         company_name: payload.companyName.trim(),
         siren: payload.siren.trim(),
         specialty: payload.specialty.trim(),
+        bio: payload.bio.trim(),
         street_address: payload.streetAddress.trim(),
         city: payload.city.trim(),
         postal_code: payload.postalCode.trim(),
@@ -391,35 +535,43 @@ export async function signUpProfessionalAccount(payload: ProfessionalSignupPaylo
     phone,
   };
 
-  try {
-    apiUser = await upsertUserProfile({
-      authId: data.user.id,
-      role: 'professional',
-      firstName,
-      lastName,
-      email,
-      phone,
-    });
-  } catch (profileError) {
-    console.warn('Profil public.users non upsert côté pro', profileError);
-  }
-
-  try {
-    await upsertProfessionalProfile({
-      authId: data.user.id,
-      companyName: payload.companyName,
-      specialty: payload.specialty,
-      bio: payload.bio,
-      streetAddress: payload.streetAddress,
-      city: payload.city,
-      postalCode: payload.postalCode,
-      siren: payload.siren,
-    });
-  } catch (professionalError) {
-    console.warn('Fiche public.professionals non upsert côté pro', professionalError);
-  }
+  const syncProPublicRows = async () => {
+    try {
+      apiUser = await upsertUserProfile({
+        authId: data.user!.id,
+        role: 'professional',
+        firstName,
+        lastName,
+        email,
+        phone,
+      });
+    } catch (profileError) {
+      console.warn(
+        'Profil public.users — échec (souvent RLS). Voir scripts/supabase-rls-users-professionals.sql',
+        profileError,
+      );
+    }
+    try {
+      await upsertProfessionalProfile({
+        authId: data.user!.id,
+        companyName: payload.companyName,
+        specialty: payload.specialty,
+        bio: payload.bio,
+        streetAddress: payload.streetAddress,
+        city: payload.city,
+        postalCode: payload.postalCode,
+        siren: payload.siren,
+      });
+    } catch (professionalError) {
+      console.warn(
+        'Fiche public.professionals — échec (souvent RLS). Voir scripts/supabase-rls-users-professionals.sql',
+        professionalError,
+      );
+    }
+  };
 
   if (data.session) {
+    await syncProPublicRows();
     return { user: apiUser, requiresEmailConfirmation: false };
   }
 
@@ -429,7 +581,14 @@ export async function signUpProfessionalAccount(payload: ProfessionalSignupPaylo
   });
 
   if (!signInError) {
+    await syncProPublicRows();
     return { user: apiUser, requiresEmailConfirmation: false };
+  }
+
+  if (import.meta.env.DEV) {
+    console.info(
+      '[Pro signup] Pas de session : public.users / professionals seront remplis au premier login (sync Auth).',
+    );
   }
 
   return { user: null, requiresEmailConfirmation: true };
@@ -454,6 +613,23 @@ export async function updateAccountPassword(password: string): Promise<void> {
   if (error) throw error;
 }
 
+export function mapServiceRow(s: Record<string, unknown>): ApiService {
+  const row = s as any;
+  return {
+    _id: row.id,
+    professionalId: row.professional_id ?? row.professionalId ?? '',
+    title: row.title ?? '',
+    description: row.description ?? '',
+    category: row.category ?? '',
+    price: Number(row.price ?? 0),
+    duration: Number(row.duration ?? 0),
+    media: Array.isArray(row.media) ? row.media : [],
+    ratingAverage: Number(row.rating_average ?? row.ratingAverage ?? 0),
+    likesCount: Number(row.likes_count ?? row.likesCount ?? 0),
+    reviewsCount: Number(row.reviews_count ?? row.reviewsCount ?? 0),
+  };
+}
+
 export async function fetchServices(professionalId?: string): Promise<ApiService[]> {
   const baseQuery = supabase.from('services').select('*');
   const { data, error } = professionalId
@@ -463,10 +639,65 @@ export async function fetchServices(professionalId?: string): Promise<ApiService
     if (isMissingTableError(error)) return [];
     throw error;
   }
-  return (data ?? []).map((s: any) => ({
-    ...s,
-    _id: s.id,
-  })) as ApiService[];
+  return (data ?? []).map((s: any) => mapServiceRow(s));
+}
+
+export async function createProService(payload: {
+  professionalId: string;
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  duration: number;
+  media?: string[];
+}): Promise<{ serviceId: string }> {
+  const { data, error } = await supabase
+    .from('services')
+    .insert({
+      professional_id: payload.professionalId,
+      title: payload.title.trim(),
+      description: payload.description.trim(),
+      category: payload.category.trim(),
+      price: payload.price,
+      duration: payload.duration,
+      media: payload.media && payload.media.length > 0 ? payload.media : [],
+      rating_average: 0,
+      likes_count: 0,
+      reviews_count: 0,
+    })
+    .select('id')
+    .single();
+
+  if (error || !data) throw error ?? new Error('Impossible de créer le service');
+  return { serviceId: data.id as string };
+}
+
+export async function updateProService(
+  serviceId: string,
+  payload: {
+    title?: string;
+    description?: string;
+    category?: string;
+    price?: number;
+    duration?: number;
+    media?: string[];
+  },
+): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (payload.title !== undefined) row.title = payload.title.trim();
+  if (payload.description !== undefined) row.description = payload.description.trim();
+  if (payload.category !== undefined) row.category = payload.category.trim();
+  if (payload.price !== undefined) row.price = payload.price;
+  if (payload.duration !== undefined) row.duration = payload.duration;
+  if (payload.media !== undefined) row.media = payload.media;
+
+  const { error } = await supabase.from('services').update(row).eq('id', serviceId);
+  if (error) throw error;
+}
+
+export async function deleteProService(serviceId: string): Promise<void> {
+  const { error } = await supabase.from('services').delete().eq('id', serviceId);
+  if (error) throw error;
 }
 
 export async function fetchServicesByCategory(category: string): Promise<ApiService[]> {
@@ -478,10 +709,7 @@ export async function fetchServicesByCategory(category: string): Promise<ApiServ
     if (isMissingTableError(error)) return [];
     throw error;
   }
-  return (data ?? []).map((s: any) => ({
-    ...s,
-    _id: s.id,
-  })) as ApiService[];
+  return (data ?? []).map((s: any) => mapServiceRow(s));
 }
 
 export async function fetchServiceDetails(id: string): Promise<{
@@ -510,7 +738,7 @@ export async function fetchServiceDetails(id: string): Promise<{
   if (reviewsError) throw reviewsError;
 
   return {
-    service: { ...(service as any), _id: (service as any).id } as ApiService,
+    service: mapServiceRow({ ...(service as any), id: (service as any).id }),
     professional: professional
       ? ({
           _id: (professional as any).id,
@@ -529,6 +757,178 @@ export async function fetchServiceDetails(id: string): Promise<{
       : null,
     reviews: (reviews ?? []) as any[],
   };
+}
+
+// --- Disponibilités récurrentes (availability_slots) + créneaux réservables ---
+
+function formatTimeSlotFromDb(value: string | null | undefined): string {
+  if (!value) return '00:00';
+  const s = String(value);
+  return s.length >= 5 ? s.slice(0, 5) : s;
+}
+
+function parseTimeToMinutes(time: string): number {
+  const normalized = formatTimeSlotFromDb(time);
+  const parts = normalized.split(':');
+  const h = parseInt(parts[0] ?? '0', 10);
+  const m = parseInt(parts[1] ?? '0', 10);
+  if (Number.isNaN(h) || Number.isNaN(m)) return 0;
+  return h * 60 + m;
+}
+
+function minutesToHHmm(total: number): string {
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/** 0 = lundi … 6 = dimanche (aligné avec scripts/supabase-rls-availability-slots.sql) */
+function dateToAvailabilityDayOfWeek(date: Date): number {
+  const js = date.getDay();
+  return (js + 6) % 7;
+}
+
+function intervalsOverlap(
+  a: { start: number; end: number },
+  b: { start: number; end: number },
+): boolean {
+  return a.start < b.end && a.end > b.start;
+}
+
+export async function fetchAvailabilitySlotsByProId(proId: string): Promise<ApiAvailabilitySlot[]> {
+  const { data, error } = await supabase
+    .from('availability_slots')
+    .select('id, pro_id, day_of_week, start_time, end_time, is_active')
+    .eq('pro_id', proId)
+    .order('day_of_week', { ascending: true })
+    .order('start_time', { ascending: true });
+
+  if (error) {
+    if (isMissingTableError(error)) return [];
+    throw error;
+  }
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    proId: row.pro_id,
+    dayOfWeek: row.day_of_week,
+    startTime: formatTimeSlotFromDb(row.start_time),
+    endTime: formatTimeSlotFromDb(row.end_time),
+    isActive: row.is_active ?? true,
+  }));
+}
+
+export async function replaceAvailabilitySlotsForPro(
+  proId: string,
+  slots: Array<{ dayOfWeek: number; startTime: string; endTime: string }>,
+): Promise<void> {
+  const { error: delError } = await supabase.from('availability_slots').delete().eq('pro_id', proId);
+  if (delError) {
+    if (isMissingTableError(delError)) return;
+    throw delError;
+  }
+
+  const rows = slots
+    .filter((s) => s.startTime && s.endTime && parseTimeToMinutes(s.startTime) < parseTimeToMinutes(s.endTime))
+    .map((s) => ({
+      pro_id: proId,
+      day_of_week: s.dayOfWeek,
+      start_time: `${formatTimeSlotFromDb(s.startTime)}:00`,
+      end_time: `${formatTimeSlotFromDb(s.endTime)}:00`,
+      is_active: true,
+    }));
+
+  if (rows.length === 0) return;
+
+  const { error: insError } = await supabase.from('availability_slots').insert(rows);
+  if (insError) throw insError;
+}
+
+export async function fetchAvailableBookingTimeSlots(params: {
+  professionalId: string;
+  bookingDate: string;
+  serviceDurationMinutes: number;
+}): Promise<string[]> {
+  const duration = Math.max(5, Math.floor(params.serviceDurationMinutes || 60));
+  const parts = params.bookingDate.split('-').map((x) => parseInt(x, 10));
+  const y = parts[0];
+  const mo = parts[1];
+  const d = parts[2];
+  if (!y || !mo || !d) return [];
+
+  const localDate = new Date(y, mo - 1, d);
+  const dayOfWeek = dateToAvailabilityDayOfWeek(localDate);
+
+  const { data: slotRows, error: slotErr } = await supabase
+    .from('availability_slots')
+    .select('start_time, end_time')
+    .eq('pro_id', params.professionalId)
+    .eq('day_of_week', dayOfWeek)
+    .eq('is_active', true);
+
+  if (slotErr) {
+    if (isMissingTableError(slotErr)) return [];
+    throw slotErr;
+  }
+
+  const windows = (slotRows ?? [])
+    .map((row: any) => ({
+      start: parseTimeToMinutes(formatTimeSlotFromDb(row.start_time)),
+      end: parseTimeToMinutes(formatTimeSlotFromDb(row.end_time)),
+    }))
+    .filter((w) => w.end > w.start);
+
+  const { data: bookingRows, error: bookErr } = await supabase
+    .from('bookings')
+    .select('time_slot, status, service_id')
+    .eq('professional_id', params.professionalId)
+    .eq('booking_date', params.bookingDate)
+    .not('status', 'eq', 'cancelled');
+
+  let bookingsData: any[] = [];
+  if (bookErr) {
+    if (!isMissingTableError(bookErr)) throw bookErr;
+  } else {
+    bookingsData = bookingRows ?? [];
+  }
+
+  const serviceIds = Array.from(
+    new Set(bookingsData.map((b: any) => b.service_id).filter(Boolean)),
+  ) as string[];
+
+  const durationByServiceId = new Map<string, number>();
+  if (serviceIds.length > 0) {
+    const { data: svcRows, error: svcErr } = await supabase
+      .from('services')
+      .select('id, duration')
+      .in('id', serviceIds);
+    if (!svcErr && svcRows) {
+      for (const s of svcRows as any[]) {
+        durationByServiceId.set(s.id, Math.max(5, Math.floor(Number(s.duration) || 60)));
+      }
+    }
+  }
+
+  const busy = bookingsData
+    .map((b: any) => {
+      const dur = durationByServiceId.get(b.service_id) ?? 60;
+      const start = parseTimeToMinutes(formatTimeSlotFromDb(b.time_slot));
+      return { start, end: start + dur };
+    })
+    .filter((x) => x.end > x.start)
+    .sort((a, b) => a.start - b.start);
+
+  const offered = new Set<string>();
+
+  for (const win of windows) {
+    for (let t = win.start; t + duration <= win.end; t += duration) {
+      const candidate = { start: t, end: t + duration };
+      const clashes = busy.some((b) => intervalsOverlap(candidate, b));
+      if (!clashes) offered.add(minutesToHHmm(t));
+    }
+  }
+
+  return Array.from(offered).sort((a, b) => parseTimeToMinutes(a) - parseTimeToMinutes(b));
 }
 
 export async function fetchBookingsByClient(clientId: string): Promise<ApiBookingSummary[]> {
@@ -566,9 +966,7 @@ export async function fetchBookingsByClient(clientId: string): Promise<ApiBookin
       status: row.status,
       amount: row.amount,
     },
-    service: row.services
-      ? ({ ...row.services, _id: row.services.id } as ApiService)
-      : null,
+    service: row.services ? mapServiceRow(row.services as any) : null,
     professional: row.professionals
       ? ({
           _id: row.professionals.id,
@@ -586,6 +984,126 @@ export async function fetchBookingsByClient(clientId: string): Promise<ApiBookin
         } as ApiProfessional)
       : null,
   }));
+}
+
+export async function fetchProfessionalByUserId(userId: string): Promise<ApiProfessional | null> {
+  const { data, error } = await supabase
+    .from('professionals')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    if (isMissingTableError(error)) return null;
+    throw error;
+  }
+  if (!data) return null;
+
+  const p = data as any;
+  return {
+    _id: p.id,
+    userId: p.user_id,
+    professionalName: p.professional_name,
+    specialty: p.specialty,
+    bio: p.bio,
+    location: p.location,
+    ratingAverage: p.rating_average,
+    reviewsCount: p.reviews_count,
+    verified: p.verified,
+    gallery: p.gallery,
+    postalCode: p.postal_code,
+    city: p.city,
+  } as ApiProfessional;
+}
+
+export async function fetchBookingsByProfessional(professionalId: string): Promise<ApiBookingSummary[]> {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select(
+      `
+      id,
+      client_id,
+      professional_id,
+      service_id,
+      booking_date,
+      time_slot,
+      status,
+      amount,
+      services:service_id (*),
+      professionals:professional_id (*)
+    `,
+    )
+    .eq('professional_id', professionalId)
+    .order('booking_date', { ascending: true });
+
+  if (error) {
+    if (isMissingTableError(error)) return [];
+    throw error;
+  }
+
+  const rows = (data ?? []) as any[];
+  const clientIds = Array.from(new Set(rows.map((r) => r.client_id).filter(Boolean)));
+
+  let nameByClientId = new Map<string, string>();
+  if (clientIds.length > 0) {
+    const { data: usersRows, error: usersError } = await supabase
+      .from('users')
+      .select('id, first_name, last_name')
+      .in('id', clientIds);
+    if (!usersError && usersRows) {
+      nameByClientId = new Map(
+        (usersRows as any[]).map((u) => [
+          u.id,
+          `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || 'Client',
+        ]),
+      );
+    }
+  }
+
+  return rows.map((row: any) => ({
+    booking: {
+      _id: row.id,
+      clientId: row.client_id,
+      professionalId: row.professional_id,
+      serviceId: row.service_id,
+      bookingDate: row.booking_date,
+      timeSlot: row.time_slot,
+      status: row.status,
+      amount: row.amount,
+    },
+    service: row.services ? mapServiceRow(row.services as any) : null,
+    professional: row.professionals
+      ? ({
+          _id: row.professionals.id,
+          userId: row.professionals.user_id,
+          professionalName: row.professionals.professional_name,
+          specialty: row.professionals.specialty,
+          bio: row.professionals.bio,
+          location: row.professionals.location,
+          ratingAverage: row.professionals.rating_average,
+          reviewsCount: row.professionals.reviews_count,
+          verified: row.professionals.verified,
+          gallery: row.professionals.gallery,
+          postalCode: row.professionals.postal_code,
+          city: row.professionals.city,
+        } as ApiProfessional)
+      : null,
+    clientDisplayName: nameByClientId.get(row.client_id) ?? 'Client',
+  }));
+}
+
+export async function countUnreadMessagesForUser(userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('receiver_id', userId)
+    .eq('read_status', false);
+
+  if (error) {
+    if (isMissingTableError(error)) return 0;
+    throw error;
+  }
+  return count ?? 0;
 }
 
 export async function createBooking(payload: {
@@ -606,6 +1124,7 @@ export async function createBooking(payload: {
       booking_date: payload.bookingDate,
       time_slot: payload.timeSlot,
       amount: payload.amount,
+      status: 'pending',
       stripe_payment_intent_id: payload.stripePaymentIntentId ?? null,
     })
     .select('id')
@@ -906,8 +1425,8 @@ export async function fetchProfessionalById(id: string): Promise<{
       postalCode: (professional as any).postal_code,
       city: (professional as any).city,
     } as ApiProfessional,
-    services: (services ?? []).map((s: any) => ({ ...s, _id: s.id })) as ApiService[],
-    reviews: (reviews ?? []) as ApiReview[],
+    services: (services ?? []).map((s: any) => mapServiceRow(s)),
+    reviews: (reviews ?? []).map((r: any) => ({ ...r, _id: r.id })) as ApiReview[],
   };
 }
 
@@ -1043,9 +1562,7 @@ export async function getBookingDetail(bookingId: string): Promise<BookingDetail
     penaltyApplied: data.penalty_applied,
   };
 
-  const service = data.services
-    ? ({ ...data.services, _id: data.services.id } as ApiService)
-    : null;
+  const service = data.services ? mapServiceRow(data.services as any) : null;
   const professional = data.professionals
     ? ({
         _id: data.professionals.id,
@@ -1135,9 +1652,10 @@ export async function fetchUserProfile(userId: string): Promise<{
     .from('users')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) throw error ?? new Error('User profile not found');
+  if (error) throw error;
+  if (!data) throw new Error('User profile not found');
 
   return {
     _id: data.id,
@@ -1161,9 +1679,10 @@ export async function updateUserProfile(userId: string, data: { firstName?: stri
     .update(payload)
     .eq('id', userId)
     .select('*')
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
+  if (!updated) throw new Error('Mise à jour du profil impossible (ligne absente ou RLS).');
   return updated;
 }
 
@@ -1229,8 +1748,9 @@ export async function gdprExport(userId: string): Promise<{ user: unknown }> {
     .from('users')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error('Profil utilisateur introuvable pour l’export.');
   return { user: data };
 }
 

@@ -1,5 +1,6 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { RootLayout } from "./layouts/RootLayout";
+import { ProLayout } from "./layouts/ProLayout";
 import { HomePage } from "./pages/HomePage";
 import { Dashboard } from "./pages/Dashboard";
 import { ServicesHub } from "./pages/ServicesHub";
@@ -18,6 +19,15 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { NotFound } from "./pages/NotFound";
 import { LoginPage } from "./pages/LoginPage";
+import { ProDashboardPage } from "./pages/pro/ProDashboardPage";
+import { ProServicesPage } from "./pages/pro/ProServicesPage";
+import { ProAvailabilityPage } from "./pages/pro/ProAvailabilityPage";
+import { ProBookingsPage } from "./pages/pro/ProBookingsPage";
+import { ProMessagesPage } from "./pages/pro/ProMessagesPage";
+import { ProMessagesArchivesPage } from "./pages/pro/ProMessagesArchivesPage";
+import { ProReviewsPage } from "./pages/pro/ProReviewsPage";
+import { ProProfilePage } from "./pages/pro/ProProfilePage";
+import { ProSettingsPage } from "./pages/pro/ProSettingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -43,6 +53,23 @@ export const router = createBrowserRouter([
       { path: "profile", Component: ProfilePage },
       { path: "settings", Component: SettingsPage },
       { path: "*", Component: NotFound },
+    ],
+  },
+  {
+    path: "/pro",
+    Component: ProLayout,
+    children: [
+      { index: true, element: <Navigate to="/pro/dashboard" replace /> },
+      { path: "dashboard", Component: ProDashboardPage },
+      { path: "services", Component: ProServicesPage },
+      { path: "availability", Component: ProAvailabilityPage },
+      { path: "bookings", Component: ProBookingsPage },
+      { path: "messages/archives", Component: ProMessagesArchivesPage },
+      { path: "messages", Component: ProMessagesPage },
+      { path: "reviews", Component: ProReviewsPage },
+      { path: "profile", Component: ProProfilePage },
+      { path: "settings", Component: ProSettingsPage },
+      { path: "*", element: <Navigate to="/pro/dashboard" replace /> },
     ],
   },
 ]);
