@@ -12,11 +12,20 @@ export function ProReviewsPage() {
   const [reviews, setReviews] = useState<ApiReview[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const userId = user?._id;
+
   useEffect(() => {
     let cancelled = false;
+
+    if (!userId) {
+      setReviews([]);
+      setLoading(false);
+      return;
+    }
+
     (async () => {
       try {
-        const pro = await fetchProfessionalByUserId(user._id);
+        const pro = await fetchProfessionalByUserId(userId);
         if (!pro || cancelled) {
           if (!cancelled) setReviews([]);
           return;
@@ -33,7 +42,7 @@ export function ProReviewsPage() {
     return () => {
       cancelled = true;
     };
-  }, [user._id]);
+  }, [userId]);
 
   if (loading) {
     return (
