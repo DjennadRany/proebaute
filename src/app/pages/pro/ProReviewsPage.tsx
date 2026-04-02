@@ -44,6 +44,10 @@ export function ProReviewsPage() {
     );
   }
 
+  const average = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length
+    : null;
+
   return (
     <div className="mx-auto max-w-3xl">
       <AppHeader
@@ -51,6 +55,28 @@ export function ProReviewsPage() {
         title="Avis clients"
         subtitle="Consultez les retours laissés sur vos prestations."
       />
+
+      {reviews.length > 0 && average !== null && (
+        <div className="mb-6 flex items-center gap-4 rounded-2xl border border-border bg-card px-6 py-4">
+          <div className="flex flex-col items-center">
+            <span className="text-4xl font-bold text-foreground">{average.toFixed(1)}</span>
+            <div className="flex items-center gap-0.5 mt-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${i < Math.round(average) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">{reviews.length} avis</span> vérifié{reviews.length > 1 ? 's' : ''}
+            <br />
+            Note moyenne sur 5
+          </div>
+        </div>
+      )}
+
       {reviews.length === 0 ? (
         <EmptyState
           icon={Star}
