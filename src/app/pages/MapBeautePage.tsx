@@ -167,7 +167,21 @@ export function MapBeautePage() {
             const icon = L.divIcon({ html, className: 'locbeaute-pin', iconSize: [22, 22], iconAnchor: [11, 11] });
             if (userMarker.current) userMarker.current.remove();
             userMarker.current = L.marker([lat, lng], { icon }).addTo(map);
-            map.setView([lat, lng], 14);
+
+            // Fit bounds : toi + les 5 pros les plus proches
+            setPros((currentPros) => {
+              const sorted = [...currentPros].sort((a, b) => {
+                const da = Math.sqrt((a.lat - lat) ** 2 + (a.lng - lng) ** 2);
+                const db = Math.sqrt((b.lat - lat) ** 2 + (b.lng - lng) ** 2);
+                return da - db;
+              });
+              const nearby = sorted.slice(0, 5);
+              const points: [number, number][] = [[lat, lng], ...nearby.map((p) => [p.lat, p.lng] as [number, number])];
+              const bounds = L.latLngBounds(points);
+              map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+              return currentPros;
+            });
+
             setLocating(false);
           },
           () => setLocating(false),
@@ -218,7 +232,20 @@ export function MapBeautePage() {
         '</div>';
       const icon = L.divIcon({ html, className: 'locbeaute-pin', iconSize: [22, 22], iconAnchor: [11, 11] });
       userMarker.current = L.marker([lat, lng], { icon }).addTo(map);
-      map.setView([lat, lng], 14);
+
+      // Fit bounds : toi + les 5 pros les plus proches
+      setPros((currentPros) => {
+        const sorted = [...currentPros].sort((a, b) => {
+          const da = Math.sqrt((a.lat - lat) ** 2 + (a.lng - lng) ** 2);
+          const db = Math.sqrt((b.lat - lat) ** 2 + (b.lng - lng) ** 2);
+          return da - db;
+        });
+        const nearby = sorted.slice(0, 5);
+        const points: [number, number][] = [[lat, lng], ...nearby.map((p) => [p.lat, p.lng] as [number, number])];
+        const bounds = L.latLngBounds(points);
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+        return currentPros;
+      });
     });
   };
 
