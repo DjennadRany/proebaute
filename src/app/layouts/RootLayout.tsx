@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import {
   Bell,
   LayoutDashboard,
-  Scissors,
-  Users,
+  MapPin,
+  Sparkles,
   MessageCircle,
   Calendar,
   Heart,
@@ -18,12 +18,12 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { Button } from '../components/ui/button';
-import probeauteLogo from '../../../asset/probeaute_logo_transparent.png';
+import probeauteLogo from '../../../asset/locbeaute_logo.png';
 
 const navigationMain = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Services', href: '/services', icon: Scissors },
-  { name: 'Professionnels', href: '/professionals', icon: Users },
+  { name: 'Accueil', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'MapBeauté', href: '/map', icon: MapPin },
+  { name: 'GlamFeed', href: '/glamfeed', icon: Sparkles },
   { name: 'Réservations', href: '/reservations', icon: Calendar },
 ];
 
@@ -37,7 +37,7 @@ const navigationAccount = [
 ];
 
 const guestNavigation = [
-  { name: 'Accueil', href: '/', icon: LogIn },
+  { name: 'Accueil', href: '/', icon: LayoutDashboard },
   { name: 'Connexion', href: '/login', icon: LogIn },
 ];
 
@@ -198,7 +198,7 @@ export function RootLayout() {
 
                         <button
                           type="button"
-                          onClick={() => logout()}
+                          onClick={() => { logout(); navigate('/'); }}
                           className="mt-1 flex w-full items-center gap-2 border-t border-border/70 px-3 pt-2 pb-2 text-xs lg:text-sm text-destructive hover:bg-destructive/5"
                         >
                           <LogOut className="h-4 w-4" />
@@ -316,6 +316,7 @@ export function RootLayout() {
                     onClick={() => {
                       setMobileMenuOpen(false);
                       logout();
+                      navigate('/');
                     }}
                     className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   >

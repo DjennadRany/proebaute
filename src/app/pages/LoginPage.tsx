@@ -12,7 +12,7 @@ import {
   User,
   type LucideIcon,
 } from 'lucide-react';
-import probeauteLogo from '../../../asset/probeaute_logo_transparent.png';
+import probeauteLogo from '../../../asset/locbeaute_logo.png';
 import { useAuth } from '../context/AuthContext';
 import {
   requestPasswordReset,
@@ -357,7 +357,7 @@ export function LoginPage() {
     try {
       const loggedIn = await login(email.trim().toLowerCase(), password);
       navigate(
-        loggedIn.role === 'professional' ? '/pro/dashboard' : '/dashboard',
+        loggedIn.role === 'professional' ? '/pro/dashboard' : '/map',
         { replace: true },
       );
     } catch (err) {
@@ -454,7 +454,7 @@ export function LoginPage() {
 
       if (result.user) {
         persistUser(result.user);
-        navigate(result.user.role === 'professional' ? '/pro/dashboard' : '/dashboard', { replace: true });
+        navigate(result.user.role === 'professional' ? '/pro/dashboard' : '/map', { replace: true });
         return;
       }
 

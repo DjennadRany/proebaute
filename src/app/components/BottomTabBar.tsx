@@ -11,7 +11,7 @@ import { cn } from './ui/utils';
 
 const primaryItems = [
   { href: '/dashboard', label: 'Accueil', icon: Home },
-  { href: '/map', label: 'Carte', icon: MapPin },
+  { href: '/map', label: 'MapBeaute', icon: MapPin },
   { href: '/glamfeed', label: 'GlamFeed', icon: Sparkles },
   { href: '/reservations', label: 'Reservations', icon: Calendar },
   { href: '/profile', label: 'Profil', icon: User },

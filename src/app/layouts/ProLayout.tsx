@@ -16,7 +16,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../components/ui/sheet';
 import { cn } from '../components/ui/utils';
-import probeauteLogo from '../../../asset/probeaute_logo_transparent.png';
+import probeauteLogo from '../../../asset/locbeaute_logo.png';
 
 const PRO_NAV = [
   { label: 'Dashboard', href: '/pro/dashboard', icon: LayoutDashboard },

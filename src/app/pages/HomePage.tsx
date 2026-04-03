@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import probeauteLogo from '../../../asset/probeaute_logo_transparent.png';
+import probeauteLogo from '../../../asset/locbeaute_logo.png';
 import { useAuth } from '../context/AuthContext';
 import { AppCard } from '../components/AppCard';
 import { Button } from '../components/ui/button';

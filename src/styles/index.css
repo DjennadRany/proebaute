@@ -82,3 +82,25 @@
     }
   }
 }
+
+/* Animation pulse pour la localisation utilisateur */
+@keyframes locpulse {
+  0%   { transform: scale(1); opacity: 0.25; }
+  70%  { transform: scale(2.5); opacity: 0; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Leaflet pin custom - neutralise le background par defaut */
+.locbeaute-pin {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.locbeaute-pin svg {
+  display: block;
+  overflow: visible;
+}
+/* Cache les markers Leaflet par defaut */
+.leaflet-default-icon-path {
+  display: none;
+}
