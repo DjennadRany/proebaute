@@ -1,7 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { Heart, MessageCircle, Bookmark, Star, MapPin, Share2 } from 'lucide-react';
-import { fetchProfessionals, fetchServices, type ApiProfessional, type ApiService } from '../api/client';
+import {
+  fetchProfessionals,
+  fetchServices,
+  fetchLikes,
+  fetchFavorites,
+  toggleLike as apiToggleLike,
+  toggleFavorite as apiToggleFavorite,
+  type ApiProfessional,
+  type ApiService,
+} from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 // Images beauté Pexels fallback si le service n'a pas de media
 const FALLBACK_IMAGES = [
@@ -177,13 +187,24 @@ function ReelCard({ item, onLike, onSave }: {
 }
 
 export function GlamFeedPage() {
+  const { user } = useAuth();
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    Promise.all([fetchProfessionals(), fetchServices()])
-      .then(([proList, serviceList]) => {
+    const likedIds = new Set<string>();
+    const savedIds = new Set<string>();
+
+    Promise.all([
+      fetchProfessionals(),
+      fetchServices(),
+      user ? fetchLikes(user._id) : Promise.resolve([]),
+      user ? fetchFavorites(user._id) : Promise.resolve([]),
+    ]).then(([proList, serviceList, likesList, favoritesList]) => {
+        likesList.forEach((l) => likedIds.add(l.serviceId));
+        favoritesList.forEach((f) => savedIds.add(f.targetId));
+
         const proMap: Record<string, ApiProfessional> = {};
         proList.forEach((p) => { proMap[p._id] = p; });
 
@@ -201,10 +222,10 @@ export function GlamFeedPage() {
               service: s,
               pro,
               image: media,
-              liked: false,
-              saved: false,
-              likes: s.likesCount > 0 ? s.likesCount : Math.floor(Math.random() * 200) + 20,
-              comments: s.reviewsCount > 0 ? s.reviewsCount : Math.floor(Math.random() * 40) + 2,
+              liked: likedIds.has(s._id),
+              saved: savedIds.has(s._id),
+              likes: s.likesCount,
+              comments: s.reviewsCount,
             };
           })
           .filter((x): x is FeedItem => x !== null);
@@ -230,11 +251,31 @@ export function GlamFeedPage() {
   }, []);
 
   const toggleLike = (id: string) => {
-    setFeed((prev) => prev.map((p) => p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p));
+    // Optimistic UI
+    setFeed((prev) => prev.map((p) =>
+      p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p
+    ));
+    // Sync Supabase
+    if (user) {
+      apiToggleLike(user._id, id).catch(() => {
+        // Rollback si erreur
+        setFeed((prev) => prev.map((p) =>
+          p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p
+        ));
+      });
+    }
   };
 
   const toggleSave = (id: string) => {
+    // Optimistic UI
     setFeed((prev) => prev.map((p) => p.id === id ? { ...p, saved: !p.saved } : p));
+    // Sync Supabase
+    if (user) {
+      apiToggleFavorite({ userId: user._id, targetId: id, targetType: 'service' }).catch(() => {
+        // Rollback si erreur
+        setFeed((prev) => prev.map((p) => p.id === id ? { ...p, saved: !p.saved } : p));
+      });
+    }
   };
 
   if (loading) {
