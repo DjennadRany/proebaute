@@ -100,7 +100,7 @@ export function ProfessionalProfile() {
         <EmptyState
           icon={MapPin}
           title="Professionnel non trouvé"
-          description="Ce profil n’est plus disponible ou a été retiré de la plateforme."
+          description="Ce profil n'est plus disponible ou a été retiré de la plateforme."
           action={
             <Link to="/professionals">
               <Button>Retour aux professionnels</Button>
@@ -250,7 +250,7 @@ export function ProfessionalProfile() {
             <EmptyState
               icon={Calendar}
               title="Aucun service disponible"
-              description="Ce professionnel n’a pas encore publié de prestation disponible."
+              description="Ce professionnel n'a pas encore publié de prestation disponible."
             />
           )}
         </TabsContent>

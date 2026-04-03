@@ -189,7 +189,7 @@ export function ReservationDetailPage() {
                     window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
                   }}
                 >
-                  Ouvrir l’itinéraire
+                  Ouvrir l'itinéraire
                 </Button>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -265,7 +265,7 @@ export function ReservationDetailPage() {
           {isEditing && (
             <div className="mt-6 space-y-4 border-t border-border pt-4">
               <p className="text-sm font-medium text-foreground">
-                Modifier la date et l’horaire de votre rendez-vous
+                Modifier la date et l'horaire de votre rendez-vous
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>

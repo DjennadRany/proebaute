@@ -248,7 +248,7 @@ export function ServiceDetail() {
         <EmptyState
           icon={MapPin}
           title="Service non trouvé"
-          description="Ce service n’est plus disponible ou a été retiré du catalogue."
+          description="Ce service n'est plus disponible ou a été retiré du catalogue."
           action={
             <Link to="/services">
               <Button>Retour aux services</Button>

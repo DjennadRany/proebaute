@@ -101,7 +101,7 @@ export function Dashboard() {
               <StatusBadge status="online" />
             </div>
             <h2 className="text-2xl font-semibold text-foreground">
-              Votre activité beauté en un coup d’œil
+              Votre activité beauté en un coup d'œil
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Consultez vos prochains rendez-vous, vos conversations et les services que vous suivez de près.

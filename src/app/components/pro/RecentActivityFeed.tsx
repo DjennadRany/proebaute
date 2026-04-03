@@ -53,7 +53,7 @@ export function RecentActivityFeed({ items, loading, error }: RecentActivityFeed
       <p className="mb-4 text-sm font-semibold text-foreground">Activité récente</p>
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Messages, avis et mouvements de réservation s’afficheront ici.
+          Messages, avis et mouvements de réservation s'afficheront ici.
         </p>
       ) : (
         <ul className="space-y-2">

@@ -51,7 +51,7 @@ export function TodaySchedule({ items, loading, error }: TodayScheduleProps) {
       {items.length === 0 ? (
         <EmptyState
           icon={Calendar}
-          title="Aucun rendez-vous aujourd’hui"
+          title="Aucun rendez-vous aujourd'hui"
           description="Les réservations du jour apparaîtront ici."
         />
       ) : (

@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 interface ServiceCardProps {
   service: ApiService;
   professional?: ApiProfessional | null;
-  /** Si fourni, le bouton favori appelle l’API */
+  /** Si fourni, le bouton favori appelle l'API */
   onToggleFavorite?: (serviceId: string) => void;
   onToggleLike?: (serviceId: string) => void;
   /** Optionnel: ouvrir directement la section avis/commentaires */

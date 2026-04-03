@@ -50,7 +50,7 @@ export function ReservationsPage() {
       <AppHeader
         eyebrow="Activité"
         title="Mes réservations"
-        subtitle="Retrouvez vos prochains rendez-vous, leur statut et les actions utiles en un coup d’œil."
+        subtitle="Retrouvez vos prochains rendez-vous, leur statut et les actions utiles en un coup d'œil."
       />
 
       <div className="space-y-4">

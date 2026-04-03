@@ -205,7 +205,7 @@ export function ProAvailabilityPage() {
         <AppHeader
           eyebrow="Planning"
           title="Disponibilités"
-          subtitle="Associez d’abord une fiche professionnelle à votre compte."
+          subtitle="Associez d'abord une fiche professionnelle à votre compte."
         />
         <EmptyState
           icon={CalendarRange}

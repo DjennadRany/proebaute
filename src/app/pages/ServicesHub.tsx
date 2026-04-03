@@ -139,7 +139,7 @@ export function ServicesHub() {
     return (
       <div className="max-w-3xl mx-auto text-center py-16">
         <h1 className="text-3xl font-bold text-foreground mb-2">
-          Découvrez les services ProBeauté
+          Découvrez les services LocBeauté
         </h1>
         <p className="text-muted-foreground mb-6">
           Connectez-vous pour voir les services disponibles près de chez vous, les ajouter en
@@ -350,7 +350,7 @@ export function ServicesHub() {
         <EmptyState
           icon={Search}
           title="Aucun service trouvé"
-          description="Essayez de modifier votre recherche, votre ville ou votre catégorie pour afficher d’autres résultats."
+          description="Essayez de modifier votre recherche, votre ville ou votre catégorie pour afficher d'autres résultats."
           action={
             <Button
               variant="outline"

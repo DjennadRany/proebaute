@@ -44,7 +44,7 @@ export function ReviewsPage() {
       <AppHeader
         eyebrow="Confiance"
         title="Avis et évaluations"
-        subtitle="Retrouvez vos retours clients et gardez une trace claire de votre expérience ProBeauté."
+        subtitle="Retrouvez vos retours clients et gardez une trace claire de votre experience LocBeaute."
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

@@ -83,7 +83,7 @@ const clientSteps: StepMeta[] = [
 const professionalSteps: StepMeta[] = [
   { title: 'Responsable', caption: 'Identité du compte', icon: User },
   { title: 'Entreprise', caption: 'SIREN et activité', icon: Building2 },
-  { title: 'Prestations', caption: 'Mode d’intervention', icon: Car },
+  { title: 'Prestations', caption: "Mode d'intervention", icon: Car },
   { title: 'Adresse', caption: 'Localisation professionnelle', icon: MapPin },
   { title: 'Sécurité', caption: 'Accès et validation', icon: ShieldCheck },
 ];
@@ -289,7 +289,7 @@ export function LoginPage() {
         return '';
       case 1:
         if (!signupForm.streetAddress.trim() || !signupForm.city.trim() || !signupForm.postalCode.trim()) {
-          return 'Complétez votre adresse principale avant de passer à l’étape suivante.';
+          return "Complétez votre adresse principale avant de passer à l'étape suivante.";
         }
         return '';
       case 2:
@@ -332,7 +332,7 @@ export function LoginPage() {
         return '';
       case 3:
         if (!proSignupForm.streetAddress.trim() || !proSignupForm.city.trim() || !proSignupForm.postalCode.trim()) {
-          return 'Complétez l’adresse professionnelle avant de passer à l’étape suivante.';
+          return "Completez l'adresse professionnelle avant de passer a l'etape suivante.";
         }
         return '';
       case 4:
@@ -374,13 +374,13 @@ export function LoginPage() {
     try {
       await requestPasswordReset(forgotEmail);
       setForgotSuccess(
-        'Si un compte existe avec cet email, un lien de réinitialisation vient d’être envoyé.',
+        "Si un compte existe avec cet email, un lien de réinitialisation vient d'être envoyé.",
       );
     } catch (err) {
       setForgotError(
         err instanceof Error
           ? err.message
-          : 'Impossible d’envoyer le mail de réinitialisation.',
+          : "Impossible d'envoyer le mail de réinitialisation.",
       );
     } finally {
       setIsSendingReset(false);
@@ -513,7 +513,7 @@ export function LoginPage() {
 
       setSignupSuccess(
         result.requiresEmailConfirmation
-          ? 'Compte pro créé. Vérifiez votre boîte mail pour confirmer l’email, puis connectez-vous : votre fiche (users / professionals) sera synchronisée automatiquement au premier login.'
+          ? "Compte pro créé. Vérifiez votre boîte mail pour confirmer l'email, puis connectez-vous : votre fiche (users / professionals) sera synchronisée automatiquement au premier login."
           : 'Compte pro créé avec succès. Vous pouvez maintenant vous connecter.',
       );
       setSearchParams({ role: 'pro' });
@@ -645,7 +645,7 @@ export function LoginPage() {
                 onChange={(e) => setField('acceptsHomeVisit', e.target.checked)}
               />
               <span className="text-sm text-foreground">
-                J’accepte d’être contactée pour des prestations à domicile quand le professionnel se déplace.
+                J'accepte d'être contactée pour des prestations à domicile quand le professionnel se déplace.
               </span>
             </label>
             <div className="space-y-2">
@@ -680,7 +680,7 @@ export function LoginPage() {
                 onChange={(e) => setField('acceptsTerms', e.target.checked)}
               />
               <span className="text-sm text-foreground">
-                Je confirme que mes informations sont exactes et j’accepte la création de mon compte cliente ProBeauté.
+                Je confirme que mes informations sont exactes et j'accepte la création de mon compte cliente LocBeauté.
               </span>
             </label>
           </div>
@@ -717,7 +717,7 @@ export function LoginPage() {
         return (
           <div className="grid gap-4">
             <div className="space-y-2">
-              <Label htmlFor="companyName">Nom de l’entreprise / salon</Label>
+              <Label htmlFor="companyName">Nom de l'entreprise / salon</Label>
               <Input id="companyName" value={proSignupForm.companyName} onChange={(e) => setProField('companyName', e.target.value)} required />
             </div>
             <div className="space-y-2">
@@ -742,7 +742,7 @@ export function LoginPage() {
         return (
           <div className="space-y-5">
             <div className="space-y-3">
-              <Label>Mode d’intervention</Label>
+              <Label>Mode d'intervention</Label>
               <RadioGroup
                 value={proSignupForm.serviceMode}
                 onValueChange={(value) => setProField('serviceMode', value as ProfessionalSignupForm['serviceMode'])}
@@ -832,7 +832,7 @@ export function LoginPage() {
                 onChange={(e) => setProField('acceptsTerms', e.target.checked)}
               />
               <span className="text-sm text-foreground">
-                Je confirme l’exactitude de mes informations professionnelles et j’accepte la création de mon compte pro beauté ProBeauté.
+                Je confirme l'exactitude de mes informations professionnelles et j'accepte la création de mon compte pro beauté LocBeauté.
               </span>
             </label>
           </div>
@@ -848,11 +848,11 @@ export function LoginPage() {
         <div className="flex flex-col items-center gap-3 text-center">
           <img
             src={probeauteLogo}
-            alt="Logo ProBeauté"
+            alt="Logo LocBeauté"
             className="h-20 w-auto object-contain"
           />
           <h1 className="text-2xl font-bold bg-gradient-to-r from-[#e8c1b7] via-[#d9a5a5] to-[#6c5ce7] bg-clip-text text-transparent">
-            ProBeauté
+            LocBeauté
           </h1>
           <p className="text-sm text-muted-foreground">{title}</p>
         </div>
@@ -899,7 +899,7 @@ export function LoginPage() {
                 }}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {clientStep === 0 ? 'Retour à la connexion' : 'Revenir à l’étape précédente'}
+                {clientStep === 0 ? 'Retour à la connexion' : "Revenir à l'étape précédente"}
               </Button>
               {clientStep < clientSteps.length - 1 ? (
                 <Button type="button" onClick={handleClientNext} className="sm:min-w-56">
@@ -954,7 +954,7 @@ export function LoginPage() {
                 }}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {proStep === 0 ? 'Retour à la connexion' : 'Revenir à l’étape précédente'}
+                {proStep === 0 ? 'Retour à la connexion' : "Revenir à l'étape précédente"}
               </Button>
               {proStep < professionalSteps.length - 1 ? (
                 <Button type="button" onClick={handleProNext} className="sm:min-w-56">
@@ -1048,7 +1048,7 @@ export function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder={role === 'pro' ? 'pro.demo@probeaute.app' : 'client.demo@probeaute.app'}
+                  placeholder={role === 'pro' ? 'pro.demo@locbeaute.app' : 'client.demo@locbeaute.app'}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -1085,10 +1085,10 @@ export function LoginPage() {
 
         <div className="space-y-3 text-xs text-center text-muted-foreground">
           <p>
-            Compte cliente de test : `client.demo@probeaute.app` / `TestPassword123!`
+            Compte cliente de test : `client.demo@locbeaute.app` / `TestPassword123!`
           </p>
           <div className="pt-2 border-t border-border/60 space-y-1">
-            <p className="font-medium text-foreground text-sm">Nouveau sur ProBeauté ?</p>
+            <p className="font-medium text-foreground text-sm">Nouveau sur LocBeauté ?</p>
             <div className="flex flex-col gap-1">
               <button
                 type="button"

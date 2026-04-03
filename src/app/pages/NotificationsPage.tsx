@@ -120,7 +120,7 @@ export function NotificationsPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <AppHeader
-        eyebrow="Centre d’alertes"
+        eyebrow="Centre d'alertes"
         title="Notifications"
         subtitle="Retrouvez ici vos réservations, messages et confirmations importantes."
       />

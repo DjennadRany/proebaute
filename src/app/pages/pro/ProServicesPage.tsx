@@ -178,12 +178,12 @@ export function ProServicesPage() {
         <AppHeader
           eyebrow="Catalogue"
           title="Mes services"
-          subtitle="Associez d’abord une fiche professionnelle à votre compte."
+          subtitle="Associez d'abord une fiche professionnelle à votre compte."
         />
         <EmptyState
           icon={Scissors}
           title="Fiche pro introuvable"
-          description="Sans ligne dans public.professionals, vous ne pouvez pas gérer de services. Vérifiez l’inscription et les scripts RLS."
+          description="Sans ligne dans public.professionals, vous ne pouvez pas gérer de services. Vérifiez l'inscription et les scripts RLS."
           action={
             <Button asChild variant="outline">
               <Link to="/login?role=pro">Connexion</Link>

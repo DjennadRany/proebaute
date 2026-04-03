@@ -23,11 +23,15 @@ import { ProDashboardPage } from "./pages/pro/ProDashboardPage";
 import { ProServicesPage } from "./pages/pro/ProServicesPage";
 import { ProAvailabilityPage } from "./pages/pro/ProAvailabilityPage";
 import { ProBookingsPage } from "./pages/pro/ProBookingsPage";
+import { ProBookingDetailPage } from "./pages/pro/ProBookingDetailPage";
 import { ProMessagesPage } from "./pages/pro/ProMessagesPage";
 import { ProMessagesArchivesPage } from "./pages/pro/ProMessagesArchivesPage";
 import { ProReviewsPage } from "./pages/pro/ProReviewsPage";
 import { ProProfilePage } from "./pages/pro/ProProfilePage";
 import { ProSettingsPage } from "./pages/pro/ProSettingsPage";
+import { ProWalletPage } from "./pages/pro/ProWalletPage";
+import { MapBeautePage } from './pages/MapBeautePage';
+import { GlamFeedPage } from './pages/GlamFeedPage';
 
 export const router = createBrowserRouter([
   {
@@ -52,6 +56,8 @@ export const router = createBrowserRouter([
       { path: "reviews", Component: ReviewsPage },
       { path: "profile", Component: ProfilePage },
       { path: "settings", Component: SettingsPage },
+      { path: "map", Component: MapBeautePage },
+      { path: "glamfeed", Component: GlamFeedPage },
       { path: "*", Component: NotFound },
     ],
   },
@@ -64,11 +70,13 @@ export const router = createBrowserRouter([
       { path: "services", Component: ProServicesPage },
       { path: "availability", Component: ProAvailabilityPage },
       { path: "bookings", Component: ProBookingsPage },
+      { path: "bookings/:id", Component: ProBookingDetailPage },
       { path: "messages/archives", Component: ProMessagesArchivesPage },
       { path: "messages", Component: ProMessagesPage },
       { path: "reviews", Component: ProReviewsPage },
       { path: "profile", Component: ProProfilePage },
       { path: "settings", Component: ProSettingsPage },
+      { path: "wallet", Component: ProWalletPage },
       { path: "*", element: <Navigate to="/pro/dashboard" replace /> },
     ],
   },

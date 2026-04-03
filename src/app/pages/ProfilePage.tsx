@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { Mail, Phone, Calendar, Edit2 } from 'lucide-react';
+import { Mail, Phone, Calendar, Edit2, Save, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AppCard } from '../components/AppCard';
 import { AppHeader } from '../components/AppHeader';
@@ -15,11 +15,36 @@ import {
 } from '../api/client';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+
+const PROFILE_STORAGE_KEY = 'locbeaute_profile_overrides';
+
+function loadStoredOverrides(userId: string): { firstName?: string; lastName?: string; phone?: string } {
+  try {
+    const raw = localStorage.getItem(`${PROFILE_STORAGE_KEY}_${userId}`);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveStoredOverrides(userId: string, data: { firstName: string; lastName: string; phone: string }) {
+  try {
+    localStorage.setItem(`${PROFILE_STORAGE_KEY}_${userId}`, JSON.stringify(data));
+  } catch {
+    // ignore storage errors
+  }
+}
 
 export function ProfilePage() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<{ phone?: string } | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [savedOverrides, setSavedOverrides] = useState<{ firstName?: string; lastName?: string; phone?: string }>({});
   const [bookingsCount, setBookingsCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [reviewsCount, setReviewsCount] = useState(0);
@@ -27,6 +52,11 @@ export function ProfilePage() {
   const [bookings, setBookings] = useState<Array<{ booking: { _id: string; status: string; bookingDate: string; timeSlot: string; serviceId: string }; service: { title: string } | null }>>([]);
   const [reviews, setReviews] = useState<Array<{ comment: string; rating: number; createdAt: string | null }>>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const overrides = loadStoredOverrides(user._id);
+    setSavedOverrides(overrides);
+  }, [user._id]);
 
   useEffect(() => {
     async function load() {
@@ -53,6 +83,28 @@ export function ProfilePage() {
     load();
   }, [user._id]);
 
+  const displayFirstName = savedOverrides.firstName ?? user.firstName;
+  const displayLastName = savedOverrides.lastName ?? user.lastName;
+  const displayPhone = savedOverrides.phone ?? profile?.phone ?? user.phone;
+
+  const handleStartEdit = () => {
+    setEditFirstName(displayFirstName);
+    setEditLastName(displayLastName);
+    setEditPhone(displayPhone ?? '');
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    const overrides = { firstName: editFirstName, lastName: editLastName, phone: editPhone };
+    saveStoredOverrides(user._id, overrides);
+    setSavedOverrides(overrides);
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto py-16 text-center text-muted-foreground">
@@ -71,34 +123,76 @@ export function ProfilePage() {
 
       <AppCard tone="premium" className="mb-8 rounded-[32px] bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20">
         <div className="flex flex-col items-start gap-6 sm:flex-row">
-          <EntityAvatar name={`${user.firstName} ${user.lastName}`} size="lg" />
+          <EntityAvatar name={`${displayFirstName} ${displayLastName}`} size="lg" />
           <div className="flex-1">
-            <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground mb-1">
-                  {user.firstName} {user.lastName}
-                </h2>
-                <div className="mb-3">
-                  <StatusBadge status="online" className="text-[11px]" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Mail className="w-4 h-4" />
-                    <span className="text-sm">{user.email}</span>
+            {isEditing ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Prenom</label>
+                    <Input
+                      value={editFirstName}
+                      onChange={(e) => setEditFirstName(e.target.value)}
+                      placeholder="Prenom"
+                    />
                   </div>
-                  {(profile?.phone ?? user.phone) && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Phone className="w-4 h-4" />
-                      <span className="text-sm">{profile?.phone ?? user.phone}</span>
-                    </div>
-                  )}
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Nom</label>
+                    <Input
+                      value={editLastName}
+                      onChange={(e) => setEditLastName(e.target.value)}
+                      placeholder="Nom"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Telephone</label>
+                  <Input
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    placeholder="+33 6 00 00 00 00"
+                    type="tel"
+                  />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <Button onClick={handleSaveEdit} className="w-full sm:w-auto">
+                    <Save className="w-4 h-4 mr-2" />
+                    Enregistrer
+                  </Button>
+                  <Button variant="outline" onClick={handleCancelEdit} className="w-full sm:w-auto">
+                    <X className="w-4 h-4 mr-2" />
+                    Annuler
+                  </Button>
                 </div>
               </div>
-              <Button variant="outline" className="w-full sm:w-auto">
-                <Edit2 className="w-4 h-4 mr-2" />
-                Modifier
-              </Button>
-            </div>
+            ) : (
+              <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-1">
+                    {displayFirstName} {displayLastName}
+                  </h2>
+                  <div className="mb-3">
+                    <StatusBadge status="online" className="text-[11px]" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Mail className="w-4 h-4" />
+                      <span className="text-sm">{user.email}</span>
+                    </div>
+                    {displayPhone && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="w-4 h-4" />
+                        <span className="text-sm">{displayPhone}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full sm:w-auto" onClick={handleStartEdit}>
+                  <Edit2 className="w-4 h-4 mr-2" />
+                  Modifier
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </AppCard>
@@ -240,12 +334,12 @@ export function ProfilePage() {
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
               </div>
-              {(profile?.phone ?? user.phone) && (
+              {displayPhone && (
                 <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
                   <Phone className="w-5 h-5 text-muted-foreground mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground mb-1">Téléphone</p>
-                    <p className="text-sm text-muted-foreground">{profile?.phone ?? user.phone}</p>
+                    <p className="text-sm font-medium text-foreground mb-1">Telephone</p>
+                    <p className="text-sm text-muted-foreground">{displayPhone}</p>
                   </div>
                 </div>
               )}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Clock } from 'lucide-react';
+import { Link } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import {
   fetchBookingsByProfessional,
@@ -10,6 +11,7 @@ import { AppHeader } from '../../components/AppHeader';
 import { EmptyState } from '../../components/EmptyState';
 import { ListItemCard } from '../../components/ListItemCard';
 import { StatusBadge } from '../../components/StatusBadge';
+import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
 
 const statusLabel: Record<string, string> = {
@@ -111,6 +113,11 @@ export function ProBookingsPage() {
                       {statusLabel[booking.status] ?? booking.status}
                     </p>
                   </div>
+                  <Link to={`/pro/bookings/${booking._id}`} className="w-full sm:w-auto">
+                    <Button variant="outline" size="sm" className="w-full rounded-full px-4 sm:w-auto">
+                      Voir le detail
+                    </Button>
+                  </Link>
                 </div>
               </ListItemCard>
             );

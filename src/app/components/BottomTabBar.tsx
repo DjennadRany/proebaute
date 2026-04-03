@@ -1,8 +1,8 @@
 import {
-  Bell,
   Calendar,
   Home,
-  MessageCircle,
+  MapPin,
+  Sparkles,
   User,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
@@ -10,10 +10,10 @@ import { useAuth } from '../context/AuthContext';
 import { cn } from './ui/utils';
 
 const primaryItems = [
-  { href: '/', label: 'Accueil', icon: Home },
-  { href: '/reservations', label: 'Activité', icon: Calendar },
-  { href: '/messages', label: 'Messages', icon: MessageCircle },
-  { href: '/notifications', label: 'Alertes', icon: Bell },
+  { href: '/dashboard', label: 'Accueil', icon: Home },
+  { href: '/map', label: 'Carte', icon: MapPin },
+  { href: '/glamfeed', label: 'GlamFeed', icon: Sparkles },
+  { href: '/reservations', label: 'Reservations', icon: Calendar },
   { href: '/profile', label: 'Profil', icon: User },
 ];
 

@@ -112,12 +112,12 @@ export function HomePage() {
           <div className="inline-flex items-center gap-4 rounded-[28px] border border-white/35 bg-white/78 px-4 py-3 backdrop-blur">
             <img
               src={probeauteLogo}
-              alt="Logo ProBeauté"
+              alt="Logo LocBeauté"
               className="h-16 w-auto object-contain"
             />
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.2em] text-foreground/60">
-                ProBeauté
+                LocBeauté
               </p>
               <p className="text-sm text-foreground/90">
                 {HERO_SLIDES[activeHeroIndex].title} · {HERO_SLIDES[activeHeroIndex].caption}
@@ -135,7 +135,7 @@ export function HomePage() {
           </div>
           <div className="inline-block max-w-lg rounded-[28px] bg-white/72 px-5 py-4 backdrop-blur-sm shadow-[0_18px_60px_rgba(255,255,255,0.35)]">
           <p className="text-sm sm:text-base text-foreground/80 max-w-lg">
-            ProBeauté connecte les meilleurs professionnels près de chez vous avec des clientes
+            LocBeauté connecte les meilleurs professionnels près de chez vous avec des clientes
             qui veulent gagner du temps sans sacrifier la qualité. Coiffure, ongles, make-up,
             soins du visage… choisissez, réservez, profitez.
           </p>
@@ -232,7 +232,7 @@ export function HomePage() {
                 Bienvenue {user.firstName}
               </p>
               <h2 className="text-lg font-semibold text-foreground">
-                Vos espaces ProBeauté en un coup d’œil
+                Vos espaces LocBeauté en un coup d'œil
               </h2>
               <div className="grid grid-cols-1 gap-3 text-sm text-muted-foreground">
                 <button
@@ -301,7 +301,7 @@ export function HomePage() {
                       className="rounded-full"
                       onClick={() => navigate('/login?mode=signup&role=client')}
                     >
-                      M’inscrire
+                      M'inscrire
                     </Button>
                   </div>
                 </div>
@@ -324,13 +324,13 @@ export function HomePage() {
                       className="rounded-full"
                       onClick={() => navigate('/login?mode=signup&role=pro')}
                     >
-                      M’inscrire
+                      M'inscrire
                     </Button>
                   </div>
                 </div>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Les écrans d’inscription dédiés pourront être branchés sur ces boutons (client / pro).
+                Les écrans d'inscription dédiés pourront être branchés sur ces boutons (client / pro).
               </p>
             </div>
           )}

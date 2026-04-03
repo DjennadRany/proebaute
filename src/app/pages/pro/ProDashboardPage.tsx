@@ -197,7 +197,7 @@ export function ProDashboardPage() {
         <EmptyState
           icon={Calendar}
           title="Fiche professionnelle non trouvée"
-          description="Votre compte pro n’est pas encore relié à une fiche dans l’annuaire. Reconnectez-vous ou contactez le support si le problème persiste."
+          description="Votre compte pro n'est pas encore relié à une fiche dans l'annuaire. Reconnectez-vous ou contactez le support si le problème persiste."
           action={
             <Button asChild variant="outline">
               <Link to="/login?role=pro">Retour connexion</Link>
@@ -223,13 +223,13 @@ export function ProDashboardPage() {
           title="Rendez-vous du jour"
           value={loading ? '—' : todayBookings.length}
           icon={Calendar}
-          description="Aujourd’hui"
+          description="Aujourd'hui"
         />
         <StatCard
           title="Rendez-vous à venir"
           value={loading ? '—' : upcomingCount}
           icon={Calendar}
-          description="À partir d’aujourd’hui (30 j.)"
+          description="À partir d'aujourd'hui (30 j.)"
         />
         <StatCard
           title="Demandes en attente"

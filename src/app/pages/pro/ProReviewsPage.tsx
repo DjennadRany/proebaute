@@ -89,7 +89,7 @@ export function ProReviewsPage() {
       {reviews.length === 0 ? (
         <EmptyState
           icon={Star}
-          title="Pas encore d’avis"
+          title="Pas encore d'avis"
           description="Les avis vérifiés apparaîtront ici après vos premières prestations."
         />
       ) : (

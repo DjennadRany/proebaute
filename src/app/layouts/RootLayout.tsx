@@ -102,10 +102,10 @@ export function RootLayout() {
             >
               <img
                 src={probeauteLogo}
-                alt="ProBeauté"
+                alt="LocBeauté"
                 className="h-10 w-auto object-contain sm:h-12 lg:h-16"
               />
-              <span className="sr-only">ProBeauté</span>
+              <span className="sr-only">LocBeauté</span>
               <p className="hidden sm:block text-[11px] text-muted-foreground leading-snug">
                 Réservez vos soins en un clic
               </p>

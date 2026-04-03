@@ -263,7 +263,7 @@ async function upsertProfessionalProfile(payload: {
 
 /**
  * Recrée les lignes public.users / public.professionals à partir des métadonnées Auth.
- * Indispensable quand la confirmation email est activée : au signUp il n’y a souvent pas de session,
+ * Indispensable quand la confirmation email est activée : au signUp il n'y a souvent pas de session,
  * donc les upserts initiaux échouent souvent (RLS) même si auth.users est bien créé.
  */
 async function syncAppProfileFromAuthUser(authUser: AuthUser): Promise<void> {
@@ -359,7 +359,7 @@ export async function login(email: string, password: string): Promise<ApiUser> {
     } catch (e) {
       if (isRlsOrPermissionError(e)) {
         throw new Error(
-          'Supabase refuse l’écriture sur public.users / public.professionals (RLS). Ouvrez le fichier scripts/supabase-rls-users-professionals.sql dans le dashboard Supabase → SQL, exécutez-le, puis reconnectez-vous.',
+          "Supabase refuse l'ecriture sur public.users / public.professionals (RLS). Ouvrez le fichier scripts/supabase-rls-users-professionals.sql dans le dashboard Supabase, executez-le, puis reconnectez-vous.",
         );
       }
       throw e;
@@ -385,7 +385,7 @@ export async function login(email: string, password: string): Promise<ApiUser> {
       } catch (e) {
         if (isRlsOrPermissionError(e)) {
           throw new Error(
-            'Supabase refuse l’écriture sur public.professionals (RLS). Exécutez scripts/supabase-rls-users-professionals.sql dans Supabase, puis reconnectez-vous.',
+            "Supabase refuse l'écriture sur public.professionals (RLS). Exécutez scripts/supabase-rls-users-professionals.sql dans Supabase, puis reconnectez-vous.",
           );
         }
         throw e;
@@ -1750,7 +1750,7 @@ export async function gdprExport(userId: string): Promise<{ user: unknown }> {
     .eq('id', userId)
     .maybeSingle();
   if (error) throw error;
-  if (!data) throw new Error('Profil utilisateur introuvable pour l’export.');
+  if (!data) throw new Error("Profil utilisateur introuvable pour l'export.");
   return { user: data };
 }
 

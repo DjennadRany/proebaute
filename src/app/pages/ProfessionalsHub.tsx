@@ -142,7 +142,7 @@ export function ProfessionalsHub() {
         <EmptyState
           icon={Search}
           title="Aucun professionnel trouvé"
-          description="Essayez de modifier votre recherche ou votre spécialité pour afficher d’autres profils."
+          description="Essayez de modifier votre recherche ou votre spécialité pour afficher d'autres profils."
           action={
             <Button
               variant="outline"
