@@ -3,10 +3,14 @@ import { login as apiLogin } from '../api/client';
 import { supabase } from '../api/supabaseClient';
 import type { User } from '../data/mockData';
 import { AuthContext, STORAGE_KEY, loadStoredUser } from './auth-context';
+import { useNotifications } from '../hooks/useNotifications';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(loadStoredUser);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Notifications push (SW + Realtime)
+  useNotifications(user);
 
   // Synchronise l'état avec la session Supabase (expiration, onglets multiples, etc.)
   useEffect(() => {

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { supabase } from '../../api/supabaseClient';
 import {
   ArrowDownToLine,
   Banknote,
@@ -63,7 +64,35 @@ export function ProWalletPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<ApiBookingSummary[]>([]);
+  const [payouts, setPayouts] = useState<PayoutRecord[]>([]);
   const [withdrawRequested, setWithdrawRequested] = useState(false);
+  const [proId, setProId] = useState<string | null>(null);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawError, setWithdrawError] = useState('');
+
+  const COMMISSION_RATE = 0.10;
+  function proAmount(totalEur: number): number {
+    return totalEur * (1 - COMMISSION_RATE);
+  }
+
+  const loadPayouts = useCallback(async (pid: string) => {
+    const { data } = await supabase
+      .from('payouts')
+      .select('*')
+      .eq('pro_id', pid)
+      .order('requested_at', { ascending: false })
+      .limit(20);
+
+    if (data && data.length > 0) {
+      setPayouts(data.map((p: any) => ({
+        id: p.id,
+        date: p.requested_at,
+        amountEur: p.amount_eur,
+        status: p.status,
+        reference: p.reference ?? 'PO-' + p.id.slice(0, 8).toUpperCase(),
+      })));
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -73,30 +102,24 @@ export function ProWalletPage() {
       try {
         const proData = await fetchProfessionalByUserId(user._id);
         if (!proData || cancelled) return;
+        setProId(proData._id);
         const proBookings = await fetchBookingsByProfessional(proData._id);
         if (cancelled) return;
         setBookings(proBookings);
+        await loadPayouts(proData._id);
       } catch (e) {
         console.error('Erreur chargement wallet', e);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
+    return () => { cancelled = true; };
+  }, [user, loadPayouts]);
 
   // Calcul des montants a partir des reservations
-  const completedBookings = bookings.filter(
-    (b) => b.booking.status === 'completed'
-  );
-  const confirmedBookings = bookings.filter(
-    (b) => b.booking.status === 'confirmed'
-  );
+  const completedBookings = bookings.filter((b) => b.booking.status === 'completed');
 
   // Montants en attente = prestations terminees dont la date de prestation < 48h
-  // (en l'absence de updatedAt, on utilise bookingDate comme approximation)
   const pendingBookings = completedBookings.filter((b) => {
     return b.booking.bookingDate && hoursAgo(b.booking.bookingDate) < 48;
   });
@@ -106,33 +129,59 @@ export function ProWalletPage() {
     return !b.booking.bookingDate || hoursAgo(b.booking.bookingDate) >= 48;
   });
 
-  const COMMISSION_RATE = 0.10;
+  const pendingAmountEur = pendingBookings.reduce((sum, b) => sum + proAmount(b.booking.amount ?? 0), 0);
+  const availableAmountEur = availableBookings.reduce((sum, b) => sum + proAmount(b.booking.amount ?? 0), 0);
+  const totalEarnedEur = completedBookings.reduce((sum, b) => sum + proAmount(b.booking.amount ?? 0), 0);
 
-  function proAmount(totalEur: number): number {
-    return totalEur * (1 - COMMISSION_RATE);
-  }
+  // Déjà versé = somme des payouts paid
+  const alreadyPaidEur = payouts
+    .filter((p) => p.status === 'paid')
+    .reduce((sum, p) => sum + p.amountEur, 0);
 
-  const pendingAmountEur = pendingBookings.reduce(
-    (sum, b) => sum + proAmount(b.booking.amount ?? 0),
-    0
-  );
-  const availableAmountEur = availableBookings.reduce(
-    (sum, b) => sum + proAmount(b.booking.amount ?? 0),
-    0
-  );
-  const totalEarnedEur = completedBookings.reduce(
-    (sum, b) => sum + proAmount(b.booking.amount ?? 0),
-    0
-  );
+  const handleRequestWithdraw = async () => {
+    if (!proId || availableAmountEur <= 0) return;
+    setWithdrawing(true);
+    setWithdrawError('');
+    try {
+      const reference = 'VIR-' + Date.now().toString(36).toUpperCase();
+      const { error } = await supabase.from('payouts').insert({
+        pro_id: proId,
+        amount_eur: availableAmountEur,
+        status: 'pending',
+        reference,
+      });
+      if (error) {
+        if (error.code === 'PGRST205' || error.message?.includes('does not exist')) {
+          setWithdrawError(
+            'La table payouts n\'existe pas encore. SQL à exécuter dans Supabase : ' +
+            'CREATE TABLE payouts (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, ' +
+            'pro_id uuid REFERENCES professionals(id), amount_eur numeric(10,2), ' +
+            'status text DEFAULT \'pending\', reference text, ' +
+            'requested_at timestamptz DEFAULT now(), paid_at timestamptz);'
+          );
+          return;
+        }
+        throw new Error(error.message);
+      }
+      setWithdrawRequested(true);
+      await loadPayouts(proId);
+    } catch (e) {
+      setWithdrawError(e instanceof Error ? e.message : 'Erreur lors de la demande de virement.');
+    } finally {
+      setWithdrawing(false);
+    }
+  };
 
-  // Exemple de payout (simulation - pas encore de vraie table payouts)
-  const simulatedPayouts: PayoutRecord[] = completedBookings.slice(0, 3).map((b, i) => ({
-    id: 'payout_' + i,
-    date: b.booking.bookingDate,
-    amountEur: proAmount(b.booking.amount ?? 0),
-    status: i === 0 ? 'paid' : i === 1 ? 'processing' : 'pending',
-    reference: 'PO-' + b.booking._id.slice(0, 8).toUpperCase(),
-  }));
+  // Historique : payouts réels ou fallback simulé sur les bookings
+  const displayPayouts: PayoutRecord[] = payouts.length > 0
+    ? payouts
+    : completedBookings.slice(0, 3).map((b, i) => ({
+        id: 'payout_' + i,
+        date: b.booking.bookingDate,
+        amountEur: proAmount(b.booking.amount ?? 0),
+        status: (i === 0 ? 'paid' : i === 1 ? 'processing' : 'pending') as PayoutRecord['status'],
+        reference: 'PO-' + b.booking._id.slice(0, 8).toUpperCase(),
+      }));
 
   // Exemple de prestation pour le calcul transparent
   const examplePrestation = completedBookings[0]?.booking.amount ?? 80;
@@ -236,21 +285,20 @@ export function ProWalletPage() {
             className="mt-4 w-full text-sm"
             size="sm"
             variant={availableAmountEur > 0 ? 'default' : 'outline'}
-            disabled={availableAmountEur <= 0 || withdrawRequested}
-            onClick={() => setWithdrawRequested(true)}
+            disabled={availableAmountEur <= 0 || withdrawRequested || withdrawing}
+            onClick={handleRequestWithdraw}
           >
-            {withdrawRequested ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                Demande envoyee
-              </>
+            {withdrawing ? (
+              <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />En cours...</>
+            ) : withdrawRequested ? (
+              <><CheckCircle2 className="w-3.5 h-3.5 mr-1" />Demande envoyee</>
             ) : (
-              <>
-                <ArrowDownToLine className="w-3.5 h-3.5 mr-1" />
-                Demander un virement
-              </>
+              <><ArrowDownToLine className="w-3.5 h-3.5 mr-1" />Demander un virement</>
             )}
           </Button>
+          {withdrawError && (
+            <p className="text-xs text-red-500 mt-2">{withdrawError}</p>
+          )}
         </AppCard>
 
         {/* En attente */}
@@ -332,7 +380,7 @@ export function ProWalletPage() {
           <h2 className="font-semibold text-foreground text-lg">Historique des virements</h2>
         </div>
 
-        {simulatedPayouts.length === 0 ? (
+        {displayPayouts.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-10 text-center">
             <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
               <Banknote className="w-6 h-6 text-muted-foreground" />
@@ -344,7 +392,7 @@ export function ProWalletPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {simulatedPayouts.map((payout) => (
+            {displayPayouts.map((payout) => (
               <div
                 key={payout.id}
                 className="flex items-center justify-between rounded-xl border border-border/60 bg-background/50 px-4 py-3 hover:bg-accent/30 transition-colors"

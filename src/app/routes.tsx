@@ -32,6 +32,7 @@ import { ProSettingsPage } from "./pages/pro/ProSettingsPage";
 import { ProWalletPage } from "./pages/pro/ProWalletPage";
 import { MapBeautePage } from './pages/MapBeautePage';
 import { GlamFeedPage } from './pages/GlamFeedPage';
+import { GlamFeedPublishPage } from './pages/GlamFeedPublishPage';
 
 export const router = createBrowserRouter([
   {
@@ -58,6 +59,7 @@ export const router = createBrowserRouter([
       { path: "settings", Component: SettingsPage },
       { path: "map", Component: MapBeautePage },
       { path: "glamfeed", Component: GlamFeedPage },
+      { path: "glamfeed/publish", Component: GlamFeedPublishPage },
       { path: "*", Component: NotFound },
     ],
   },

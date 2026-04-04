@@ -543,7 +543,7 @@ export function GlamFeedPage() {
       {/* Bouton publier (clients) */}
       {user && (
         <button
-          onClick={() => navigate('/glamfeed/post')}
+          onClick={() => navigate('/glamfeed/publish')}
           className="fixed bottom-24 left-4 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full text-white text-sm font-bold shadow-xl"
           style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)' }}
         >

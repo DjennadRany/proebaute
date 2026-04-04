@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router';
 import { Send, Search, Phone, Video, MoreVertical, Archive } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../api/supabaseClient';
 import { AppCard } from '../components/AppCard';
 import { AppHeader } from '../components/AppHeader';
 import { EmptyState } from '../components/EmptyState';
@@ -46,6 +47,70 @@ export function MessagesPage() {
   const [otherUserPhone, setOtherUserPhone] = useState<string | null>(null);
   const [showActions, setShowActions] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll en bas
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Supabase Realtime : nouveaux messages en temps réel
+  useEffect(() => {
+    if (!selectedConversation || !user) return;
+    const channel = supabase
+      .channel('messages:' + selectedConversation)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${selectedConversation}`,
+      }, (payload) => {
+        const row = payload.new as any;
+        if (row.sender_id === user._id) return; // déjà ajouté en optimistique
+        setMessages((prev) => [
+          ...prev,
+          {
+            _id: row.id,
+            conversationId: row.conversation_id,
+            senderId: row.sender_id,
+            receiverId: row.receiver_id ?? '',
+            content: row.content,
+            createdAt: row.created_at,
+            readStatus: false,
+          },
+        ]);
+        // Notification browser si page pas focused
+        if (document.hidden && Notification.permission === 'granted') {
+          new Notification('Nouveau message', {
+            body: row.content?.slice(0, 80) ?? 'Nouveau message',
+            icon: '/icon-192.png',
+          });
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedConversation, user?._id]);
+
+  // Realtime : nouvelles conversations
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('conversations:' + user._id)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversations',
+      }, () => {
+        // Recharger les conversations quand une nouvelle arrive
+        fetchConversations(user._id).then((convs) => {
+          setConversations(convs.filter((c) => !c.archived));
+        }).catch(() => {});
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user?._id]);
 
   useEffect(() => {
     async function loadConversations() {
@@ -436,6 +501,7 @@ export function MessagesPage() {
                       </div>
                     );
                   })}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Message Input */}
