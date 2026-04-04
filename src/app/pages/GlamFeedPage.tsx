@@ -47,7 +47,7 @@ type Comment = { id: string; author: string; text: string; createdAt: string };
 
 type FeedItem = {
   id: string;
-  service: ApiService;
+  service: ApiService | null;       // null pour les posts clients
   pro: ApiProfessional | undefined;
   image: string;
   liked: boolean;
@@ -56,6 +56,9 @@ type FeedItem = {
   comments: number;
   commentList: Comment[];
   commentsLoaded: boolean;
+  isClientPost?: boolean;
+  clientName?: string;
+  caption?: string;
 };
 
 // ─── CommentDrawer ───────────────────────────────────────────────────────────
@@ -269,10 +272,6 @@ function ReelCard({
             <p className="text-white/75 text-[11px] leading-tight">{item.pro.city}</p>
           )}
         </div>
-        {/* Badge suivre */}
-        <span className="ml-1 px-2.5 py-0.5 rounded-full bg-white/20 border border-white/40 text-white text-[11px] font-semibold backdrop-blur-sm">
-          Voir profil
-        </span>
       </button>
 
       {/* Actions droite */}
@@ -313,40 +312,48 @@ function ReelCard({
 
       {/* Infos bas */}
       <div className="absolute bottom-4 left-4 right-16 z-10" onClick={(e) => e.stopPropagation()}>
-        {/* Categorie badge */}
-        <span
-          className="inline-block mb-2 px-3 py-0.5 rounded-full text-[11px] font-bold text-white shadow"
-          style={{ backgroundColor: proColor + 'dd' }}
-        >
-          {item.service.category}
-        </span>
-
-        {/* Titre */}
-        <h3 className="text-white font-extrabold text-xl leading-tight drop-shadow-lg mb-1">
-          {item.service.title}
-        </h3>
-
-        {/* Description */}
-        {item.service.description && (
-          <p className="text-white/80 text-xs leading-snug mb-3 line-clamp-2">{item.service.description}</p>
-        )}
-
-        {/* Prix + Reserver */}
-        <div className="flex items-center gap-3">
+        {item.isClientPost ? (
+          /* Post client */
           <div>
-            <span className="text-white font-black text-2xl drop-shadow-lg">{item.service.price} €</span>
-            {item.service.duration > 0 && (
-              <span className="text-white/60 text-xs ml-1">{item.service.duration}min</span>
+            <span className="inline-block mb-2 px-3 py-0.5 rounded-full text-[11px] font-bold text-white shadow bg-fuchsia-600/90">
+              ✨ Post client
+            </span>
+            {item.caption && (
+              <p className="text-white text-sm leading-snug line-clamp-3 drop-shadow">{item.caption}</p>
             )}
           </div>
-          <button
-            onClick={() => navigate('/booking?serviceId=' + item.service._id + (item.pro ? '&proId=' + item.pro._id : ''))}
-            className="ml-auto px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-xl active:scale-95 transition-all"
-            style={{ background: `linear-gradient(135deg, ${proColor}, #ec4899)` }}
-          >
-            Reserver
-          </button>
-        </div>
+        ) : item.service ? (
+          /* Service pro */
+          <>
+            <span
+              className="inline-block mb-2 px-3 py-0.5 rounded-full text-[11px] font-bold text-white shadow"
+              style={{ backgroundColor: proColor + 'dd' }}
+            >
+              {item.service.category}
+            </span>
+            <h3 className="text-white font-extrabold text-xl leading-tight drop-shadow-lg mb-1">
+              {item.service.title}
+            </h3>
+            {item.service.description && (
+              <p className="text-white/80 text-xs leading-snug mb-3 line-clamp-2">{item.service.description}</p>
+            )}
+            <div className="flex items-center gap-3">
+              <div>
+                <span className="text-white font-black text-2xl drop-shadow-lg">{item.service.price} €</span>
+                {item.service.duration > 0 && (
+                  <span className="text-white/60 text-xs ml-1">{item.service.duration}min</span>
+                )}
+              </div>
+              <button
+                onClick={() => navigate('/booking?serviceId=' + item.service!._id + (item.pro ? '&proId=' + item.pro._id : ''))}
+                className="ml-auto px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-xl active:scale-95 transition-all"
+                style={{ background: `linear-gradient(135deg, ${proColor}, #ec4899)` }}
+              >
+                Reserver
+              </button>
+            </div>
+          </>
+        ) : null}
       </div>
 
       {/* Scroll hint */}
@@ -370,19 +377,30 @@ export function GlamFeedPage() {
     const likedIds = new Set<string>();
     const savedIds = new Set<string>();
 
+    const fetchClientPosts = async () => {
+      const { data } = await supabase
+        .from('glamfeed_posts')
+        .select('id, user_id, media_url, caption, likes_count, created_at, users:user_id(first_name, last_name)')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      return data ?? [];
+    };
+
     Promise.all([
       fetchProfessionals(),
       fetchServices(),
       user ? fetchLikes(user._id) : Promise.resolve([]),
       user ? fetchFavorites(user._id) : Promise.resolve([]),
-    ]).then(([proList, serviceList, likesList, favoritesList]) => {
+      fetchClientPosts(),
+    ]).then(([proList, serviceList, likesList, favoritesList, clientPosts]) => {
       likesList.forEach((l) => { if (l.serviceId) likedIds.add(l.serviceId); });
       favoritesList.forEach((f) => savedIds.add(f.targetId));
 
       const proMap: Record<string, ApiProfessional> = {};
       proList.forEach((p) => { proMap[p._id] = p; });
 
-      const items: FeedItem[] = serviceList
+      // Items services (pros)
+      const serviceItems: FeedItem[] = serviceList
         .map((s) => {
           const pro = proMap[s.professionalId];
           const media =
@@ -401,11 +419,41 @@ export function GlamFeedPage() {
             comments: s.reviewsCount,
             commentList: [],
             commentsLoaded: false,
+            isClientPost: false,
           };
         })
         .filter((x): x is FeedItem => x !== null);
 
-      setFeed(items);
+      // Items posts clients (glamfeed_posts)
+      const clientItems: FeedItem[] = (clientPosts as any[]).map((p) => ({
+        id: 'gp_' + p.id,
+        service: null,
+        pro: undefined,
+        image: p.media_url,
+        liked: false,
+        saved: false,
+        likes: p.likes_count ?? 0,
+        comments: 0,
+        commentList: [],
+        commentsLoaded: false,
+        isClientPost: true,
+        clientName: p.users ? `${(p.users as any).first_name ?? ''} ${(p.users as any).last_name ?? ''}`.trim() : 'Client',
+        caption: p.caption ?? '',
+      }));
+
+      // Mélanger : 1 post client tous les 4 services
+      const mixed: FeedItem[] = [];
+      let ci = 0;
+      serviceItems.forEach((item, i) => {
+        mixed.push(item);
+        if ((i + 1) % 4 === 0 && ci < clientItems.length) {
+          mixed.push(clientItems[ci++]);
+        }
+      });
+      // Ajouter les posts clients restants
+      while (ci < clientItems.length) mixed.push(clientItems[ci++]);
+
+      setFeed(mixed);
     }).catch(() => setFeed([])).finally(() => setLoading(false));
   }, [user]);
 
@@ -445,6 +493,20 @@ export function GlamFeedPage() {
 
   const handleAddComment = async (serviceId: string, text: string) => {
     if (!user) return;
+    // Pour les posts clients, on ne fait pas de reviews Supabase (pas de service_id)
+    if (serviceId.startsWith('gp_')) {
+      const newComment: Comment = {
+        id: Date.now().toString(),
+        author: `${user.firstName} ${user.lastName}`.trim(),
+        text,
+        createdAt: new Date().toISOString(),
+      };
+      setFeed((prev) => prev.map((p) =>
+        p.id === serviceId ? { ...p, commentList: [...p.commentList, newComment], comments: p.comments + 1 } : p
+      ));
+      return;
+    }
+
     const { data } = await supabase
       .from('reviews')
       .insert({
@@ -468,6 +530,10 @@ export function GlamFeedPage() {
           ? { ...p, commentList: [...p.commentList, newComment], comments: p.comments + 1 }
           : p
       ));
+      // Sync reviews_count en base
+      await supabase.rpc('increment_reviews_count', { p_service_id: serviceId }).catch(() => {
+        // RPC optionnel — fail silently
+      });
     }
   };
 
@@ -475,7 +541,7 @@ export function GlamFeedPage() {
     setFeed((prev) => prev.map((p) =>
       p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p
     ));
-    if (user) {
+    if (user && !id.startsWith('gp_')) {
       apiToggleLike(user._id, id).catch(() => {
         setFeed((prev) => prev.map((p) =>
           p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p
@@ -486,7 +552,7 @@ export function GlamFeedPage() {
 
   const toggleSave = (id: string) => {
     setFeed((prev) => prev.map((p) => p.id === id ? { ...p, saved: !p.saved } : p));
-    if (user) {
+    if (user && !id.startsWith('gp_')) {
       apiToggleFavorite({ userId: user._id, targetId: id, targetType: 'service' }).catch(() => {
         setFeed((prev) => prev.map((p) => p.id === id ? { ...p, saved: !p.saved } : p));
       });
