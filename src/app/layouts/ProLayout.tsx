@@ -16,7 +16,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../components/ui/sheet';
 import { cn } from '../components/ui/utils';
-import probeauteLogo from '../../../asset/locbeaute_logo.png';
+import { BRANDED_LOGO_SRC } from '../constants/branding';
 
 const PRO_NAV = [
   { label: 'Dashboard', href: '/pro/dashboard', icon: LayoutDashboard },
@@ -95,7 +95,7 @@ export function ProLayout() {
       <div className="mx-auto flex min-h-screen w-full max-w-[1600px]">
         <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card/80 py-6 pl-4 pr-3 lg:flex">
           <Link to="/pro/dashboard" className="mb-8 flex items-center gap-2 px-2">
-            <img src={probeauteLogo} alt="LocBeauté Pro" className="h-9 w-auto object-contain" />
+            <img src={BRANDED_LOGO_SRC}alt="LocBeauté Pro" className="h-9 w-auto object-contain" />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">Pro</span>
           </Link>
           <ProNavLinks className="flex-1" />

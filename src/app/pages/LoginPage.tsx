@@ -12,7 +12,7 @@ import {
   User,
   type LucideIcon,
 } from 'lucide-react';
-import probeauteLogo from '../../../asset/locbeaute_logo.png';
+import { BRANDED_LOGO_SRC } from '../constants/branding';
 import { useAuth } from '../context/AuthContext';
 import {
   requestPasswordReset,
@@ -847,7 +847,7 @@ export function LoginPage() {
       <div className={`w-full ${isClientSignup || isProSignup ? 'max-w-5xl' : 'max-w-sm'} space-y-8`}>
         <div className="flex flex-col items-center gap-3 text-center">
           <img
-            src={probeauteLogo}
+            src={BRANDED_LOGO_SRC}
             alt="Logo LocBeauté"
             className="h-20 w-auto object-contain"
           />

@@ -18,7 +18,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { Button } from '../components/ui/button';
-import probeauteLogo from '../../../asset/locBeauté_logo.png';
+import { BRANDED_LOGO_SRC } from '../constants/branding';
 
 const navigationMain = [
   { name: 'Accueil', href: '/dashboard', icon: LayoutDashboard },
@@ -104,7 +104,7 @@ const initials = user
               onClick={() => setMobileMenuOpen(false)}
             >
               <img
-                src={probeauteLogo}
+                src={BRANDED_LOGO_SRC}
                 alt="LocBeautÃ©"
                 className="h-10 w-auto object-contain sm:h-12 lg:h-16"
               />
