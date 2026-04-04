@@ -18,7 +18,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { Button } from '../components/ui/button';
-import probeauteLogo from '../../../asset/locbeaute_logo.png';
+import probeauteLogo from '../../../asset/locBeauté_logo.png';
 
 const navigationMain = [
   { name: 'Accueil', href: '/dashboard', icon: LayoutDashboard },
@@ -86,8 +86,11 @@ export function RootLayout() {
     setUserMenuOpen(false);
   }, [location.pathname]);
 
-  const initials = user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : '';
-
+ const safeFirstName = user?.firstName?.trim() || 'Compte';
+const safeLastName = user?.lastName?.trim() || '';
+const initials = user
+  ? `${safeFirstName.charAt(0)}${safeLastName.charAt(0)}`.trim() || 'U'
+  : '';
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Top navigation bar - mobile first */}
