@@ -1,10 +1,10 @@
-/**
+﻿/**
  * useNotifications
- * ─────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * 1. Enregistre le service worker (public/sw.js)
  * 2. Demande la permission browser notification
- * 3. Écoute Supabase Realtime pour messages + bookings
- * 4. Affiche une browser Notification quand la page est en arrière-plan
+ * 3. Ã‰coute Supabase Realtime pour messages + bookings
+ * 4. Affiche une browser Notification quand la page est en arriÃ¨re-plan
  */
 
 import { useEffect, useRef } from 'react';
@@ -16,7 +16,12 @@ type NotificationUser = {
   role: 'client' | 'professional';
 };
 
+function isNotificationSupported() {
+  return typeof window !== 'undefined' && 'Notification' in window;
+}
+
 function showBrowserNotif(title: string, body: string, url = '/') {
+  if (!isNotificationSupported()) return;
   if (Notification.permission !== 'granted') return;
   try {
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -47,6 +52,7 @@ export function useNotifications(user: NotificationUser | null) {
   // Demander permission
   useEffect(() => {
     if (!user) return;
+    if (!isNotificationSupported()) return;
     if (Notification.permission === 'default') {
       Notification.requestPermission().catch(() => {});
     }
@@ -58,7 +64,7 @@ export function useNotifications(user: NotificationUser | null) {
 
     const channels: ReturnType<typeof supabase.channel>[] = [];
 
-    // Nouveaux messages → notification si page en background
+    // Nouveaux messages â†’ notification si page en background
     const msgChannel = supabase
       .channel('notif:messages:' + user._id)
       .on('postgres_changes', {
@@ -79,7 +85,7 @@ export function useNotifications(user: NotificationUser | null) {
       .subscribe();
     channels.push(msgChannel);
 
-    // Réservation confirmée/annulée
+    // RÃ©servation confirmÃ©e/annulÃ©e
     const bookingChannel = supabase
       .channel('notif:bookings:' + user._id)
       .on('postgres_changes', {
@@ -93,19 +99,19 @@ export function useNotifications(user: NotificationUser | null) {
         if (row.status === old.status) return;
 
         const statusMessages: Record<string, string> = {
-          confirmed: 'Votre réservation a été confirmée ! ✅',
-          cancelled: 'Votre réservation a été annulée.',
-          completed: 'Prestation terminée — laissez un avis ! ⭐',
+          confirmed: 'Votre rÃ©servation a Ã©tÃ© confirmÃ©e ! âœ…',
+          cancelled: 'Votre rÃ©servation a Ã©tÃ© annulÃ©e.',
+          completed: 'Prestation terminÃ©e â€” laissez un avis ! â­',
         };
         const body = statusMessages[row.status];
         if (body && document.hidden) {
-          showBrowserNotif('LocBeauté', body, '/reservations/' + row.id);
+          showBrowserNotif('LocBeautÃ©', body, '/reservations/' + row.id);
         }
       })
       .subscribe();
     channels.push(bookingChannel);
 
-    // Pro : nouvelles réservations entrantes
+    // Pro : nouvelles rÃ©servations entrantes
     if (user.role === 'professional') {
       const proBookingChannel = supabase
         .channel('notif:pro:bookings:' + user._id)
@@ -115,7 +121,7 @@ export function useNotifications(user: NotificationUser | null) {
           table: 'bookings',
         }, () => {
           if (document.hidden) {
-            showBrowserNotif('LocBeauté', 'Nouvelle demande de réservation ! 🎉', '/pro/bookings');
+            showBrowserNotif('LocBeautÃ©', 'Nouvelle demande de rÃ©servation ! ðŸŽ‰', '/pro/bookings');
           }
         })
         .subscribe();
@@ -127,3 +133,4 @@ export function useNotifications(user: NotificationUser | null) {
     };
   }, [user?._id, user?.role]);
 }
+
