@@ -1048,11 +1048,15 @@ export function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder={role === 'pro' ? 'pro.demo@locbeaute.app' : 'client.demo@locbeaute.app'}
+                  placeholder="votre@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.trim().toLowerCase())}
                   required
                   autoComplete="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  inputMode="email"
                   className="w-full"
                 />
               </div>
@@ -1084,9 +1088,6 @@ export function LoginPage() {
         )}
 
         <div className="space-y-3 text-xs text-center text-muted-foreground">
-          <p>
-            Compte cliente de test : `client.demo@locbeaute.app` / `TestPassword123!`
-          </p>
           <div className="pt-2 border-t border-border/60 space-y-1">
             <p className="font-medium text-foreground text-sm">Nouveau sur LocBeauté ?</p>
             <div className="flex flex-col gap-1">

@@ -329,16 +329,18 @@ export async function login(email: string, password: string): Promise<ApiUser> {
       if (
         err.code === 'invalid_credentials' ||
         m.includes('invalid login') ||
-        m.includes('invalid_grant')
+        m.includes('invalid_grant') ||
+        m.includes('email not confirmed')
       ) {
         throw new Error(
-          'Mot de passe incorrect, ou compte non confirmé, ou utilisateur absent de Supabase Authentication. ' +
-            'Une ligne dans public.users ne suffit pas : la connexion utilise auth.users (menu Authentication → Users). ' +
-            'Utilisez « Mot de passe oublié » ou réinitialisez le mot de passe depuis le dashboard Supabase.',
+          'Email ou mot de passe incorrect. Si vous venez de créer votre compte, vérifiez votre boîte mail pour confirmer votre adresse.',
         );
       }
+      if (m.includes('too many requests') || err.code === 'over_request_rate_limit') {
+        throw new Error('Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.');
+      }
     }
-    throw error ?? new Error('Authentication failed');
+    throw new Error('Connexion impossible. Vérifiez votre connexion internet et réessayez.');
   }
 
   const authUser = authData.user;
