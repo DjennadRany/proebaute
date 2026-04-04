@@ -2,8 +2,8 @@ import {
   Calendar,
   Home,
   MapPin,
+  MessageCircle,
   Sparkles,
-  User,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +14,7 @@ const primaryItems = [
   { href: '/map', label: 'MapBeaute', icon: MapPin },
   { href: '/glamfeed', label: 'GlamFeed', icon: Sparkles },
   { href: '/reservations', label: 'Reservations', icon: Calendar },
-  { href: '/profile', label: 'Profil', icon: User },
+  { href: '/messages', label: 'Chat', icon: MessageCircle },
 ];
 
 export function BottomTabBar() {

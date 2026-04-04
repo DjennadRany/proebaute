@@ -1,6 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import { Heart, MessageCircle, Bookmark, Star, MapPin, Share2 } from 'lucide-react';
+import {
+  Heart, MessageCircle, Bookmark, Share2, X, Send,
+  ChevronUp, Plus, Camera,
+} from 'lucide-react';
 import {
   fetchProfessionals,
   fetchServices,
@@ -12,9 +15,22 @@ import {
   type ApiService,
 } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../api/supabaseClient';
 
-// Images beauté Pexels fallback si le service n'a pas de media
-const FALLBACK_IMAGES = [
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+function getAccent(id: string): string {
+  const p = ['#7c3aed','#ec4899','#f59e0b','#0ea5e9','#ef4444','#10b981','#8b5cf6','#f97316'];
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return p[h % p.length];
+}
+
+function isVideo(url: string) {
+  return /\.(mp4|mov|webm|ogg)(\?|$)/i.test(url);
+}
+
+const BEAUTY_IMGS = [
   'https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=800',
   'https://images.pexels.com/photos/3762875/pexels-photo-3762875.jpeg?auto=compress&cs=tinysrgb&w=800',
   'https://images.pexels.com/photos/1453005/pexels-photo-1453005.jpeg?auto=compress&cs=tinysrgb&w=800',
@@ -25,12 +41,9 @@ const FALLBACK_IMAGES = [
   'https://images.pexels.com/photos/6621461/pexels-photo-6621461.jpeg?auto=compress&cs=tinysrgb&w=800',
 ];
 
-function getProAccent(id: string): string {
-  const palette = ['#7c3aed', '#ec4899', '#f59e0b', '#0ea5e9', '#ef4444', '#10b981', '#8b5cf6', '#f97316'];
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  return palette[hash % palette.length];
-}
+// ─── types ──────────────────────────────────────────────────────────────────
+
+type Comment = { id: string; author: string; text: string; createdAt: string };
 
 type FeedItem = {
   id: string;
@@ -41,144 +54,101 @@ type FeedItem = {
   saved: boolean;
   likes: number;
   comments: number;
+  commentList: Comment[];
+  commentsLoaded: boolean;
 };
 
-function isVideo(url: string): boolean {
-  return /\.(mp4|mov|webm|ogg)(\?|$)/i.test(url);
-}
+// ─── CommentDrawer ───────────────────────────────────────────────────────────
 
-function ReelCard({ item, onLike, onSave }: {
+function CommentDrawer({
+  item,
+  onClose,
+  onAddComment,
+  user,
+}: {
   item: FeedItem;
-  onLike: (id: string) => void;
-  onSave: (id: string) => void;
+  onClose: () => void;
+  onAddComment: (serviceId: string, text: string) => Promise<void>;
+  user: { _id: string; firstName: string; lastName: string } | null;
 }) {
-  const navigate = useNavigate();
-  const [imgFailed, setImgFailed] = useState(false);
-  const proName = item.pro?.professionalName ?? 'Pro LocBeaute';
-  const proInitials = proName.trim().split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
-  const proColor = item.pro ? getProAccent(item.pro._id) : '#7c3aed';
-  const proPhoto = item.pro?.gallery?.[0] ?? null;
-  const city = item.pro?.city ?? '';
-  const rating = item.pro?.ratingAverage ?? 0;
-  const mediaUrl = imgFailed ? FALLBACK_IMAGES[Math.abs(item.id.charCodeAt(0) || 0) % FALLBACK_IMAGES.length] : item.image;
-  const isVid = !imgFailed && isVideo(item.image);
+  const [text, setText] = useState('');
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({ title: item.service.title, url: window.location.origin + '/services/' + item.service._id });
-    }
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [item.commentList.length]);
+
+  const submit = async () => {
+    if (!text.trim() || !user) return;
+    setSending(true);
+    await onAddComment(item.id, text.trim());
+    setText('');
+    setSending(false);
   };
 
   return (
-    <div className="relative w-full bg-black" style={{ height: 'calc(100svh - 120px)', minHeight: 480, maxHeight: 780 }}>
-      {/* Media plein ecran - video ou image */}
-      {isVid ? (
-        <video
-          src={item.image}
-          className="absolute inset-0 w-full h-full object-cover"
-          autoPlay
-          loop
-          muted
-          playsInline
-          onError={() => setImgFailed(true)}
-        />
-      ) : (
-        <img
-          src={mediaUrl}
-          alt={item.service.title}
-          className="absolute inset-0 w-full h-full object-cover"
-          onError={() => setImgFailed(true)}
-        />
-      )}
+    <div className="fixed inset-0 z-[2000] flex flex-col justify-end">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Gradient bas */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+      <div className="relative bg-card rounded-t-3xl flex flex-col max-h-[70vh] shadow-2xl">
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+        </div>
 
-      {/* Gradient haut leger */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent h-24" />
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 pb-3 border-b border-border">
+          <h3 className="font-semibold text-sm">{item.comments} commentaire{item.comments !== 1 ? 's' : ''}</h3>
+          <button onClick={onClose}><X className="h-5 w-5 text-muted-foreground" /></button>
+        </div>
 
-      {/* Infos pro en haut a gauche */}
-      <div className="absolute top-4 left-4 flex items-center gap-2">
-        <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow-md shrink-0">
-          {proPhoto ? (
-            <img src={proPhoto} alt={proName} className="w-full h-full object-cover" />
+        {/* Liste */}
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+          {item.commentList.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground py-8">Soyez le premier a commenter !</p>
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold"
-              style={{ backgroundColor: proColor }}>
-              {proInitials}
-            </div>
+            item.commentList.map((c) => (
+              <div key={c.id} className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  {c.author.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-foreground">{c.author}</p>
+                  <p className="text-sm text-foreground mt-0.5">{c.text}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {new Date(c.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                  </p>
+                </div>
+              </div>
+            ))
           )}
+          <div ref={bottomRef} />
         </div>
-        <div>
-          <p className="text-white text-sm font-semibold leading-tight drop-shadow">{proName}</p>
-          <div className="flex items-center gap-1 text-white/80 text-[11px]">
-            {city && <><MapPin className="h-3 w-3" /><span>{city}</span></>}
-            {rating > 0 && <><span>•</span><Star className="h-3 w-3 fill-amber-400 text-amber-400" /><span>{rating.toFixed(1)}</span></>}
+
+        {/* Input */}
+        <div className="px-4 py-3 border-t border-border flex items-center gap-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {user ? (user.firstName.charAt(0) + user.lastName.charAt(0)).toUpperCase() : '?'}
           </div>
-        </div>
-      </div>
-
-      {/* Actions verticales droite */}
-      <div className="absolute right-3 bottom-28 flex flex-col items-center gap-5">
-        {/* Like */}
-        <button onClick={() => onLike(item.id)} className="flex flex-col items-center gap-1">
-          <div className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-sm ${item.liked ? 'bg-red-500' : 'bg-white/20 border border-white/30'}`}>
-            <Heart className={`h-5 w-5 ${item.liked ? 'fill-white text-white' : 'text-white'}`} />
-          </div>
-          <span className="text-white text-xs font-medium drop-shadow">{item.likes}</span>
-        </button>
-
-        {/* Commentaire */}
-        <button className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-white/20 border border-white/30 backdrop-blur-sm flex items-center justify-center">
-            <MessageCircle className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-white text-xs font-medium drop-shadow">{item.comments}</span>
-        </button>
-
-        {/* Sauvegarder */}
-        <button onClick={() => onSave(item.id)} className="flex flex-col items-center gap-1">
-          <div className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-sm ${item.saved ? 'bg-violet-600' : 'bg-white/20 border border-white/30'}`}>
-            <Bookmark className={`h-5 w-5 ${item.saved ? 'fill-white text-white' : 'text-white'}`} />
-          </div>
-        </button>
-
-        {/* Partager */}
-        <button onClick={handleShare} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-white/20 border border-white/30 backdrop-blur-sm flex items-center justify-center">
-            <Share2 className="h-5 w-5 text-white" />
-          </div>
-        </button>
-      </div>
-
-      {/* Infos service + prix en bas */}
-      <div className="absolute bottom-4 left-4 right-16">
-        {/* Badge categorie */}
-        <span className="inline-block mb-2 px-2.5 py-0.5 rounded-full text-[11px] font-semibold text-white"
-          style={{ backgroundColor: proColor + 'cc' }}>
-          {item.service.category}
-        </span>
-
-        {/* Titre */}
-        <h3 className="text-white font-bold text-lg leading-tight drop-shadow mb-1">{item.service.title}</h3>
-
-        {/* Description */}
-        {item.service.description && (
-          <p className="text-white/80 text-xs leading-snug mb-3 line-clamp-2">{item.service.description}</p>
-        )}
-
-        {/* Prix + bouton reserver */}
-        <div className="flex items-center gap-3">
-          <span className="text-white font-black text-2xl drop-shadow">{item.service.price} €</span>
-          {item.service.duration > 0 && (
-            <span className="text-white/70 text-xs">{item.service.duration} min</span>
-          )}
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && submit()}
+            placeholder={user ? 'Ajouter un commentaire...' : 'Connectez-vous pour commenter'}
+            disabled={!user}
+            className="flex-1 text-sm bg-muted rounded-full px-4 py-2 outline-none border border-border focus:border-violet-400"
+          />
           <button
-            onClick={() => navigate('/booking?serviceId=' + item.service._id + (item.pro ? '&proId=' + item.pro._id : ''))}
-            className="ml-auto px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-lg"
-            style={{ background: `linear-gradient(to right, ${proColor}, #ec4899)` }}
+            onClick={submit}
+            disabled={!text.trim() || sending || !user}
+            className="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center disabled:opacity-40"
           >
-            Reserver
+            {sending
+              ? <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              : <Send className="h-4 w-4 text-white" />
+            }
           </button>
         </div>
       </div>
@@ -186,11 +156,215 @@ function ReelCard({ item, onLike, onSave }: {
   );
 }
 
+// ─── ReelCard ────────────────────────────────────────────────────────────────
+
+function ReelCard({
+  item,
+  onLike,
+  onSave,
+  onComment,
+  user,
+}: {
+  item: FeedItem;
+  onLike: (id: string) => void;
+  onSave: (id: string) => void;
+  onComment: (item: FeedItem) => void;
+  user: { _id: string; firstName: string; lastName: string } | null;
+}) {
+  const navigate = useNavigate();
+  const [mediaBroken, setMediaBroken] = useState(false);
+  const [likeAnim, setLikeAnim] = useState(false);
+  const lastTap = useRef(0);
+
+  const proName = item.pro?.professionalName ?? 'Pro LocBeaute';
+  const proWords = proName.trim().split(/\s+/);
+  const proInitials = (proWords[0]?.[0] ?? '') + (proWords[1]?.[0] ?? '');
+  const proColor = item.pro ? getAccent(item.pro._id) : '#7c3aed';
+  const proPhoto = item.pro?.gallery?.[0] ?? null;
+  const fallback = BEAUTY_IMGS[Math.abs((item.id.charCodeAt(0) || 0) + (item.id.charCodeAt(1) || 0)) % BEAUTY_IMGS.length];
+  const mediaUrl = mediaBroken ? fallback : item.image;
+  const isVid = !mediaBroken && isVideo(item.image);
+
+  // Double-tap pour liker
+  const handleTap = useCallback(() => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      onLike(item.id);
+      setLikeAnim(true);
+      setTimeout(() => setLikeAnim(false), 800);
+    }
+    lastTap.current = now;
+  }, [item.id, onLike]);
+
+  const handleShare = () => {
+    const url = window.location.origin + '/services/' + item.service._id;
+    if (navigator.share) {
+      navigator.share({ title: item.service.title, text: item.service.description, url });
+    } else {
+      navigator.clipboard?.writeText(url);
+    }
+  };
+
+  return (
+    <div
+      className="relative w-full bg-black select-none"
+      style={{ height: 'calc(100svh - 116px)', minHeight: 500 }}
+      onClick={handleTap}
+    >
+      {/* Media */}
+      {isVid ? (
+        <video
+          src={mediaUrl}
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay loop muted playsInline
+          onError={() => setMediaBroken(true)}
+        />
+      ) : (
+        <img
+          src={mediaUrl}
+          alt={item.service.title}
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={() => setMediaBroken(true)}
+          loading="lazy"
+        />
+      )}
+
+      {/* Gradients */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
+
+      {/* Animation coeur double-tap */}
+      {likeAnim && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <Heart className="h-24 w-24 text-white fill-white drop-shadow-2xl animate-ping" style={{ animationDuration: '0.6s', animationIterationCount: 1 }} />
+        </div>
+      )}
+
+      {/* Pro info haut gauche — cliquable */}
+      <button
+        className="absolute top-4 left-4 flex items-center gap-2.5 z-10"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (item.pro) navigate('/professionals/' + item.pro._id);
+        }}
+      >
+        <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-lg shrink-0">
+          {proPhoto ? (
+            <img
+              src={proPhoto}
+              alt={proName}
+              className="w-full h-full object-cover"
+              onError={(ev) => { (ev.currentTarget.parentElement as HTMLElement).style.backgroundColor = proColor; ev.currentTarget.remove(); }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold"
+              style={{ backgroundColor: proColor }}>
+              {proInitials.toUpperCase() || '?'}
+            </div>
+          )}
+        </div>
+        <div className="text-left">
+          <p className="text-white text-sm font-bold leading-tight drop-shadow">{proName}</p>
+          {item.pro?.city && (
+            <p className="text-white/75 text-[11px] leading-tight">{item.pro.city}</p>
+          )}
+        </div>
+        {/* Badge suivre */}
+        <span className="ml-1 px-2.5 py-0.5 rounded-full bg-white/20 border border-white/40 text-white text-[11px] font-semibold backdrop-blur-sm">
+          Voir profil
+        </span>
+      </button>
+
+      {/* Actions droite */}
+      <div
+        className="absolute right-3 bottom-36 flex flex-col items-center gap-5 z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Like */}
+        <button onClick={() => onLike(item.id)} className="flex flex-col items-center gap-1">
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 ${item.liked ? 'bg-red-500 scale-110' : 'bg-white/20 border border-white/30 backdrop-blur-sm'}`}>
+            <Heart className={`h-6 w-6 transition-all ${item.liked ? 'fill-white text-white scale-110' : 'text-white'}`} />
+          </div>
+          <span className="text-white text-xs font-semibold drop-shadow">{item.likes > 999 ? (item.likes / 1000).toFixed(1) + 'k' : item.likes}</span>
+        </button>
+
+        {/* Commentaire */}
+        <button onClick={() => onComment(item)} className="flex flex-col items-center gap-1">
+          <div className="w-12 h-12 rounded-full bg-white/20 border border-white/30 backdrop-blur-sm flex items-center justify-center shadow-lg active:scale-90 transition-all">
+            <MessageCircle className="h-6 w-6 text-white" />
+          </div>
+          <span className="text-white text-xs font-semibold drop-shadow">{item.comments}</span>
+        </button>
+
+        {/* Sauvegarder */}
+        <button onClick={() => onSave(item.id)} className="flex flex-col items-center gap-1">
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 ${item.saved ? 'bg-violet-600 scale-110' : 'bg-white/20 border border-white/30 backdrop-blur-sm'}`}>
+            <Bookmark className={`h-6 w-6 ${item.saved ? 'fill-white text-white' : 'text-white'}`} />
+          </div>
+        </button>
+
+        {/* Partage */}
+        <button onClick={handleShare} className="flex flex-col items-center gap-1">
+          <div className="w-12 h-12 rounded-full bg-white/20 border border-white/30 backdrop-blur-sm flex items-center justify-center shadow-lg active:scale-90 transition-all">
+            <Share2 className="h-6 w-6 text-white" />
+          </div>
+        </button>
+      </div>
+
+      {/* Infos bas */}
+      <div className="absolute bottom-4 left-4 right-16 z-10" onClick={(e) => e.stopPropagation()}>
+        {/* Categorie badge */}
+        <span
+          className="inline-block mb-2 px-3 py-0.5 rounded-full text-[11px] font-bold text-white shadow"
+          style={{ backgroundColor: proColor + 'dd' }}
+        >
+          {item.service.category}
+        </span>
+
+        {/* Titre */}
+        <h3 className="text-white font-extrabold text-xl leading-tight drop-shadow-lg mb-1">
+          {item.service.title}
+        </h3>
+
+        {/* Description */}
+        {item.service.description && (
+          <p className="text-white/80 text-xs leading-snug mb-3 line-clamp-2">{item.service.description}</p>
+        )}
+
+        {/* Prix + Reserver */}
+        <div className="flex items-center gap-3">
+          <div>
+            <span className="text-white font-black text-2xl drop-shadow-lg">{item.service.price} €</span>
+            {item.service.duration > 0 && (
+              <span className="text-white/60 text-xs ml-1">{item.service.duration}min</span>
+            )}
+          </div>
+          <button
+            onClick={() => navigate('/booking?serviceId=' + item.service._id + (item.pro ? '&proId=' + item.pro._id : ''))}
+            className="ml-auto px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-xl active:scale-95 transition-all"
+            style={{ background: `linear-gradient(135deg, ${proColor}, #ec4899)` }}
+          >
+            Reserver
+          </button>
+        </div>
+      </div>
+
+      {/* Scroll hint */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-40 pointer-events-none">
+        <ChevronUp className="h-4 w-4 text-white animate-bounce" />
+      </div>
+    </div>
+  );
+}
+
+// ─── GlamFeedPage ─────────────────────────────────────────────────────────────
+
 export function GlamFeedPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [commentItem, setCommentItem] = useState<FeedItem | null>(null);
 
   useEffect(() => {
     const likedIds = new Set<string>();
@@ -202,63 +376,107 @@ export function GlamFeedPage() {
       user ? fetchLikes(user._id) : Promise.resolve([]),
       user ? fetchFavorites(user._id) : Promise.resolve([]),
     ]).then(([proList, serviceList, likesList, favoritesList]) => {
-        likesList.forEach((l) => likedIds.add(l.serviceId));
-        favoritesList.forEach((f) => savedIds.add(f.targetId));
+      likesList.forEach((l) => { if (l.serviceId) likedIds.add(l.serviceId); });
+      favoritesList.forEach((f) => savedIds.add(f.targetId));
 
-        const proMap: Record<string, ApiProfessional> = {};
-        proList.forEach((p) => { proMap[p._id] = p; });
+      const proMap: Record<string, ApiProfessional> = {};
+      proList.forEach((p) => { proMap[p._id] = p; });
 
-        const items: FeedItem[] = serviceList
-          .map((s) => {
-            const pro = proMap[s.professionalId];
-            // Photo : media du service OU gallery du pro — sinon on n'affiche pas
-            const media =
-              (s.media && s.media.length > 0 ? s.media[0] : null) ??
-              (pro?.gallery && pro.gallery.length > 0 ? pro.gallery[0] : null) ??
-              null;
-            if (!media) return null; // pas de photo = pas dans le feed
-            return {
-              id: s._id,
-              service: s,
-              pro,
-              image: media,
-              liked: likedIds.has(s._id),
-              saved: savedIds.has(s._id),
-              likes: s.likesCount,
-              comments: s.reviewsCount,
-            };
-          })
-          .filter((x): x is FeedItem => x !== null);
+      const items: FeedItem[] = serviceList
+        .map((s) => {
+          const pro = proMap[s.professionalId];
+          const media =
+            (s.media?.length ? s.media[0] : null) ??
+            (pro?.gallery?.length ? pro.gallery[0] : null) ??
+            null;
+          if (!media) return null;
+          return {
+            id: s._id,
+            service: s,
+            pro,
+            image: media,
+            liked: likedIds.has(s._id),
+            saved: savedIds.has(s._id),
+            likes: s.likesCount,
+            comments: s.reviewsCount,
+            commentList: [],
+            commentsLoaded: false,
+          };
+        })
+        .filter((x): x is FeedItem => x !== null);
 
-        // Fallback uniquement si Supabase ne retourne rien du tout
-        if (items.length === 0) {
-          setFeed(FALLBACK_IMAGES.map((img, i) => ({
-            id: 'demo-' + i,
-            service: { _id: String(i), professionalId: '', title: 'Prestation beaute', description: 'Demo - ajoutez vos services dans Supabase', category: 'Beaute', price: 50 + i * 10, duration: 60, media: [], ratingAverage: 4.5, likesCount: 0, reviewsCount: 0 },
-            pro: undefined,
-            image: img,
-            liked: false,
-            saved: false,
-            likes: 50 + i * 20,
-            comments: 5 + i * 3,
-          })));
-        } else {
-          setFeed(items);
-        }
+      setFeed(items);
+    }).catch(() => setFeed([])).finally(() => setLoading(false));
+  }, [user]);
+
+  // Charger commentaires depuis Supabase
+  const loadComments = async (serviceId: string) => {
+    const { data } = await supabase
+      .from('reviews')
+      .select('id, comment, rating, created_at, users:client_id (first_name, last_name)')
+      .eq('service_id', serviceId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    const list: Comment[] = (data ?? []).map((r: any) => ({
+      id: r.id,
+      author: r.users ? `${r.users.first_name ?? ''} ${r.users.last_name ?? ''}`.trim() : 'Anonyme',
+      text: r.comment ?? '',
+      createdAt: r.created_at,
+    })).filter((c) => c.text);
+
+    setFeed((prev) => prev.map((p) =>
+      p.id === serviceId ? { ...p, commentList: list, commentsLoaded: true } : p
+    ));
+  };
+
+  const handleOpenComment = async (item: FeedItem) => {
+    if (!item.commentsLoaded) await loadComments(item.id);
+    setCommentItem((prev) => (prev?.id === item.id ? null : feed.find((f) => f.id === item.id) ?? item));
+  };
+
+  // Sync commentItem avec feed
+  useEffect(() => {
+    if (commentItem) {
+      const updated = feed.find((f) => f.id === commentItem.id);
+      if (updated) setCommentItem(updated);
+    }
+  }, [feed]);
+
+  const handleAddComment = async (serviceId: string, text: string) => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('reviews')
+      .insert({
+        service_id: serviceId,
+        client_id: user._id,
+        comment: text,
+        rating: 5,
       })
-      .catch(() => setFeed([]))
-      .finally(() => setLoading(false));
-  }, []);
+      .select('id, created_at')
+      .single();
+
+    if (data) {
+      const newComment: Comment = {
+        id: data.id,
+        author: `${user.firstName} ${user.lastName}`.trim(),
+        text,
+        createdAt: data.created_at,
+      };
+      setFeed((prev) => prev.map((p) =>
+        p.id === serviceId
+          ? { ...p, commentList: [...p.commentList, newComment], comments: p.comments + 1 }
+          : p
+      ));
+    }
+  };
 
   const toggleLike = (id: string) => {
-    // Optimistic UI
     setFeed((prev) => prev.map((p) =>
       p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p
     ));
-    // Sync Supabase
     if (user) {
       apiToggleLike(user._id, id).catch(() => {
-        // Rollback si erreur
         setFeed((prev) => prev.map((p) =>
           p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p
         ));
@@ -267,12 +485,9 @@ export function GlamFeedPage() {
   };
 
   const toggleSave = (id: string) => {
-    // Optimistic UI
     setFeed((prev) => prev.map((p) => p.id === id ? { ...p, saved: !p.saved } : p));
-    // Sync Supabase
     if (user) {
       apiToggleFavorite({ userId: user._id, targetId: id, targetType: 'service' }).catch(() => {
-        // Rollback si erreur
         setFeed((prev) => prev.map((p) => p.id === id ? { ...p, saved: !p.saved } : p));
       });
     }
@@ -280,17 +495,72 @@ export function GlamFeedPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="h-6 w-6 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+      <div className="fixed inset-0 flex items-center justify-center bg-black z-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 rounded-full border-2 border-fuchsia-500 border-t-transparent animate-spin" />
+          <p className="text-white/60 text-sm">Chargement du GlamFeed...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (feed.length === 0) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-black gap-6 z-50">
+        <Camera className="h-16 w-16 text-white/20" />
+        <p className="text-white/50 text-sm text-center px-8">
+          Aucun contenu disponible.<br />Les pros peuvent publier leurs photos depuis leur espace pro.
+        </p>
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-0.5 -mx-4 -mt-4 sm:-mx-6 lg:-mx-8">
-      {feed.map((item) => (
-        <ReelCard key={item.id} item={item} onLike={toggleLike} onSave={toggleSave} />
-      ))}
-    </div>
+    <>
+      {/* Feed plein ecran, scroll snap vertical */}
+      <div
+        className="-mx-4 -mt-4 sm:-mx-6 lg:-mx-8 overflow-y-scroll"
+        style={{
+          height: 'calc(100svh - 56px)',
+          scrollSnapType: 'y mandatory',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+      >
+        {feed.map((item) => (
+          <div key={item.id} style={{ scrollSnapAlign: 'start' }}>
+            <ReelCard
+              item={item}
+              onLike={toggleLike}
+              onSave={toggleSave}
+              onComment={handleOpenComment}
+              user={user}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Bouton publier (clients) */}
+      {user && (
+        <button
+          onClick={() => navigate('/glamfeed/post')}
+          className="fixed bottom-24 left-4 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full text-white text-sm font-bold shadow-xl"
+          style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)' }}
+        >
+          <Plus className="h-4 w-4" />
+          Publier
+        </button>
+      )}
+
+      {/* Drawer commentaires */}
+      {commentItem && (
+        <CommentDrawer
+          item={commentItem}
+          onClose={() => setCommentItem(null)}
+          onAddComment={handleAddComment}
+          user={user}
+        />
+      )}
+    </>
   );
 }
