@@ -86,8 +86,8 @@ export function RootLayout() {
     setUserMenuOpen(false);
   }, [location.pathname]);
 
- const safeFirstName = user?.firstName?.trim() || 'Compte';
-const safeLastName = user?.lastName?.trim() || '';
+  const safeFirstName = user?.firstName?.trim() || 'Compte';
+  const safeLastName = user?.lastName?.trim() || '';
 const initials = user
   ? `${safeFirstName.charAt(0)}${safeLastName.charAt(0)}`.trim() || 'U'
   : '';

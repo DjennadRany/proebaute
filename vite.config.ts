@@ -19,4 +19,32 @@ export default defineConfig({
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
+
+  build: {
+    target: 'ES2020',
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-router'],
+          'ui-vendor': ['lucide-react'],
+        },
+      },
+    },
+    cssCodeSplit: true,
+    sourcemap: false,
+    // Important: preserve variable declarations for better debugging
+    esbuild: {
+      drop: [],
+    },
+  },
+
+  server: {
+    port: 3000,
+    strictPort: false,
+  },
+
+  preview: {
+    port: 4173,
+  },
 })
