@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { Button } from '../components/ui/button';
 import { BRANDED_LOGO_SRC } from '../constants/branding';
+import { pageview } from '../lib/gtag';
 
 const navigationMain = [
   { name: 'Accueil', href: '/dashboard', icon: LayoutDashboard },
@@ -86,11 +87,15 @@ export function RootLayout() {
     setUserMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    pageview(location.pathname + location.search);
+  }, [location.pathname, location.search]);
+
   const safeFirstName = user?.firstName?.trim() || 'Compte';
   const safeLastName = user?.lastName?.trim() || '';
-const initials = user
-  ? `${safeFirstName.charAt(0)}${safeLastName.charAt(0)}`.trim() || 'U'
-  : '';
+  const initials = user
+    ? `${safeFirstName.charAt(0)}${safeLastName.charAt(0)}`.trim() || 'U'
+    : '';
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Top navigation bar - mobile first */}
@@ -105,10 +110,10 @@ const initials = user
             >
               <img
                 src={BRANDED_LOGO_SRC}
-                alt="LocBeautÃ©"
+                alt="LocBeauté"
                 className="h-10 w-auto object-contain sm:h-12 lg:h-16"
               />
-              <span className="sr-only">LocBeautÃ©</span>
+              <span className="sr-only">LocBeauté</span>
               <p className="hidden sm:block text-[11px] text-muted-foreground leading-snug">
                 RÃ©servez vos soins en un clic
               </p>
@@ -343,7 +348,7 @@ const initials = user
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 bg-background pb-24 md:pb-0">
+      <main className="flex-1 bg-background pb-28 md:pb-0">
         <div className="mx-auto max-w-6xl px-4 pt-4 pb-6 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8 lg:pb-10">
           <Outlet />
         </div>

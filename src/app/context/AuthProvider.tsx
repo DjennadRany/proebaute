@@ -4,6 +4,7 @@ import { supabase } from '../api/supabaseClient';
 import type { User } from '../data/mockData';
 import { AuthContext, STORAGE_KEY, loadStoredUser } from './auth-context';
 import { useNotifications } from '../hooks/useNotifications';
+import { trackLogin } from '../lib/gtag';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(loadStoredUser);
@@ -49,6 +50,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(u);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+
+      // Track login event
+      trackLogin(u.role === 'professional' ? 'professional' : 'client', 'email');
+
       return u;
     } finally {
       setIsLoading(false);

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Heart, MessageCircle, Bookmark, Share2, X, Send,
-  ChevronUp, Plus, Camera,
+  ChevronUp, Camera,
 } from 'lucide-react';
 import {
   fetchProfessionals,
@@ -605,18 +605,6 @@ export function GlamFeedPage() {
           </div>
         ))}
       </div>
-
-      {/* Bouton publier (clients) */}
-      {user && (
-        <button
-          onClick={() => navigate('/glamfeed/publish')}
-          className="fixed bottom-24 left-4 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full text-white text-sm font-bold shadow-xl"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)' }}
-        >
-          <Plus className="h-4 w-4" />
-          Publier
-        </button>
-      )}
 
       {/* Drawer commentaires */}
       {commentItem && (

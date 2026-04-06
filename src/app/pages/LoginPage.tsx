@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { BRANDED_LOGO_SRC } from '../constants/branding';
 import { useAuth } from '../context/AuthContext';
+import { trackSignup, trackLogin, trackFunnelStep } from '../lib/gtag';
 import {
   requestPasswordReset,
   signUpClientAccount,
@@ -453,10 +454,17 @@ export function LoginPage() {
       });
 
       if (result.user) {
+        // Track successful signup
+        trackSignup('client', 'email');
+        trackFunnelStep('signup_complete', 'client');
+
         persistUser(result.user);
         navigate(result.user.role === 'professional' ? '/pro/dashboard' : '/map', { replace: true });
         return;
       }
+
+      // Track signup start even if email confirmation required
+      trackFunnelStep('signup_start', 'client');
 
       setSignupSuccess(
         result.requiresEmailConfirmation
@@ -506,10 +514,17 @@ export function LoginPage() {
       });
 
       if (result.user) {
+        // Track successful professional signup
+        trackSignup('professional', 'email');
+        trackFunnelStep('signup_complete', 'professional');
+
         persistUser(result.user);
         navigate('/pro/dashboard', { replace: true });
         return;
       }
+
+      // Track signup start even if email confirmation required
+      trackFunnelStep('signup_start', 'professional');
 
       setSignupSuccess(
         result.requiresEmailConfirmation
