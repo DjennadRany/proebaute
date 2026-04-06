@@ -105,10 +105,10 @@ const initials = user
             >
               <img
                 src={BRANDED_LOGO_SRC}
-                alt="LocBeautÃ©"
+                alt="LocBeauté"
                 className="h-10 w-auto object-contain sm:h-12 lg:h-16"
               />
-              <span className="sr-only">LocBeautÃ©</span>
+              <span className="sr-only">LocBeauté</span>
               <p className="hidden sm:block text-[11px] text-muted-foreground leading-snug">
                 RÃ©servez vos soins en un clic
               </p>
