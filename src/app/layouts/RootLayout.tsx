@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { Button } from '../components/ui/button';
 import { BRANDED_LOGO_SRC } from '../constants/branding';
+import { pageview } from '../lib/gtag';
 
 const navigationMain = [
   { name: 'Accueil', href: '/dashboard', icon: LayoutDashboard },
@@ -86,11 +87,15 @@ export function RootLayout() {
     setUserMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    pageview(location.pathname + location.search);
+  }, [location.pathname, location.search]);
+
   const safeFirstName = user?.firstName?.trim() || 'Compte';
   const safeLastName = user?.lastName?.trim() || '';
-const initials = user
-  ? `${safeFirstName.charAt(0)}${safeLastName.charAt(0)}`.trim() || 'U'
-  : '';
+  const initials = user
+    ? `${safeFirstName.charAt(0)}${safeLastName.charAt(0)}`.trim() || 'U'
+    : '';
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Top navigation bar - mobile first */}
