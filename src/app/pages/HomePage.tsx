@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import probeauteLogo from '../../../asset/locbeaute_logo.png';
 import { useAuth } from '../context/AuthContext';
+import { BRANDED_LOGO_SRC } from '../constants/branding';
 import { AppCard } from '../components/AppCard';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -111,7 +111,7 @@ export function HomePage() {
         <div className="space-y-6 max-w-xl">
           <div className="inline-flex items-center gap-4 rounded-[28px] border border-white/35 bg-white/78 px-4 py-3 backdrop-blur">
             <img
-              src={probeauteLogo}
+              src={BRANDED_LOGO_SRC}
               alt="Logo LocBeauté"
               className="h-16 w-auto object-contain"
             />
