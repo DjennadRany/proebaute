@@ -348,7 +348,7 @@ export function RootLayout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 bg-background pb-24 md:pb-0">
+      <main className="flex-1 bg-background pb-28 md:pb-0">
         <div className="mx-auto max-w-6xl px-4 pt-4 pb-6 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8 lg:pb-10">
           <Outlet />
         </div>
