@@ -13,23 +13,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Notifications push (SW + Realtime)
   useNotifications(user);
 
-  // Synchronise l'état avec la session Supabase (expiration, onglets multiples, etc.)
+  // Synchronise l'état avec la session Supabase (expiration, onglets multiples, confirmation email)
   useEffect(() => {
+    type Session = import('@supabase/supabase-js').Session;
+    const buildUserFromSession = (session: Session): User => {
+      const meta = session.user.user_metadata ?? {};
+      return {
+        _id: session.user.id,
+        role: (meta.role === 'professional' ? 'professional' : 'client') as User['role'],
+        firstName: meta.first_name || meta.firstName || '',
+        lastName: meta.last_name || meta.lastName || '',
+        email: session.user.email ?? '',
+        phone: meta.phone,
+      };
+    };
+
     // Vérifie la session active au démarrage
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        // Session expirée ou absente → déconnexion propre
         setUser(null);
         localStorage.removeItem(STORAGE_KEY);
+      } else if (!loadStoredUser()) {
+        // Session Supabase active mais pas de user en localStorage (ex: après confirmation email)
+        const u = buildUserFromSession(session);
+        setUser(u);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
       }
     });
 
-    // Écoute les changements de session (expiration, déconnexion, refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          localStorage.removeItem(STORAGE_KEY);
+    // Écoute les changements de session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        localStorage.removeItem(STORAGE_KEY);
+      } else if (event === 'SIGNED_IN' && session) {
+        // Déclenché après confirmation d'email ou connexion OAuth
+        const stored = loadStoredUser();
+        if (!stored || stored._id !== session.user.id) {
+          const u = buildUserFromSession(session);
+          setUser(u);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+          trackLogin(u.role === 'professional' ? 'professional' : 'client', 'email');
         }
       }
     });

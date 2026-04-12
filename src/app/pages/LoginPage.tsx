@@ -272,7 +272,11 @@ export function LoginPage() {
     if (window.location.hash.includes('type=recovery') && mode !== 'reset') {
       setSearchParams({ mode: 'reset', role: 'client' });
     }
-  }, [mode, setSearchParams]);
+    // Retour après confirmation d'email depuis le lien Supabase
+    if (searchParams.get('confirmed') === 'true' && mode === 'login') {
+      setSignupSuccess('✅ Email confirmé ! Vous pouvez maintenant vous connecter.');
+    }
+  }, [mode, setSearchParams, searchParams]);
 
   useEffect(() => {
     setSignupError('');

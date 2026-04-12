@@ -414,10 +414,12 @@ export async function signUpClientAccount(payload: ClientSignupPayload): Promise
   const lastName = payload.lastName.trim();
   const phone = payload.phone?.trim() || undefined;
 
+  const appUrl = import.meta.env.VITE_APP_URL || 'https://locbeaute.com';
   const { data, error } = await supabase.auth.signUp({
     email,
     password: payload.password,
     options: {
+      emailRedirectTo: `${appUrl}/login?confirmed=true`,
       data: {
         role: 'client',
         first_name: firstName,
@@ -500,10 +502,12 @@ export async function signUpProfessionalAccount(payload: ProfessionalSignupPaylo
   const lastName = payload.lastName.trim();
   const phone = payload.phone?.trim() || undefined;
 
+  const appUrlPro = import.meta.env.VITE_APP_URL || 'https://locbeaute.com';
   const { data, error } = await supabase.auth.signUp({
     email,
     password: payload.password,
     options: {
+      emailRedirectTo: `${appUrlPro}/login?confirmed=true&role=pro`,
       data: {
         role: 'professional',
         first_name: firstName,
