@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LocBeauté — Noir & Or Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    /* ── VARIABLES ── */
+    :root {
+      --gold-light:   #F5D58B;
+      --gold-main:    #C9A84C;
+      --gold-dark:    #8B6914;
+      --gold-grad:    linear-gradient(135deg, #8B6914 0%, #C9A84C 40%, #F5D58B 65%, #C9A84C 100%);
+      --gold-grad-h:  linear-gradient(135deg, #C9A84C 0%, #F5D58B 50%, #C9A84C 100%);
+      --bg-base:      #080808;
+      --bg-card:      #111111;
+      --bg-card2:     #181818;
+      --bg-input:     #0E0E0E;
+      --border-gold:  rgba(201,168,76,0.25);
+      --border-gold2: rgba(201,168,76,0.5);
+      --text-white:   #F8F8F8;
+      --text-muted:   rgba(248,248,248,0.5);
+      --text-muted2:  rgba(248,248,248,0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-white);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── GOLD TEXT ── */
+    .gold {
+      background: var(--gold-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .gold-solid { color: var(--gold-main); }
+
+    /* ── LAYOUT ── */
+    .phone-frame {
+      max-width: 390px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-gold);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .navbar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .navbar-logo span { font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; display: block; color: var(--gold-main); margin-top: -3px; }
+    .navbar-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--gold-grad);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: #000;
+      box-shadow: 0 0 12px rgba(201,168,76,0.4);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      padding: 36px 20px 32px;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: -40px;
+      width: 150px; height: 150px;
+      background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold-main);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .hero p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 28px;
+      max-width: 280px;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold-grad);
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 14px 28px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(201,168,76,0.35);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { box-shadow: 0 6px 28px rgba(201,168,76,0.55); transform: translateY(-1px); }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--gold-main);
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 13px 28px;
+      border-radius: 50px;
+      border: 1px solid var(--border-gold2);
+      cursor: pointer;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-bar {
+      margin: 0 20px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+    }
+    .search-icon { color: var(--gold-main); font-size: 16px; }
+    .search-bar input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text-white);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      flex: 1;
+      caret-color: var(--gold-main);
+    }
+    .search-bar input::placeholder { color: var(--text-muted); }
+
+    /* ── SECTION TITLE ── */
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0 20px;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .section-link { font-size: 12px; color: var(--gold-main); letter-spacing: 0.5px; }
+
+    /* ── CATEGORY PILLS ── */
+    .pills-row {
+      display: flex;
+      gap: 10px;
+      padding: 0 20px 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .pills-row::-webkit-scrollbar { display: none; }
+    .pill {
+      flex-shrink: 0;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      border: 1px solid var(--border-gold);
+      color: var(--text-muted);
+      background: var(--bg-card);
+      transition: all 0.2s;
+    }
+    .pill.active {
+      background: var(--gold-grad);
+      color: #000;
+      border-color: transparent;
+      box-shadow: 0 2px 12px rgba(201,168,76,0.3);
+    }
+
+    /* ── SERVICE CARD ── */
+    .cards-row {
+      display: flex;
+      gap: 14px;
+      padding: 0 20px 28px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .cards-row::-webkit-scrollbar { display: none; }
+    .service-card {
+      flex-shrink: 0;
+      width: 200px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .service-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(201,168,76,0.2); }
+    .card-img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-img::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(to top, var(--bg-card), transparent);
+    }
+    .card-badge {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: var(--gold-grad);
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .card-body { padding: 14px; }
+    .card-pro {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--gold-main);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-price {
+      font-weight: 700;
+      font-size: 17px;
+      background: var(--gold-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card-stars { font-size: 11px; color: var(--gold-main); }
+
+    /* ── PRO CARD ── */
+    .pro-card {
+      margin: 0 20px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: 20px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .pro-avatar {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: var(--gold-grad);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(201,168,76,0.3);
+      position: relative;
+    }
+    .pro-avatar::after {
+      content: '✓';
+      position: absolute;
+      bottom: -2px; right: -2px;
+      width: 18px; height: 18px;
+      background: var(--gold-grad);
+      border-radius: 50%;
+      font-size: 9px;
+      display: flex; align-items: center; justify-content: center;
+      color: #000;
+      font-weight: 900;
+      border: 2px solid var(--bg-card);
+    }
+    .pro-info { flex: 1; }
+    .pro-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .pro-specialty { font-size: 11px; color: var(--gold-main); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 4px; }
+    .pro-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; }
+    .pro-action {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border-gold2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    /* ── STAT ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 0 20px 28px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: 16px;
+      padding: 16px 12px;
+      text-align: center;
+    }
+    .stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 900;
+      background: var(--gold-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+
+    /* ── INPUT / FORM ── */
+    .form-section {
+      margin: 0 20px 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: 20px;
+      padding: 24px;
+    }
+    .form-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .form-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--gold-main); font-weight: 600; margin-bottom: 8px; }
+    .field input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-gold);
+      border-radius: 12px;
+      padding: 13px 16px;
+      color: var(--text-white);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus {
+      border-color: var(--gold-main);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+    }
+    .field input::placeholder { color: var(--text-muted2); }
+    .btn-full {
+      width: 100%;
+      padding: 15px;
+      background: var(--gold-grad);
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(201,168,76,0.35);
+      margin-top: 8px;
+    }
+
+    /* ── GOLD DIVIDER ── */
+    .gold-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-main), transparent);
+      margin: 0 20px 28px;
+      opacity: 0.4;
+    }
+
+    /* ── TAG / BADGE ── */
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .tag-gold { background: rgba(201,168,76,0.15); color: var(--gold-main); border: 1px solid var(--border-gold); }
+    .tag-dark { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+
+    /* ── NOTIFICATION CARD ── */
+    .notif-card {
+      margin: 0 20px 12px;
+      background: var(--bg-card);
+      border-left: 3px solid var(--gold-main);
+      border-top: 1px solid var(--border-gold);
+      border-right: 1px solid var(--border-gold);
+      border-bottom: 1px solid var(--border-gold);
+      border-radius: 0 14px 14px 0;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .notif-icon { font-size: 20px; }
+    .notif-text { flex: 1; }
+    .notif-title { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+    .notif-sub { font-size: 12px; color: var(--text-muted); }
+    .notif-time { font-size: 10px; color: var(--text-muted2); white-space: nowrap; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: sticky;
+      bottom: 0;
+      z-index: 50;
+      background: rgba(8,8,8,0.95);
+      backdrop-filter: blur(24px);
+      border-top: 1px solid var(--border-gold);
+      padding: 10px 0 18px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px 12px;
+      border-radius: 12px;
+      transition: background 0.2s;
+      position: relative;
+    }
+    .nav-item.active { background: rgba(201,168,76,0.08); }
+    .nav-icon { font-size: 20px; }
+    .nav-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; color: var(--text-muted); }
+    .nav-item.active .nav-label { color: var(--gold-main); }
+    .nav-dot {
+      position: absolute;
+      top: 2px; right: 8px;
+      width: 7px; height: 7px;
+      background: var(--gold-main);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--gold-main);
+    }
+
+    /* ── DECORATIVE LINE ── */
+    .deco-line {
+      width: 40px; height: 2px;
+      background: var(--gold-grad);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    /* ── SECTION BREAK ── */
+    .section-break {
+      padding: 0 20px;
+      margin-bottom: 24px;
+    }
+    .section-break p {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--gold-main);
+      font-weight: 600;
+      text-align: center;
+      position: relative;
+    }
+    .section-break p::before,
+    .section-break p::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 60px;
+      height: 1px;
+      background: var(--gold-grad);
+      opacity: 0.5;
+    }
+    .section-break p::before { right: calc(50% + 80px); }
+    .section-break p::after { left: calc(50% + 80px); }
+
+    /* ── GLAMFEED CARD ── */
+    .glamfeed-card {
+      margin: 0 20px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .glamfeed-header {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .glamfeed-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--gold-grad);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      font-weight: 700; color: #000;
+    }
+    .glamfeed-name { font-weight: 600; font-size: 13px; }
+    .glamfeed-img {
+      width: 100%; height: 200px;
+      background: linear-gradient(135deg, #1c1c1c, #2a2020);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 60px;
+    }
+    .glamfeed-actions {
+      padding: 12px 14px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .gf-btn { font-size: 20px; cursor: pointer; }
+    .gf-likes { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+    .glamfeed-caption { padding: 0 14px 14px; font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ══════════════════════════════════════
+       GOLD GRADIENT ANIMATIONS
+    ══════════════════════════════════════ */
+
+    /* Shimmer lent en continu */
+    @keyframes goldShimmer {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Shimmer rapide au hover */
+    @keyframes goldShimmerFast {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Pulse glow pour les éléments or */
+    @keyframes goldGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(201,168,76,0.25), 0 0 20px rgba(201,168,76,0.1); }
+      50%       { box-shadow: 0 0 20px rgba(201,168,76,0.5),  0 0 40px rgba(201,168,76,0.2); }
+    }
+    @keyframes goldGlowFast {
+      0%, 100% { box-shadow: 0 0 20px rgba(201,168,76,0.6), 0 0 40px rgba(201,168,76,0.3); }
+      50%       { box-shadow: 0 0 35px rgba(201,168,76,0.9), 0 0 70px rgba(201,168,76,0.5); }
+    }
+
+    /* Text shimmer */
+    @keyframes textShimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    /* ── Boutons primaires animés ── */
+    .btn-primary {
+      background: linear-gradient(90deg,
+        #8B6914 0%, #C9A84C 25%, #F5D58B 50%, #C9A84C 75%, #8B6914 100%);
+      background-size: 300% 100%;
+      animation: goldShimmer 4s ease infinite;
+      transition: animation-duration 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover {
+      animation-duration: 2s;
+      box-shadow: 0 6px 32px rgba(201,168,76,0.55), 0 0 0 1px rgba(245,213,139,0.25);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .btn-full {
+      background: linear-gradient(90deg,
+        #8B6914 0%, #C9A84C 25%, #F5D58B 50%, #C9A84C 75%, #8B6914 100%);
+      background-size: 300% 100%;
+      animation: goldShimmer 4s ease infinite;
+      transition: animation-duration 0.3s, box-shadow 0.3s;
+    }
+    .btn-full:hover {
+      animation-duration: 2s;
+      box-shadow: 0 0 24px rgba(201,168,76,0.45), 0 4px 16px rgba(201,168,76,0.3);
+    }
+
+    /* ── Cards animées ── */
+    .service-card {
+      transition: transform 0.25s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .service-card:hover {
+      border-color: rgba(201,168,76,0.7);
+      box-shadow: 0 0 0 1px rgba(245,213,139,0.15), 0 8px 32px rgba(201,168,76,0.25);
+      transform: translateY(-4px);
+    }
+
+    .pro-card {
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .pro-card:hover {
+      border-color: rgba(201,168,76,0.6);
+      box-shadow: 0 0 24px rgba(201,168,76,0.15);
+    }
+
+    /* ── Prix animés ── */
+    .card-price {
+      background: linear-gradient(90deg,
+        #8B6914, #C9A84C, #F5D58B, #C9A84C, #8B6914);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: goldShimmer 5s ease infinite;
+    }
+    .service-card:hover .card-price {
+      animation-duration: 1s;
+    }
+
+    /* ── Badge card animé ── */
+    .card-badge {
+      background: linear-gradient(90deg,
+        #8B6914 0%, #C9A84C 30%, #F5D58B 50%, #C9A84C 70%, #8B6914 100%);
+      background-size: 300% 100%;
+      animation: goldShimmer 3s ease infinite;
+    }
+
+    /* ── Avatar pro glow ── */
+    .pro-avatar {
+      animation: goldGlow 3s ease-in-out infinite;
+    }
+    .pro-card:hover .pro-avatar {
+      animation: goldGlowFast 1.8s ease-in-out infinite;
+    }
+
+    /* ── Navbar avatar ── */
+    .navbar-avatar {
+      animation: goldGlow 4s ease-in-out infinite;
+      transition: animation-duration 0.3s;
+    }
+    .navbar-avatar:hover {
+      animation: goldGlowFast 1.6s ease-in-out infinite;
+    }
+
+    /* ── Stat cards ── */
+    .stat-val {
+      background: linear-gradient(90deg,
+        #8B6914, #C9A84C, #F5D58B, #C9A84C, #8B6914);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: goldShimmer 6s ease infinite;
+    }
+    .stat-card:hover .stat-val {
+      animation-duration: 1s;
+    }
+    .stat-card {
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .stat-card:hover {
+      border-color: rgba(201,168,76,0.5);
+      box-shadow: 0 0 20px rgba(201,168,76,0.12);
+    }
+
+    /* ── Gold text hero ── */
+    .gold {
+      background: linear-gradient(90deg,
+        #8B6914, #C9A84C, #F5D58B, #FFE5A0, #C9A84C, #8B6914);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: goldShimmer 6s ease infinite;
+      display: inline-block;
+    }
+
+    /* ── Notification card border ── */
+    .notif-card {
+      transition: border-left-color 0.3s, box-shadow 0.3s;
+    }
+    .notif-card:hover {
+      box-shadow: -4px 0 20px rgba(201,168,76,0.3), 0 0 16px rgba(201,168,76,0.1);
+    }
+
+    /* ── Nav item hover ── */
+    .nav-item {
+      transition: background 0.2s;
+    }
+    .nav-item:hover .nav-icon { filter: drop-shadow(0 0 6px rgba(201,168,76,0.8)); }
+
+    /* ── Nav dot pulse ── */
+    @keyframes dotPulse {
+      0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 6px var(--gold-main); }
+      50%       { transform: scale(1.4); opacity: 0.7; box-shadow: 0 0 12px var(--gold-main); }
+    }
+    .nav-dot { animation: dotPulse 2s ease-in-out infinite; }
+
+    /* ── Gold divider ── */
+    .gold-divider {
+      background: linear-gradient(90deg,
+        transparent, #8B6914, #C9A84C, #F5D58B, #C9A84C, #8B6914, transparent);
+      background-size: 200% 100%;
+      animation: goldShimmer 4s ease infinite;
+    }
+
+    /* ── Pill active ── */
+    .pill.active {
+      background: linear-gradient(90deg,
+        #8B6914 0%, #C9A84C 30%, #F5D58B 50%, #C9A84C 70%, #8B6914 100%);
+      background-size: 300% 100%;
+      animation: goldShimmer 3s ease infinite;
+    }
+    .pill:hover:not(.active) {
+      border-color: rgba(201,168,76,0.5);
+      color: var(--gold-main);
+    }
+
+    /* ── Form input focus glow ── */
+    .field input:focus {
+      border-color: var(--gold-main);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.15), 0 0 16px rgba(201,168,76,0.1);
+    }
+
+    /* ── GlamFeed card ── */
+    .glamfeed-card { transition: border-color 0.3s, box-shadow 0.3s; }
+    .glamfeed-card:hover {
+      border-color: rgba(201,168,76,0.5);
+      box-shadow: 0 0 28px rgba(201,168,76,0.12);
+    }
+
+    /* ── Tag gold shimmer ── */
+    .tag-gold {
+      background: linear-gradient(90deg,
+        rgba(201,168,76,0.08), rgba(201,168,76,0.2), rgba(201,168,76,0.08));
+      background-size: 300% 100%;
+      animation: goldShimmer 4s ease infinite;
+    }
+
+    /* scrollbar global */
+    ::-webkit-scrollbar { width: 0; }
+
+    /* spacing helpers */
+    .pb-4 { padding-bottom: 16px; }
+    .mt-4 { margin-top: 16px; }
+
+    /* ── LUCIDE ICONS ── */
+    i[data-lucide] {
+      display: inline-block;
+      vertical-align: middle;
+      width: 20px; height: 20px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+      flex-shrink: 0;
+    }
+    .nav-icon i[data-lucide] { width: 22px; height: 22px; }
+    .nav-item.active i[data-lucide] { stroke: var(--gold-main); }
+    .nav-item:hover i[data-lucide] { stroke: var(--gold-main); }
+    .btn-primary i[data-lucide], .btn-full i[data-lucide] { stroke: #000; width: 16px; height: 16px; }
+    .btn-outline i[data-lucide] { stroke: var(--gold-main); width: 16px; height: 16px; }
+    .search-icon i[data-lucide] { stroke: var(--gold-main); width: 17px; height: 17px; }
+    .card-img i[data-lucide] { width: 44px; height: 44px; stroke: var(--gold-main); opacity: 0.5; }
+    .pro-meta i[data-lucide] { width: 12px; height: 12px; stroke: var(--gold-main); }
+    .pro-action i[data-lucide] { width: 16px; height: 16px; stroke: var(--gold-main); }
+    .glamfeed-img i[data-lucide] { width: 60px; height: 60px; stroke: var(--gold-main); opacity: 0.3; }
+    .gf-btn i[data-lucide] { width: 22px; height: 22px; stroke: var(--text-muted); }
+    .notif-icon i[data-lucide] { width: 20px; height: 20px; stroke: var(--gold-main); }
+    .pill i[data-lucide] { width: 13px; height: 13px; stroke: currentColor; }
+  </style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- ══════════════════════════════════════
+       NAVBAR
+  ══════════════════════════════════════ -->
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <span class="gold">LOC</span>BEAUTÉ
+      <span>Plateforme Beauté</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div style="position:relative;color:var(--text-muted);">
+        <i data-lucide="bell"></i>
+        <div style="position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--gold-main);border-radius:50%;box-shadow:0 0 6px var(--gold-main);"></div>
+      </div>
+      <div class="navbar-avatar">RD</div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       HERO
+  ══════════════════════════════════════ -->
+  <div class="hero">
+    <p class="hero-label">✦ Bienvenue sur LocBeauté</p>
+    <h1>
+      <span class="gold">Les meilleurs</span><br>
+      talents beauté<br>près de vous.
+    </h1>
+    <p>Réservez un soin, une coupe ou un make-up avec les professionnels vérifiés de votre quartier.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="btn-primary"><i data-lucide="map-pin"></i> Explorer la carte</button>
+      <button class="btn-outline"><i data-lucide="users"></i> Voir les pros</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       STATS
+  ══════════════════════════════════════ -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val">1 200+</div>
+      <div class="stat-label">Pros vérifiés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">4.9★</div>
+      <div class="stat-label">Note moyenne</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">98%</div>
+      <div class="stat-label">Satisfaction</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SEARCH
+  ══════════════════════════════════════ -->
+  <div class="search-bar">
+    <span class="search-icon"><i data-lucide="search"></i></span>
+    <input type="text" placeholder="Rechercher un soin, une coupe…" />
+    <span style="color:var(--gold-main);"><i data-lucide="sliders-horizontal"></i></span>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       CATÉGORIES
+  ══════════════════════════════════════ -->
+  <div class="section-header">
+    <h2 class="section-title">Catégories</h2>
+    <span class="section-link">Tout voir →</span>
+  </div>
+  <div class="pills-row">
+    <div class="pill active"><i data-lucide="layout-grid"></i> Tout</div>
+    <div class="pill"><i data-lucide="scissors"></i> Coiffure</div>
+    <div class="pill"><i data-lucide="sparkles"></i> Onglerie</div>
+    <div class="pill"><i data-lucide="eye"></i> Cils</div>
+    <div class="pill"><i data-lucide="wand-2"></i> Make-up</div>
+    <div class="pill"><i data-lucide="zap"></i> Barbers</div>
+    <div class="pill"><i data-lucide="star"></i> Esthétique</div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SERVICES CARDS
+  ══════════════════════════════════════ -->
+  <div class="section-header">
+    <h2 class="section-title">Services <span class="gold">✦</span></h2>
+    <span class="section-link">Tout voir →</span>
+  </div>
+  <div class="cards-row">
+
+    <div class="service-card">
+      <div class="card-img">
+        <div class="card-badge">TOP</div>
+        <i data-lucide="sparkles"></i>
+      </div>
+      <div class="card-body">
+        <div class="card-pro">Nail Studio Paris</div>
+        <div class="card-title">Pose gel + nail art premium</div>
+        <div class="card-footer">
+          <span class="card-price">65 €</span>
+          <span class="card-stars"><i data-lucide="star" style="width:11px;height:11px;fill:var(--gold-main);stroke:var(--gold-main);"></i> 4.9</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="service-card">
+      <div class="card-img">
+        <div class="card-badge">NOUVEAU</div>
+        <i data-lucide="scissors"></i>
+      </div>
+      <div class="card-body">
+        <div class="card-pro">Hair Expert</div>
+        <div class="card-title">Coupe + Brushing luxe</div>
+        <div class="card-footer">
+          <span class="card-price">80 €</span>
+          <span class="card-stars"><i data-lucide="star" style="width:11px;height:11px;fill:var(--gold-main);stroke:var(--gold-main);"></i> 4.8</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="service-card">
+      <div class="card-img">
+        <i data-lucide="eye"></i>
+      </div>
+      <div class="card-body">
+        <div class="card-pro">Lash Expert</div>
+        <div class="card-title">Pose extensions cils volume russe</div>
+        <div class="card-footer">
+          <span class="card-price">90 €</span>
+          <span class="card-stars"><i data-lucide="star" style="width:11px;height:11px;fill:var(--gold-main);stroke:var(--gold-main);"></i> 5.0</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="gold-divider"></div>
+
+  <!-- ══════════════════════════════════════
+       PROS SECTION
+  ══════════════════════════════════════ -->
+  <div class="section-header">
+    <h2 class="section-title">Nos <span class="gold">Talents</span></h2>
+    <span class="section-link">Tout voir →</span>
+  </div>
+
+  <div class="pro-card">
+    <div class="pro-avatar"><i data-lucide="user" style="width:22px;height:22px;stroke:#000;"></i></div>
+    <div class="pro-info">
+      <div class="pro-name">Sofia M.</div>
+      <div class="pro-specialty">Esthéticienne · Massage</div>
+      <div class="pro-meta">
+        <span><i data-lucide="star" style="width:11px;height:11px;fill:var(--gold-main);stroke:var(--gold-main);"></i> 4.9</span>
+        <span><i data-lucide="map-pin"></i> 2.1 km</span>
+        <span><i data-lucide="message-circle"></i> 128 avis</span>
+      </div>
+    </div>
+    <div class="pro-action"><i data-lucide="arrow-right"></i></div>
+  </div>
+
+  <div class="pro-card">
+    <div class="pro-avatar"><i data-lucide="scissors" style="width:22px;height:22px;stroke:#000;"></i></div>
+    <div class="pro-info">
+      <div class="pro-name">Karim B.</div>
+      <div class="pro-specialty">Barber · Coiffure</div>
+      <div class="pro-meta">
+        <span><i data-lucide="star" style="width:11px;height:11px;fill:var(--gold-main);stroke:var(--gold-main);"></i> 5.0</span>
+        <span><i data-lucide="map-pin"></i> 0.8 km</span>
+        <span><i data-lucide="message-circle"></i> 210 avis</span>
+      </div>
+    </div>
+    <div class="pro-action"><i data-lucide="arrow-right"></i></div>
+  </div>
+
+  <div class="gold-divider"></div>
+
+  <!-- ══════════════════════════════════════
+       GLAMFEED PREVIEW
+  ══════════════════════════════════════ -->
+  <div class="section-header">
+    <h2 class="section-title">GlamFeed <span class="gold">✦</span></h2>
+    <span class="section-link">Tout voir →</span>
+  </div>
+
+  <div class="glamfeed-card">
+    <div class="glamfeed-header">
+      <div class="glamfeed-avatar">SM</div>
+      <div>
+        <div class="glamfeed-name">Sofia M.</div>
+        <div style="font-size:11px;color:var(--gold-main);">Esthéticienne certifiée ✦</div>
+      </div>
+      <div style="margin-left:auto;" class="tag tag-gold">PRO</div>
+    </div>
+    <div class="glamfeed-img"><i data-lucide="image"></i></div>
+    <div class="glamfeed-actions">
+      <span class="gf-btn"><i data-lucide="heart"></i></span>
+      <span class="gf-btn"><i data-lucide="message-circle"></i></span>
+      <span class="gf-btn"><i data-lucide="share-2"></i></span>
+      <span class="gf-likes">847 j'aime</span>
+    </div>
+    <div class="glamfeed-caption">
+      Résultat après séance de soin visage deep cleansing. Peau repulpée, lumineuse et hydratée. Disponible sur LocBeauté.
+    </div>
+  </div>
+
+  <div class="gold-divider"></div>
+
+  <!-- ══════════════════════════════════════
+       NOTIFICATIONS PREVIEW
+  ══════════════════════════════════════ -->
+  <div class="section-header">
+    <h2 class="section-title">Alertes <span class="gold">✦</span></h2>
+  </div>
+
+  <div class="notif-card">
+    <div class="notif-icon"><i data-lucide="calendar-check"></i></div>
+    <div class="notif-text">
+      <div class="notif-title">Réservation confirmée</div>
+      <div class="notif-sub">Pose gel avec Sofia M. — Demain 14h</div>
+    </div>
+    <div class="notif-time">2 min</div>
+  </div>
+  <div class="notif-card">
+    <div class="notif-icon"><i data-lucide="star"></i></div>
+    <div class="notif-text">
+      <div class="notif-title">Nouvel avis reçu</div>
+      <div class="notif-sub">Karim B. vous a laissé 5 étoiles</div>
+    </div>
+    <div class="notif-time">1 h</div>
+  </div>
+
+  <div class="gold-divider"></div>
+
+  <!-- ══════════════════════════════════════
+       LOGIN FORM PREVIEW
+  ══════════════════════════════════════ -->
+  <div class="section-break"><p>Connexion</p></div>
+  <div class="form-section">
+    <div class="deco-line"></div>
+    <h2 class="form-title">Bon retour <span class="gold">✦</span></h2>
+    <p class="form-subtitle">Connectez-vous à votre compte LocBeauté</p>
+
+    <div class="field">
+      <label>Adresse email</label>
+      <input type="email" placeholder="votre@email.com" value="sofia@example.com" />
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" placeholder="••••••••" value="password" />
+    </div>
+    <button class="btn-full">✦ Se connecter</button>
+    <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--gold-main);letter-spacing:0.5px;">Mot de passe oublié ?</p>
+  </div>
+
+  <div style="height:80px;"></div>
+
+  <!-- ══════════════════════════════════════
+       BOTTOM NAV
+  ══════════════════════════════════════ -->
+  <nav class="bottom-nav">
+    <div class="nav-item">
+      <span class="nav-icon"><i data-lucide="home"></i></span>
+      <span class="nav-label">Accueil</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon"><i data-lucide="map-pin"></i></span>
+      <span class="nav-label">MapBeauté</span>
+    </div>
+    <div class="nav-item active">
+      <span class="nav-icon"><i data-lucide="sparkles"></i></span>
+      <span class="nav-label">GlamFeed</span>
+    </div>
+    <div class="nav-item" style="position:relative;">
+      <span class="nav-icon"><i data-lucide="bell"></i></span>
+      <span class="nav-label">Alertes</span>
+      <div class="nav-dot"></div>
+    </div>
+    <div class="nav-item" style="position:relative;">
+      <span class="nav-icon"><i data-lucide="message-circle"></i></span>
+      <span class="nav-label">Chat</span>
+      <div class="nav-dot"></div>
+    </div>
+  </nav>
+
+</div>
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

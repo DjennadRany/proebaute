@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { BottomTabBar } from '../components/BottomTabBar';
+import { AppFooter } from '../components/AppFooter';
 import { Button } from '../components/ui/button';
 import { BRANDED_LOGO_SRC } from '../constants/branding';
 import { pageview } from '../lib/gtag';
@@ -353,6 +354,11 @@ export function RootLayout() {
           <Outlet />
         </div>
       </main>
+
+      {/* Footer — hidden on mobile when user is connected (BottomTabBar takes over) */}
+      <div className={user ? 'hidden md:block' : 'block'}>
+        <AppFooter />
+      </div>
       {user && <BottomTabBar />}
     </div>
   );

@@ -180,12 +180,11 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   LAYOUT RESPONSIVE
+   GLASSMORPHISM (cartes premium)
 ══════════════════════════════════════════════════════════════ */
-@layer utilities {
-  @media (min-width: 64rem) {
-    .lg\:px-8 {
-      padding-inline: calc(var(--spacing) * 0);
-    }
-  }
+.glass-dark {
+  background: rgba(10, 13, 18, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(201, 168, 76, 0.12);
 }

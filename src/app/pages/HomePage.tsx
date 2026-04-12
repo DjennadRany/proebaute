@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, Navigation, MapPin, Star, X, Check, ArrowRight } from 'lucide-react';
+import { Search, Navigation, MapPin, Star, X, Check, ArrowRight, Zap, Users, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchProfessionals, type ApiProfessional } from '../api/client';
 import { Button } from '../components/ui/button';
 import { useSEO } from '../hooks/useSEO';
 import 'leaflet/dist/leaflet.css';
 
-// ── Color helpers (same as MapBeautePage) ──────────────────────────────────
+// ── Color helpers ──────────────────────────────────────────────────────────
 function getColor(specialty: string): string {
   const s = specialty.toLowerCase();
   if (s.includes('coiff')) return '#C9A84C';
@@ -80,7 +80,7 @@ const CLIENT_FEATURES = [
 
 const PRO_FEATURES = [
   'Agenda en ligne automatisé',
-  'Visibilité géolocalisée',
+  'Visibilité géolocalisée instantanée',
   'Paiements directs & sécurisés',
   'Statistiques & avis clients',
 ];
@@ -117,7 +117,6 @@ export function HomePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect logged-in users to their dashboard
   useEffect(() => {
     if (user) {
       navigate(user.role === 'professional' ? '/pro/dashboard' : '/dashboard', { replace: true });
@@ -277,31 +276,50 @@ export function HomePage() {
 
   const handleViewProfile = () => {
     if (!selected) return;
-    if (!user) { navigate('/login'); return; }
-    navigate('/professionals/' + selected._id);
+    navigate(!user ? '/login' : '/professionals/' + selected._id);
   };
 
   const handleBook = () => {
     if (!selected) return;
-    if (!user) { navigate('/login'); return; }
-    navigate('/booking?proId=' + selected._id);
+    navigate(!user ? '/login' : '/booking?proId=' + selected._id);
   };
 
+  // Break out of RootLayout's max-w-6xl container to allow full-bleed sections
   return (
-    <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8">
+    <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 overflow-x-clip">
 
-      {/* ── HERO compact ───────────────────────────────────────────────────── */}
-      <section className="px-4 sm:px-6 lg:px-8 pt-6 pb-4 bg-background">
-        <div className="max-w-2xl">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-2">
+      {/* ── HERO ────────────────────────────────────────────────────────────── */}
+      <section
+        className="relative px-5 sm:px-8 lg:px-12 pt-8 pb-5"
+        style={{
+          background: 'linear-gradient(135deg, #080808 60%, #100c04 100%)',
+          borderBottom: '1px solid rgba(201,168,76,0.1)',
+        }}
+      >
+        {/* Gold ambient glow top-right */}
+        <div
+          className="absolute top-0 right-0 w-72 h-48 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 100% 0%, rgba(201,168,76,0.08) 0%, transparent 70%)' }}
+        />
+
+        <div className="relative max-w-2xl">
+          <h1 className="text-[1.7rem] sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-2">
             Trouvez votre expert beauté{' '}
             <span className="gold-text">près de chez vous</span>
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mb-4">
+          <p className="text-sm sm:text-base text-muted-foreground mb-5 max-w-lg">
             Coiffure, ongles, esthétique, make-up — réservez à domicile ou en salon, en quelques secondes.
           </p>
+
           {/* Search bar */}
-          <div className="flex items-center gap-2 bg-card border border-border rounded-2xl px-4 py-3 shadow-sm max-w-lg">
+          <div
+            className="flex items-center gap-2 rounded-2xl px-4 py-3 max-w-lg"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(201,168,76,0.2)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
             <Search className="h-4 w-4 text-muted-foreground shrink-0" />
             <input
               value={search}
@@ -315,19 +333,35 @@ export function HomePage() {
               </button>
             )}
           </div>
+
+          {/* Trust pills */}
+          <div className="flex flex-wrap gap-2 mt-4">
+            {[
+              { icon: Users, label: 'Pros vérifiés' },
+              { icon: Zap, label: 'Résa instantanée' },
+              { icon: Shield, label: 'Paiement sécurisé' },
+            ].map(({ icon: Icon, label }) => (
+              <span
+                key={label}
+                className="flex items-center gap-1.5 text-[11px] text-muted-foreground rounded-full px-3 py-1.5"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <Icon className="h-3 w-3" />
+                {label}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── EMBEDDED MAP ───────────────────────────────────────────────────── */}
+      {/* ── EMBEDDED MAP ─────────────────────────────────────────────────────── */}
       <section
         className="relative w-full"
-        style={{ height: '60vh', minHeight: '320px', maxHeight: '600px' }}
+        style={{ height: '58vh', minHeight: '300px', maxHeight: '580px' }}
         aria-label="Carte des professionnels de beauté"
       >
-        {/* Map tile */}
         <div ref={mapRef} className="absolute inset-0" />
 
-        {/* Loading overlay */}
         {mapLoading && (
           <div className="absolute inset-0 z-[999] flex items-center justify-center bg-background/60 backdrop-blur-sm">
             <div className="bg-card rounded-2xl shadow-xl px-6 py-4 flex items-center gap-3 border border-border">
@@ -337,10 +371,9 @@ export function HomePage() {
           </div>
         )}
 
-        {/* Locate button */}
         <button
           onClick={locate}
-          className="absolute top-4 right-4 z-[1000] bg-white rounded-2xl shadow-lg p-3 border border-border hover:bg-accent active:scale-95 transition-all"
+          className="absolute top-4 right-4 z-[1000] bg-white rounded-2xl shadow-lg p-3 border border-border hover:bg-gray-50 active:scale-95 transition-all"
           title="Me localiser"
         >
           {locating ? (
@@ -353,12 +386,12 @@ export function HomePage() {
         {/* Pro panel */}
         {selected && (
           <div className="absolute bottom-4 left-4 right-4 z-[1000] md:left-auto md:right-4 md:w-80">
-            <div className="bg-white rounded-2xl shadow-2xl border border-border overflow-hidden">
-              <div className="h-1.5" style={{ background: `linear-gradient(to right, ${proColor}, #ec4899)` }} />
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+              <div className="h-1" style={{ background: `linear-gradient(to right, ${proColor}, #C9A84C)` }} />
               <div className="p-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div
-                    className="w-14 h-14 rounded-xl overflow-hidden shrink-0 shadow-md border border-border flex items-center justify-center"
+                    className="w-14 h-14 rounded-xl overflow-hidden shrink-0 shadow flex items-center justify-center"
                     style={{ backgroundColor: proColor }}
                   >
                     {proPhoto && !imgError ? (
@@ -374,23 +407,23 @@ export function HomePage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">{selected.professionalName}</p>
-                    <p className="text-sm text-gray-500">{selected.specialty}</p>
+                    <p className="font-semibold text-gray-900 truncate text-sm">{selected.professionalName}</p>
+                    <p className="text-xs text-gray-500">{selected.specialty}</p>
                     {selected.ratingAverage > 0 && (
-                      <span className="flex items-center gap-1 text-sm font-medium text-gray-700 mt-0.5">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <span className="flex items-center gap-1 text-xs font-medium text-gray-700 mt-0.5">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                         {selected.ratingAverage.toFixed(1)}
-                        <span className="text-gray-400 font-normal text-xs">({selected.reviewsCount})</span>
+                        <span className="text-gray-400 font-normal">({selected.reviewsCount})</span>
                       </span>
                     )}
                   </div>
-                  <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 p-1 shrink-0">
+                  <button onClick={() => setSelected(null)} className="text-gray-300 hover:text-gray-500 p-1 shrink-0">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
 
                 {selected.city && (
-                  <p className="flex items-center gap-1 text-xs text-gray-400 mb-3">
+                  <p className="flex items-center gap-1 text-[11px] text-gray-400 mb-3">
                     <MapPin className="h-3 w-3" /> {selected.city}
                   </p>
                 )}
@@ -398,22 +431,22 @@ export function HomePage() {
                 <div className="flex gap-2">
                   <button
                     onClick={handleViewProfile}
-                    className="flex-1 py-2 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors"
+                    className="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors"
                   >
                     Voir profil
                   </button>
                   <button
                     onClick={handleBook}
-                    className="flex-1 py-2 rounded-xl text-sm font-medium text-white transition-colors"
-                    style={{ background: `linear-gradient(to right, ${proColor}, #C9A84C)` }}
+                    className="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-colors"
+                    style={{ background: `linear-gradient(135deg, ${proColor}, #C9A84C)` }}
                   >
                     Réserver
                   </button>
                 </div>
 
                 {!user && (
-                  <p className="text-[11px] text-gray-400 text-center mt-2">
-                    Connexion requise pour réserver
+                  <p className="text-[10px] text-gray-400 text-center mt-2">
+                    Connexion requise · <button className="underline" onClick={() => navigate('/login')}>Se connecter</button>
                   </p>
                 )}
               </div>
@@ -422,134 +455,227 @@ export function HomePage() {
         )}
       </section>
 
-      {/* ── CLIENT BANNER ──────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden" style={{ minHeight: '420px' }}>
-        <img
-          src="https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=1260"
-          alt="Professionnelle de beauté au travail"
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/20" />
-        <div className="relative z-10 flex flex-col justify-center h-full px-6 sm:px-10 lg:px-16 py-12 sm:py-16 max-w-lg">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">
-            Pour les clientes
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-4">
-            Votre beauté,{' '}
-            <span className="gold-text">à domicile ou en salon</span>
-          </h2>
-          <p className="text-sm sm:text-base text-white/75 mb-6 leading-relaxed">
-            Parcourez des centaines de professionnels vérifiés près de chez vous.
-            Choisissez, réservez, profitez — sans stress et sans attente.
-          </p>
-          <ul className="space-y-2 mb-8">
-            {CLIENT_FEATURES.map((f) => (
-              <li key={f} className="flex items-center gap-2 text-sm text-white/85">
-                <span className="w-5 h-5 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center shrink-0">
-                  <Check className="h-3 w-3 text-primary" />
-                </span>
-                {f}
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              size="lg"
-              className="rounded-full gold-bg text-black font-semibold px-6 shadow-lg"
-              onClick={() => navigate('/login?mode=signup&role=client')}
+      {/* ── CLIENT BANNER ────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden" style={{ minHeight: '440px' }}>
+        {/* Photo background — desktop right half only, mobile full bleed */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=1260"
+            alt="Professionnelle de beauté au travail"
+            className="w-full h-full object-cover object-center"
+            loading="lazy"
+          />
+          {/* Mobile overlay: strong left→right gradient */}
+          <div
+            className="absolute inset-0 md:hidden"
+            style={{ background: 'linear-gradient(to bottom, rgba(8,8,8,0.88) 0%, rgba(8,8,8,0.75) 60%, rgba(8,8,8,0.90) 100%)' }}
+          />
+          {/* Desktop overlay: content area left, reveal right */}
+          <div
+            className="absolute inset-0 hidden md:block"
+            style={{ background: 'linear-gradient(to right, rgba(8,8,8,0.96) 0%, rgba(8,8,8,0.85) 45%, rgba(8,8,8,0.3) 65%, transparent 100%)' }}
+          />
+        </div>
+
+        <div className="relative z-10 flex flex-col justify-center h-full px-6 sm:px-10 lg:px-16 py-14 sm:py-18" style={{ minHeight: '440px' }}>
+          <div className="max-w-md">
+            <span
+              className="inline-block text-[10px] font-bold uppercase tracking-[0.22em] mb-4 px-3 py-1.5 rounded-full"
+              style={{ background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.3)', color: '#C9A84C' }}
             >
-              Rejoindre LocBeauté
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-            <button
-              onClick={() => navigate('/login?role=client')}
-              className="text-sm text-white/70 hover:text-white underline underline-offset-4 self-center transition-colors"
-            >
-              Déjà membre ? Se connecter
-            </button>
+              Pour les clientes
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-4">
+              Votre beauté, <span className="gold-text">à domicile</span>
+              <br />ou en salon
+            </h2>
+            <p className="text-sm text-white/65 mb-6 leading-relaxed">
+              Des centaines de professionnels vérifiés près de chez vous. Choisissez, réservez,
+              profitez — sans stress, sans attente.
+            </p>
+            <ul className="space-y-2.5 mb-8">
+              {CLIENT_FEATURES.map((f) => (
+                <li key={f} className="flex items-center gap-3 text-sm text-white/80">
+                  <span
+                    className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.35)' }}
+                  >
+                    <Check className="h-3 w-3 text-primary" />
+                  </span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-col sm:flex-row gap-3 items-start">
+              <Button
+                size="lg"
+                className="rounded-full gold-bg text-black font-bold px-7 shadow-lg shadow-primary/20"
+                onClick={() => navigate('/login?mode=signup&role=client')}
+              >
+                Rejoindre LocBeauté
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+              <button
+                onClick={() => navigate('/login?role=client')}
+                className="text-xs text-white/55 hover:text-white underline underline-offset-4 self-center transition-colors"
+              >
+                Déjà membre ? Se connecter
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── PRO BANNER ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden" style={{ minHeight: '420px' }}>
-        <img
-          src="https://images.pexels.com/photos/1813272/pexels-photo-1813272.jpeg?auto=compress&cs=tinysrgb&w=1260"
-          alt="Barbier professionnel en activité"
-          className="absolute inset-0 w-full h-full object-cover object-top"
-          loading="lazy"
+      {/* ── PRO BANNER — Dark glass + blue reflection ─────────────────────── */}
+      <section
+        className="relative overflow-hidden"
+        style={{
+          minHeight: '440px',
+          background: '#070a10',
+        }}
+      >
+        {/* Subtle blue radial glow (right side) */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 85% 50%, rgba(59,130,246,0.09) 0%, transparent 60%)' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/60 to-black/20" />
-        <div className="relative z-10 flex flex-col justify-center h-full px-6 sm:px-10 lg:px-16 py-12 sm:py-16 max-w-lg ml-auto text-right">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">
-            Pour les professionnels
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-4">
-            Développez votre{' '}
-            <span className="gold-text">clientèle en ligne</span>
-          </h2>
-          <p className="text-sm sm:text-base text-white/75 mb-6 leading-relaxed">
-            Gérez votre agenda, vos réservations et vos paiements depuis une seule application.
-            Gagnez en visibilité géolocalisée dès le premier jour.
-          </p>
-          <ul className="space-y-2 mb-8 items-end">
-            {PRO_FEATURES.map((f) => (
-              <li key={f} className="flex items-center justify-end gap-2 text-sm text-white/85">
-                {f}
-                <span className="w-5 h-5 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center shrink-0">
-                  <Check className="h-3 w-3 text-primary" />
-                </span>
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-col sm:flex-row-reverse gap-3">
-            <Button
-              size="lg"
-              className="rounded-full gold-bg text-black font-semibold px-6 shadow-lg"
-              onClick={() => navigate('/login?mode=signup&role=pro')}
+        {/* Gold shimmer top-left corner */}
+        <div
+          className="absolute top-0 left-0 w-96 h-48 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(201,168,76,0.06) 0%, transparent 70%)' }}
+        />
+        {/* Geometric accent lines */}
+        <div
+          className="absolute right-0 top-0 bottom-0 w-px opacity-20"
+          style={{ background: 'linear-gradient(to bottom, transparent, rgba(59,130,246,0.6), transparent)' }}
+        />
+        <div
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.25), transparent)' }}
+        />
+        <div
+          className="absolute bottom-0 left-0 right-0 h-px"
+          style={{ background: 'linear-gradient(to right, transparent, rgba(59,130,246,0.15), transparent)' }}
+        />
+
+        {/* Decorative pro silhouette — desktop right */}
+        <div className="absolute right-0 top-0 bottom-0 w-5/12 hidden lg:block overflow-hidden">
+          <img
+            src="https://images.pexels.com/photos/1813272/pexels-photo-1813272.jpeg?auto=compress&cs=tinysrgb&w=800"
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover object-center opacity-15"
+            loading="lazy"
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(to right, #070a10 0%, #070a1088 40%, transparent 100%)' }}
+          />
+        </div>
+
+        <div className="relative z-10 flex flex-col justify-center h-full px-6 sm:px-10 lg:px-16 py-14 sm:py-18" style={{ minHeight: '440px' }}>
+          <div className="max-w-md">
+            <span
+              className="inline-block text-[10px] font-bold uppercase tracking-[0.22em] mb-4 px-3 py-1.5 rounded-full"
+              style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', color: 'rgba(147,197,253,0.9)' }}
             >
-              Créer mon espace pro
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-            <button
-              onClick={() => navigate('/login?role=pro')}
-              className="text-sm text-white/70 hover:text-white underline underline-offset-4 self-center transition-colors"
-            >
-              Déjà inscrit ? Me connecter
-            </button>
+              Pour les professionnels
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-4">
+              Développez votre <span className="gold-text">clientèle</span>
+              <br />en ligne dès aujourd'hui
+            </h2>
+            <p className="text-sm text-white/60 mb-6 leading-relaxed">
+              Agenda, réservations, paiements et visibilité géolocalisée — tout en un.
+              Rejoignez les pros qui font confiance à LocBeauté.
+            </p>
+            <ul className="space-y-2.5 mb-8">
+              {PRO_FEATURES.map((f) => (
+                <li key={f} className="flex items-center gap-3 text-sm text-white/75">
+                  <span
+                    className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)' }}
+                  >
+                    <Check className="h-3 w-3 text-blue-300" />
+                  </span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-col sm:flex-row gap-3 items-start">
+              <Button
+                size="lg"
+                className="rounded-full gold-bg text-black font-bold px-7 shadow-lg shadow-primary/20"
+                onClick={() => navigate('/login?mode=signup&role=pro')}
+              >
+                Créer mon espace pro
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+              <button
+                onClick={() => navigate('/login?role=pro')}
+                className="text-xs text-white/50 hover:text-white underline underline-offset-4 self-center transition-colors"
+              >
+                Déjà inscrit ? Me connecter
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── SEO CONTENT (crawlable) ─────────────────────────────────────────── */}
-      <section className="px-4 sm:px-6 lg:px-8 py-12 bg-card border-t border-border">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-8 text-center">
-            Comment fonctionne LocBeauté ?
-          </h2>
-          <div className="grid sm:grid-cols-3 gap-6 text-center">
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-full gold-bg flex items-center justify-center mx-auto text-black font-bold text-lg">1</div>
-              <h3 className="font-semibold text-foreground text-base">Cherchez</h3>
-              <p className="text-sm text-muted-foreground">Trouvez un coiffeur, esthéticienne, nail artist ou barbier près de chez vous sur la carte interactive.</p>
-            </div>
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-full gold-bg flex items-center justify-center mx-auto text-black font-bold text-lg">2</div>
-              <h3 className="font-semibold text-foreground text-base">Réservez</h3>
-              <p className="text-sm text-muted-foreground">Choisissez un créneau disponible, confirmez en ligne. Pas de téléphone, pas d'attente.</p>
-            </div>
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-full gold-bg flex items-center justify-center mx-auto text-black font-bold text-lg">3</div>
-              <h3 className="font-semibold text-foreground text-base">Profitez</h3>
-              <p className="text-sm text-muted-foreground">Le professionnel se déplace ou vous accueille. Payez en ligne, laissez un avis. Simple et sécurisé.</p>
-            </div>
+      {/* ── COMMENT ÇA MARCHE — SEO & content ──────────────────────────────── */}
+      <section
+        className="px-5 sm:px-8 lg:px-12 py-14"
+        style={{
+          background: 'linear-gradient(180deg, #09080e 0%, #080808 100%)',
+          borderTop: '1px solid rgba(201,168,76,0.1)',
+        }}
+      >
+        <div className="mx-auto max-w-4xl">
+          <div className="text-center mb-10">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary mb-2">Simple & rapide</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+              Comment fonctionne LocBeauté ?
+            </h2>
           </div>
-          <p className="text-center text-xs text-muted-foreground mt-10">
+
+          <div className="grid sm:grid-cols-3 gap-6">
+            {[
+              {
+                n: '1', title: 'Cherchez',
+                desc: 'Trouvez un coiffeur, esthéticienne, nail artist ou barbier près de chez vous sur la carte interactive.',
+              },
+              {
+                n: '2', title: 'Réservez',
+                desc: "Choisissez un créneau disponible, confirmez en ligne. Pas de téléphone, pas d'attente.",
+              },
+              {
+                n: '3', title: 'Profitez',
+                desc: 'Le professionnel se déplace ou vous accueille. Payez en ligne, laissez un avis. Simple et sécurisé.',
+              },
+            ].map(({ n, title, desc }) => (
+              <div
+                key={n}
+                className="text-center rounded-2xl p-6"
+                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(201,168,76,0.08)' }}
+              >
+                <div className="w-10 h-10 rounded-full gold-bg flex items-center justify-center mx-auto text-black font-bold text-base mb-4 shadow-md shadow-primary/20">
+                  {n}
+                </div>
+                <h3 className="font-semibold text-foreground text-base mb-2">{title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-[11px] text-muted-foreground/50 mt-10">
             LocBeauté · Réservation beauté à domicile en France ·{' '}
-            <a href="/professionals" className="underline hover:text-primary transition-colors">Trouver un professionnel</a>
+            <a href="/professionals" className="hover:text-primary transition-colors underline underline-offset-2">
+              Trouver un professionnel
+            </a>
             {' · '}
-            <a href="/services" className="underline hover:text-primary transition-colors">Voir les services</a>
+            <a href="/services" className="hover:text-primary transition-colors underline underline-offset-2">
+              Voir les services
+            </a>
           </p>
         </div>
       </section>
