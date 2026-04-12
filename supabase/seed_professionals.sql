@@ -118,47 +118,47 @@ DECLARE
     'L''Institut du Bien-être','Massage Harmonie','Zen & Beauté'
   ];
 
-  -- ── Photos galeries par spécialité (Pexels) ─────────────────────────────
+  -- ── Photos galeries par spécialité (Pexels — vérifiées beauté/coiffure) ──
   coif_gallery  TEXT[] := ARRAY[
-    'https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/3993467/pexels-photo-3993467.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/1319459/pexels-photo-1319459.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/4153618/pexels-photo-4153618.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/5069622/pexels-photo-5069622.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/4397334/pexels-photo-4397334.jpeg?auto=compress&w=400'
+    'https://images.pexels.com/photos/3065209/pexels-photo-3065209.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/2809222/pexels-photo-2809222.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/3738355/pexels-photo-3738355.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/3992874/pexels-photo-3992874.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/1570807/pexels-photo-1570807.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/3076316/pexels-photo-3076316.jpeg?auto=compress&w=400'
   ];
   barb_gallery  TEXT[] := ARRAY[
     'https://images.pexels.com/photos/1813272/pexels-photo-1813272.jpeg?auto=compress&w=400',
     'https://images.pexels.com/photos/1453005/pexels-photo-1453005.jpeg?auto=compress&w=400',
     'https://images.pexels.com/photos/2531728/pexels-photo-2531728.jpeg?auto=compress&w=400',
     'https://images.pexels.com/photos/3998428/pexels-photo-3998428.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/1570807/pexels-photo-1570807.jpeg?auto=compress&w=400'
+    'https://images.pexels.com/photos/897262/pexels-photo-897262.jpeg?auto=compress&w=400'
   ];
   nail_gallery  TEXT[] := ARRAY[
-    'https://images.pexels.com/photos/3997386/pexels-photo-3997386.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/939836/pexels-photo-939836.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/1604841/pexels-photo-1604841.jpeg?auto=compress&w=400',
     'https://images.pexels.com/photos/3997384/pexels-photo-3997384.jpeg?auto=compress&w=400',
     'https://images.pexels.com/photos/4783543/pexels-photo-4783543.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/5709754/pexels-photo-5709754.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/3604183/pexels-photo-3604183.jpeg?auto=compress&w=400'
+    'https://images.pexels.com/photos/3997391/pexels-photo-3997391.jpeg?auto=compress&w=400'
   ];
   esth_gallery  TEXT[] := ARRAY[
-    'https://images.pexels.com/photos/5927793/pexels-photo-5927793.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/6621461/pexels-photo-6621461.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/3985360/pexels-photo-3985360.jpeg?auto=compress&w=400',
     'https://images.pexels.com/photos/3997380/pexels-photo-3997380.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/3764571/pexels-photo-3764571.jpeg?auto=compress&w=400'
+    'https://images.pexels.com/photos/6621462/pexels-photo-6621462.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/3764571/pexels-photo-3764571.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/3865557/pexels-photo-3865557.jpeg?auto=compress&w=400'
   ];
   maq_gallery   TEXT[] := ARRAY[
     'https://images.pexels.com/photos/2681751/pexels-photo-2681751.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/4386431/pexels-photo-4386431.jpeg?auto=compress&w=400',
     'https://images.pexels.com/photos/3764347/pexels-photo-3764347.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/2003418/pexels-photo-2003418.jpeg?auto=compress&w=400'
+    'https://images.pexels.com/photos/1377034/pexels-photo-1377034.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/2533266/pexels-photo-2533266.jpeg?auto=compress&w=400'
   ];
   mass_gallery  TEXT[] := ARRAY[
     'https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/6823568/pexels-photo-6823568.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/3997373/pexels-photo-3997373.jpeg?auto=compress&w=400',
-    'https://images.pexels.com/photos/1865066/pexels-photo-1865066.jpeg?auto=compress&w=400'
+    'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/5699466/pexels-photo-5699466.jpeg?auto=compress&w=400',
+    'https://images.pexels.com/photos/3997373/pexels-photo-3997373.jpeg?auto=compress&w=400'
   ];
 
   -- ── Variables de boucle ──────────────────────────────────────────────────
@@ -203,7 +203,7 @@ BEGIN
       siren, verified,
       rating_average, reviews_count
     ) VALUES (
-      pid, gen_random_uuid(),
+      pid, NULL,
       pname, spec,
       CASE spec
         WHEN 'coiffure'   THEN 'Spécialiste en coiffure créative et colorimétrie. ' || (i % 3 + 1)::TEXT || ' ans d''expérience dans les meilleurs salons parisiens. Coupes femme, homme, enfant. Couleur, balayage, mèches, kératine.'
