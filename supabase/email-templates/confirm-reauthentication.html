@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmez votre identité — LocBeauté</title>
+</head>
+<body style="margin:0;padding:0;background-color:#fdf2f8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f8;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(236,72,153,0.08);">
+
+          <!-- HEADER -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#ec4899 0%,#be185d 100%);padding:36px 40px;text-align:center;">
+              <img src="https://locbeaute.com/asset/locbeaute_logo.png" alt="LocBeauté" width="160" style="display:block;margin:0 auto 12px;max-width:160px;" />
+              <p style="margin:0;color:rgba(255,255,255,0.85);font-size:14px;letter-spacing:1px;text-transform:uppercase;">Vérification de sécurité</p>
+            </td>
+          </tr>
+
+          <!-- BODY -->
+          <tr>
+            <td style="padding:48px 40px 32px;">
+              <h1 style="margin:0 0 16px;font-size:26px;font-weight:700;color:#1f1235;line-height:1.3;">
+                Confirmez votre identité 🛡️
+              </h1>
+              <p style="margin:0 0 24px;font-size:16px;color:#6b7280;line-height:1.7;">
+                Vous avez demandé une action sensible sur votre compte <strong style="color:#ec4899;">LocBeauté</strong>. Pour votre sécurité, saisissez le code OTP ci-dessous dans l'application.
+              </p>
+
+              <!-- OTP BOX -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
+                <tr>
+                  <td style="text-align:center;">
+                    <table cellpadding="0" cellspacing="0" style="display:inline-table;background:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);border:2px solid #ec4899;border-radius:16px;padding:24px 48px;">
+                      <tr>
+                        <td style="text-align:center;">
+                          <p style="margin:0 0 8px;font-size:13px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Votre code de vérification</p>
+                          <p style="margin:0;font-size:40px;font-weight:800;color:#be185d;letter-spacing:10px;font-family:'Courier New',monospace;">{{ .Token }}</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- ALERT BOX -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
+                <tr>
+                  <td style="background:#fff7ed;border-left:4px solid #f97316;border-radius:8px;padding:14px 18px;">
+                    <p style="margin:0;font-size:14px;color:#92400e;line-height:1.6;">
+                      ⚠️ Ce code expire dans <strong>10 minutes</strong>. Ne le partagez jamais avec personne — LocBeauté ne vous demandera jamais ce code par téléphone.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- DIVIDER -->
+              <hr style="border:none;border-top:1px solid #f3e8ff;margin:0 0 28px;" />
+
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf2f8;border-radius:10px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6;">
+                      🔒 Si vous n'avez pas demandé ce code, ignorez cet email et vérifiez la sécurité de votre compte sur <a href="https://locbeaute.com" style="color:#ec4899;text-decoration:none;">locbeaute.com</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:#fdf2f8;padding:24px 40px;text-align:center;border-top:1px solid #fce7f3;">
+              <p style="margin:0 0 6px;font-size:13px;color:#9ca3af;">
+                © 2025 LocBeauté — Tous droits réservés
+              </p>
+              <p style="margin:0;font-size:13px;color:#9ca3af;">
+                <a href="https://locbeaute.com" style="color:#ec4899;text-decoration:none;">locbeaute.com</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
