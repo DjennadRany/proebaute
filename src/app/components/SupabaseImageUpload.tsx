@@ -38,7 +38,7 @@ export function SupabaseImageUpload({ entityId, mode, currentUrl, onUploaded, cl
       <input ref={inputRef} type="file" accept="image/*" className="sr-only"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
       <button type="button" onClick={() => inputRef.current?.click()}
-        className="relative group rounded-xl border-2 border-dashed border-border hover:border-violet-400 transition-colors overflow-hidden"
+        className="relative group rounded-xl border-2 border-dashed border-border hover:border-primary transition-colors overflow-hidden"
         style={{ width: mode === 'avatar' ? 80 : '100%', height: mode === 'avatar' ? 80 : 160 }}>
         {preview ? (
           <img src={preview} className="w-full h-full object-cover" alt="" />

@@ -866,7 +866,7 @@ export function LoginPage() {
             alt="Logo LocBeauté"
             className="h-20 w-auto object-contain"
           />
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-[#e8c1b7] via-[#d9a5a5] to-[#6c5ce7] bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-[#8B6914] via-[#C9A84C] to-[#F5D58B] bg-clip-text text-transparent">
             LocBeauté
           </h1>
           <p className="text-sm text-muted-foreground">{title}</p>

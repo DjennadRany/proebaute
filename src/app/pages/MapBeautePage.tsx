@@ -315,7 +315,7 @@ export function MapBeautePage() {
       {loading && (
         <div className="absolute inset-0 z-[999] flex items-center justify-center bg-background/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl px-6 py-4 flex items-center gap-3">
-            <div className="h-5 w-5 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+            <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             <span className="text-sm font-medium">Chargement des pros...</span>
           </div>
         </div>
@@ -396,13 +396,13 @@ export function MapBeautePage() {
       {/* Bouton localisation flottant sur la carte */}
       <button
         onClick={locate}
-        className="absolute top-20 right-4 z-[1000] bg-white rounded-2xl shadow-lg p-3 border border-border hover:bg-violet-50 active:scale-95 transition-all"
+        className="absolute top-20 right-4 z-[1000] bg-white rounded-2xl shadow-lg p-3 border border-border hover:bg-accent active:scale-95 transition-all"
         title="Me localiser"
       >
         {locating ? (
-          <div className="h-6 w-6 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
+          <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
         ) : (
-          <Navigation className="h-6 w-6 text-violet-600" style={{ transform: 'rotate(45deg)' }} />
+          <Navigation className="h-6 w-6 text-primary" style={{ transform: 'rotate(45deg)' }} />
         )}
       </button>
     </div>

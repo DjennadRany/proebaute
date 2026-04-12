@@ -128,7 +128,7 @@ export function HomePage() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight text-foreground">
             Réservez vos soins beauté
             <br />
-            <span className="text-primary-foreground bg-gradient-to-r from-[#e8c1b7] via-[#d9a5a5] to-[#6c5ce7] bg-clip-text text-transparent">
+            <span className="text-primary-foreground bg-gradient-to-r from-[#8B6914] via-[#C9A84C] to-[#F5D58B] bg-clip-text text-transparent">
               à domicile, en toute confiance.
             </span>
           </h1>

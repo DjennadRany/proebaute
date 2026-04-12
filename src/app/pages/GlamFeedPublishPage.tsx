@@ -49,7 +49,7 @@ export function GlamFeedPublishPage() {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4">
-        <Sparkles className="h-12 w-12 text-violet-400" />
+        <Sparkles className="h-12 w-12 text-primary" />
         <h2 className="text-lg font-semibold">Connectez-vous pour publier</h2>
         <Button onClick={() => navigate('/login')}>Se connecter</Button>
       </div>
@@ -102,8 +102,8 @@ export function GlamFeedPublishPage() {
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4 text-center">
-        <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center">
-          <Sparkles className="h-8 w-8 text-violet-600" />
+        <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center">
+          <Sparkles className="h-8 w-8 text-primary" />
         </div>
         <h2 className="text-xl font-bold">Publication envoyée !</h2>
         <p className="text-muted-foreground text-sm">Votre post apparaîtra dans le GlamFeed.</p>
@@ -125,7 +125,7 @@ export function GlamFeedPublishPage() {
         <Button
           onClick={handleSubmit}
           disabled={!file || uploading}
-          className="rounded-full px-5 bg-violet-600 hover:bg-violet-700 text-white"
+          className="rounded-full px-5 bg-primary hover:bg-primary/90 text-white"
         >
           {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Publier'}
         </Button>
@@ -193,7 +193,7 @@ export function GlamFeedPublishPage() {
       {/* Caption */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 px-1">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-xs font-bold">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B6914] to-[#C9A84C] flex items-center justify-center text-white text-xs font-bold">
             {(user.firstName[0] + (user.lastName[0] ?? '')).toUpperCase()}
           </div>
           <span className="text-sm font-medium text-foreground">{user.firstName} {user.lastName}</span>
@@ -204,15 +204,15 @@ export function GlamFeedPublishPage() {
           placeholder="Décrivez votre look, votre coup de coeur... ✨"
           maxLength={300}
           rows={3}
-          className="w-full rounded-2xl border border-border bg-muted px-4 py-3 text-sm outline-none focus:border-violet-400 resize-none"
+          className="w-full rounded-2xl border border-border bg-muted px-4 py-3 text-sm outline-none focus:border-primary resize-none"
         />
         <p className="text-xs text-right text-muted-foreground">{caption.length}/300</p>
       </div>
 
       {/* Tips */}
-      <div className="rounded-2xl bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900 px-4 py-3 space-y-1">
-        <p className="text-xs font-semibold text-violet-700 dark:text-violet-300">Conseils ✨</p>
-        <ul className="text-xs text-violet-600 dark:text-violet-400 space-y-0.5 list-disc pl-4">
+      <div className="rounded-2xl bg-accent dark:bg-accent border border-border dark:border-primary px-4 py-3 space-y-1">
+        <p className="text-xs font-semibold text-primary dark:text-primary">Conseils ✨</p>
+        <ul className="text-xs text-primary dark:text-primary space-y-0.5 list-disc pl-4">
           <li>Les photos verticales (9:16) s'affichent mieux</li>
           <li>Montrez le résultat avant/après pour plus d'engagement</li>
           <li>Taguez votre professionnel dans la légende</li>

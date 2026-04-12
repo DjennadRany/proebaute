@@ -36,7 +36,7 @@ export function EntityAvatar({
     <div className={cn('relative shrink-0', className)}>
       <div
         className={cn(
-          'overflow-hidden rounded-full bg-gradient-to-br from-[#e8c1b7] via-[#d9a5a5] to-[#6c5ce7] text-white font-semibold flex items-center justify-center',
+          'overflow-hidden rounded-full bg-gradient-to-br from-[#8B6914] via-[#C9A84C] to-[#F5D58B] text-white font-semibold flex items-center justify-center',
           sizeMap[size],
         )}
       >

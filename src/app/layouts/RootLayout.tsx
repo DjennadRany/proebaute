@@ -159,7 +159,7 @@ export function RootLayout() {
                       aria-haspopup="menu"
                       aria-expanded={userMenuOpen}
                     >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#e8c1b7] to-[#6c5ce7] flex items-center justify-center text-xs font-medium text-white">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B6914] to-[#C9A84C] flex items-center justify-center text-xs font-medium text-white">
                         {initials}
                       </div>
                       <div className="hidden xl:flex flex-col min-w-0 text-left">
@@ -250,7 +250,7 @@ export function RootLayout() {
               {user && (
                 <div className="mb-3 rounded-xl border border-border bg-accent/40 px-3 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#e8c1b7] to-[#6c5ce7] text-sm font-medium text-white">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#8B6914] to-[#C9A84C] text-sm font-medium text-white">
                       {initials}
                     </div>
                     <div className="min-w-0">

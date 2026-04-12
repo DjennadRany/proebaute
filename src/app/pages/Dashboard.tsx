@@ -336,7 +336,7 @@ export function Dashboard() {
         </Link>
 
         <Link to="/professionals" className="group">
-          <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-[28px] p-6 text-white hover:shadow-lg transition-shadow">
+          <div className="bg-gradient-to-br from-[#8B6914] to-[#C9A84C] rounded-[28px] p-6 text-white hover:shadow-lg transition-shadow">
             <Star className="w-8 h-8 mb-3 opacity-90" />
             <h3 className="font-semibold mb-1">Top professionnels</h3>
             <p className="text-sm opacity-90">Les mieux notés près de chez vous</p>

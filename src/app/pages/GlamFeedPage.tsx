@@ -114,7 +114,7 @@ function CommentDrawer({
           ) : (
             item.commentList.map((c) => (
               <div key={c.id} className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B6914] to-[#C9A84C] flex items-center justify-center text-white text-xs font-bold shrink-0">
                   {c.author.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -132,7 +132,7 @@ function CommentDrawer({
 
         {/* Input */}
         <div className="px-4 py-3 border-t border-border flex items-center gap-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B6914] to-[#C9A84C] flex items-center justify-center text-white text-xs font-bold shrink-0">
             {user ? (user.firstName.charAt(0) + user.lastName.charAt(0)).toUpperCase() : '?'}
           </div>
           <input
@@ -141,12 +141,12 @@ function CommentDrawer({
             onKeyDown={(e) => e.key === 'Enter' && submit()}
             placeholder={user ? 'Ajouter un commentaire...' : 'Connectez-vous pour commenter'}
             disabled={!user}
-            className="flex-1 text-sm bg-muted rounded-full px-4 py-2 outline-none border border-border focus:border-violet-400"
+            className="flex-1 text-sm bg-muted rounded-full px-4 py-2 outline-none border border-border focus:border-primary"
           />
           <button
             onClick={submit}
             disabled={!text.trim() || sending || !user}
-            className="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center disabled:opacity-40"
+            className="w-9 h-9 rounded-full bg-primary flex items-center justify-center disabled:opacity-40"
           >
             {sending
               ? <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -297,7 +297,7 @@ function ReelCard({
 
         {/* Sauvegarder */}
         <button onClick={() => onSave(item.id)} className="flex flex-col items-center gap-1">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 ${item.saved ? 'bg-violet-600 scale-110' : 'bg-white/20 border border-white/30 backdrop-blur-sm'}`}>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 ${item.saved ? 'bg-primary scale-110' : 'bg-white/20 border border-white/30 backdrop-blur-sm'}`}>
             <Bookmark className={`h-6 w-6 ${item.saved ? 'fill-white text-white' : 'text-white'}`} />
           </div>
         </button>
@@ -315,7 +315,7 @@ function ReelCard({
         {item.isClientPost ? (
           /* Post client */
           <div>
-            <span className="inline-block mb-2 px-3 py-0.5 rounded-full text-[11px] font-bold text-white shadow bg-fuchsia-600/90">
+            <span className="inline-block mb-2 px-3 py-0.5 rounded-full text-[11px] font-bold text-white shadow bg-primary/90">
               ✨ Post client
             </span>
             {item.caption && (
@@ -563,7 +563,7 @@ export function GlamFeedPage() {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black z-50">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 rounded-full border-2 border-fuchsia-500 border-t-transparent animate-spin" />
+          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
           <p className="text-white/60 text-sm">Chargement du GlamFeed...</p>
         </div>
       </div>

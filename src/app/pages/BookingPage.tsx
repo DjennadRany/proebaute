@@ -441,7 +441,7 @@ export function BookingPage() {
                 </p>
               ) : null}
               <Button
-                className="mt-5 w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white border-0"
+                className="mt-5 w-full bg-gradient-to-r from-[#8B6914] to-[#C9A84C] hover:from-[#7A5C12] hover:to-[#B8943E] text-white border-0"
                 size="lg"
                 disabled={!canProceed || slotsLoading}
                 onClick={handleProceedToPayment}

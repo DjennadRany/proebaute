@@ -25,8 +25,8 @@ export function PaymentStatus({
   if (mode === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center gap-5 py-16 px-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-violet-600 dark:text-violet-400 animate-spin" />
+        <div className="w-16 h-16 rounded-full bg-accent dark:bg-accent flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-primary dark:text-primary animate-spin" />
         </div>
         <div className="space-y-1">
           <h3 className="text-lg font-semibold text-foreground">Traitement en cours...</h3>
@@ -89,7 +89,7 @@ export function PaymentStatus({
         {onViewReservation && (
           <Button
             onClick={onViewReservation}
-            className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white"
+            className="w-full bg-gradient-to-r from-[#8B6914] to-[#C9A84C] hover:from-[#7A5C12] hover:to-[#B8943E] text-white"
           >
             Voir ma reservation
           </Button>
@@ -119,7 +119,7 @@ export function PaymentStatus({
       {onRetry && (
         <Button
           onClick={onRetry}
-          className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white"
+          className="w-full bg-gradient-to-r from-[#8B6914] to-[#C9A84C] hover:from-[#7A5C12] hover:to-[#B8943E] text-white"
         >
           Reessayer
         </Button>

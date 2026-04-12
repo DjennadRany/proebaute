@@ -120,7 +120,7 @@ export function ProfessionalProfile() {
         backTo="/professionals"
       />
 
-      <AppCard tone="premium" className="mb-8 rounded-[32px] bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20">
+      <AppCard tone="premium" className="mb-8 rounded-[32px] bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
         <div className="flex flex-col items-start gap-6 sm:flex-row">
           <EntityAvatar
             name={professional.professionalName}

@@ -138,8 +138,8 @@ export function SettingsPage() {
         <AppCard tone="elevated" className="rounded-2xl p-0 overflow-hidden">
           <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <Eye className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 rounded-lg bg-accent dark:bg-accent">
+                <Eye className="w-5 h-5 text-primary dark:text-primary" />
               </div>
               <div>
                 <h2 className="font-semibold text-foreground">Confidentialité</h2>

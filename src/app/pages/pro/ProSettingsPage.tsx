@@ -81,7 +81,7 @@ export function ProSettingsPage() {
           onClick={() => setActiveTab(tab)}
           className={`px-4 py-2 text-sm font-medium whitespace-nowrap rounded-t-lg border-b-2 transition-colors ${
             activeTab === tab
-              ? 'border-violet-600 text-violet-600'
+              ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -132,7 +132,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-violet-500 ${props.className ?? ''}`}
+      className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary ${props.className ?? ''}`}
     />
   );
 }
@@ -141,7 +141,7 @@ function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}
-      className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500 ${props.className ?? ''}`}
+      className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary ${props.className ?? ''}`}
     />
   );
 }
@@ -150,7 +150,7 @@ function SaveButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all shadow-sm"
+      className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#8B6914] to-[#C9A84C] hover:from-[#7A5C12] hover:to-[#B8943E] transition-all shadow-sm"
     >
       <Save className="w-4 h-4" />
       Enregistrer
@@ -194,7 +194,7 @@ function TabCompte({
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-card p-6 space-y-4 mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <User className="w-5 h-5 text-violet-600" />
+          <User className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-foreground">Informations personnelles</h2>
         </div>
 
@@ -314,7 +314,7 @@ function TabActivite({
       {/* SIRET */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4 mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <Briefcase className="w-5 h-5 text-violet-600" />
+          <Briefcase className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-foreground">Informations legales</h2>
         </div>
 
@@ -333,7 +333,7 @@ function TabActivite({
             href="https://annuaire-entreprises.data.gouv.fr"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-violet-600 hover:underline"
+            className="text-xs text-primary hover:underline"
           >
             Verifier sur sirene.fr
           </a>
@@ -379,8 +379,8 @@ function TabActivite({
                 onClick={() => setZone(z.value)}
                 className={`rounded-lg border px-3 py-3 text-sm font-medium transition-colors text-center ${
                   zone === z.value
-                    ? 'border-violet-600 bg-violet-50 text-violet-700 dark:bg-violet-900/20 dark:text-violet-400'
-                    : 'border-border text-muted-foreground hover:border-violet-400 hover:text-foreground'
+                    ? 'border-primary bg-accent text-primary dark:bg-accent dark:text-primary'
+                    : 'border-border text-muted-foreground hover:border-primary hover:text-foreground'
                 }`}
               >
                 {z.label}
@@ -392,7 +392,7 @@ function TabActivite({
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-foreground">
             Rayon d'intervention -{' '}
-            <span className="text-violet-600 font-semibold">{rayon} km</span> autour de votre adresse
+            <span className="text-primary font-semibold">{rayon} km</span> autour de votre adresse
           </label>
           <input
             type="range"
@@ -401,7 +401,7 @@ function TabActivite({
             step={5}
             value={rayon}
             onChange={(e) => setRayon(Number(e.target.value))}
-            className="w-full accent-violet-600"
+            className="w-full accent-primary"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>5 km</span>
@@ -453,7 +453,7 @@ function TabActivite({
             rows={4}
             maxLength={300}
             placeholder="Presentez-vous en quelques mots a vos clients..."
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
           />
         </div>
       </div>
@@ -541,7 +541,7 @@ function TabPaiements({
       {/* IBAN */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4 mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <CreditCard className="w-5 h-5 text-violet-600" />
+          <CreditCard className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-foreground">Coordonnees bancaires</h2>
         </div>
 
@@ -571,7 +571,7 @@ function TabPaiements({
               </span>
               <button
                 onClick={() => setIbanEdit(true)}
-                className="text-xs text-violet-600 hover:underline ml-3 shrink-0"
+                className="text-xs text-primary hover:underline ml-3 shrink-0"
               >
                 Modifier l'IBAN
               </button>
@@ -686,7 +686,7 @@ function SwitchRow({
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
         />
-        <div className="w-11 h-6 rounded-full bg-muted peer-checked:bg-violet-600 transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:w-5 after:h-5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm" />
+        <div className="w-11 h-6 rounded-full bg-muted peer-checked:bg-primary transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:w-5 after:h-5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm" />
       </label>
     </div>
   );
@@ -729,7 +729,7 @@ function TabNotifications({
       {/* Reservations */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-1 mb-4">
         <div className="flex items-center gap-2 mb-3">
-          <Bell className="w-4 h-4 text-violet-600" />
+          <Bell className="w-4 h-4 text-primary" />
           <h3 className="text-sm font-semibold text-foreground">Reservations</h3>
         </div>
         <SwitchRow
@@ -760,7 +760,7 @@ function TabNotifications({
       {/* Paiements */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-1 mb-4">
         <div className="flex items-center gap-2 mb-3">
-          <CreditCard className="w-4 h-4 text-violet-600" />
+          <CreditCard className="w-4 h-4 text-primary" />
           <h3 className="text-sm font-semibold text-foreground">Paiements</h3>
         </div>
         <SwitchRow
@@ -783,7 +783,7 @@ function TabNotifications({
       {/* Marketing */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-1 mb-4">
         <div className="flex items-center gap-2 mb-3">
-          <Info className="w-4 h-4 text-violet-600" />
+          <Info className="w-4 h-4 text-primary" />
           <h3 className="text-sm font-semibold text-foreground">Marketing</h3>
         </div>
         <SwitchRow
@@ -902,7 +902,7 @@ function TabSecurite({ navigate }: { navigate: ReturnType<typeof useNavigate> })
       {/* Mot de passe */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4 mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <Shield className="w-5 h-5 text-violet-600" />
+          <Shield className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-foreground">Changer le mot de passe</h2>
         </div>
 
@@ -993,7 +993,7 @@ function TabSecurite({ navigate }: { navigate: ReturnType<typeof useNavigate> })
         <div className="flex items-center gap-3">
           <button
             onClick={handleChangePwd}
-            className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all"
+            className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#8B6914] to-[#C9A84C] hover:from-[#7A5C12] hover:to-[#B8943E] transition-all"
           >
             <Shield className="w-4 h-4" />
             Mettre a jour

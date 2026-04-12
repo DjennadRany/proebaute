@@ -27,7 +27,7 @@ export function PaymentSummary({
   const totalEur = servicePrice.toFixed(2).replace('.', ',');
 
   return (
-    <div className="rounded-2xl border border-violet-100 dark:border-violet-900/30 bg-gradient-to-br from-violet-50/60 to-fuchsia-50/40 dark:from-violet-950/20 dark:to-fuchsia-950/10 p-6 space-y-5">
+    <div className="rounded-2xl border border-border dark:border-border bg-gradient-to-br from-accent to-muted p-6 space-y-5">
       <h3 className="text-lg font-bold text-foreground">
         Recapitulatif du paiement
       </h3>
@@ -35,7 +35,7 @@ export function PaymentSummary({
       {/* Details de la prestation */}
       <div className="space-y-3">
         <div className="flex items-start gap-3">
-          <Scissors className="w-4 h-4 mt-0.5 text-violet-500 shrink-0" />
+          <Scissors className="w-4 h-4 mt-0.5 text-primary shrink-0" />
           <div className="flex-1 flex justify-between gap-2">
             <div>
               <p className="text-sm font-medium text-foreground">{serviceName}</p>
@@ -48,17 +48,17 @@ export function PaymentSummary({
         </div>
 
         <div className="flex items-center gap-3">
-          <Calendar className="w-4 h-4 text-violet-500 shrink-0" />
+          <Calendar className="w-4 h-4 text-primary shrink-0" />
           <span className="text-sm text-foreground">{date}</span>
         </div>
 
         <div className="flex items-center gap-3">
-          <Clock className="w-4 h-4 text-violet-500 shrink-0" />
+          <Clock className="w-4 h-4 text-primary shrink-0" />
           <span className="text-sm text-foreground">{time}</span>
         </div>
 
         <div className="flex items-center gap-3">
-          <MapPin className="w-4 h-4 text-violet-500 shrink-0" />
+          <MapPin className="w-4 h-4 text-primary shrink-0" />
           <span className="text-sm text-foreground">
             {isHomeService ? 'A votre domicile' : 'En salon'}
           </span>
@@ -66,7 +66,7 @@ export function PaymentSummary({
       </div>
 
       {/* Separateur */}
-      <div className="border-t border-violet-100 dark:border-violet-800/30" />
+      <div className="border-t border-border dark:border-border" />
 
       {/* Recapitulatif financier */}
       <div className="space-y-2">
@@ -85,12 +85,12 @@ export function PaymentSummary({
         </div>
         <div className="flex justify-between text-base font-bold text-foreground pt-1">
           <span>Total</span>
-          <span className="text-violet-700 dark:text-violet-400">{totalEur} EUR</span>
+          <span className="text-primary dark:text-primary">{totalEur} EUR</span>
         </div>
       </div>
 
       {/* Note securite */}
-      <div className="rounded-xl bg-white/70 dark:bg-white/5 border border-violet-100 dark:border-violet-800/20 px-4 py-3">
+      <div className="rounded-xl bg-white/70 dark:bg-white/5 border border-border dark:border-border px-4 py-3">
         <p className="text-xs text-muted-foreground leading-relaxed">
           Paiement securise par Stripe. Votre carte ne sera debitee qu&apos;apres
           confirmation du professionnel.
@@ -109,7 +109,7 @@ export function PaymentSummary({
           type="button"
           onClick={onConfirm}
           disabled={isLoading}
-          className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 text-sm transition-all shadow-md hover:shadow-lg"
+          className="w-full rounded-xl bg-gradient-to-r from-[#8B6914] to-[#C9A84C] hover:from-[#7A5C12] hover:to-[#B8943E] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 text-sm transition-all shadow-md hover:shadow-lg"
         >
           {isLoading ? 'Traitement...' : `Confirmer et payer ${totalEur} EUR`}
         </button>

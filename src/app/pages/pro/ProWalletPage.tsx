@@ -191,7 +191,7 @@ export function ProWalletPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -207,7 +207,7 @@ export function ProWalletPage() {
       {/* Section - Comment ca marche */}
       <AppCard tone="elevated" className="rounded-2xl">
         <div className="flex items-center gap-2 mb-5">
-          <HelpCircle className="w-5 h-5 text-violet-500" />
+          <HelpCircle className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-foreground text-lg">Comment ca marche ?</h2>
         </div>
 
@@ -226,8 +226,8 @@ export function ProWalletPage() {
               step: '2',
               title: 'Prestation terminee',
               desc: "Vous marquez la prestation comme terminee dans vos reservations.",
-              color: 'text-violet-500',
-              bg: 'bg-violet-50 dark:bg-violet-950/30',
+              color: 'text-primary',
+              bg: 'bg-accent dark:bg-accent',
             },
             {
               icon: ShieldCheck,
@@ -331,14 +331,14 @@ export function ProWalletPage() {
         {/* Total cumule */}
         <AppCard tone="elevated" className="rounded-2xl">
           <div className="flex items-start justify-between mb-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+            <div className="w-10 h-10 rounded-xl bg-accent dark:bg-accent flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-primary dark:text-primary" />
             </div>
-            <Badge variant="outline" className="text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800 text-xs">
+            <Badge variant="outline" className="text-primary dark:text-primary border-border dark:border-primary text-xs">
               Total
             </Badge>
           </div>
-          <p className="text-2xl font-bold text-violet-700 dark:text-violet-400">
+          <p className="text-2xl font-bold text-primary dark:text-primary">
             {formatEur(totalEarnedEur)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">Cumule depuis le debut</p>
@@ -376,7 +376,7 @@ export function ProWalletPage() {
       {/* Historique des virements */}
       <AppCard tone="elevated" className="rounded-2xl">
         <div className="flex items-center gap-2 mb-5">
-          <ArrowDownToLine className="w-5 h-5 text-violet-500" />
+          <ArrowDownToLine className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-foreground text-lg">Historique des virements</h2>
         </div>
 
