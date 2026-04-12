@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
+import { useSEO } from '../hooks/useSEO';
 import { Clock, MapPin, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AppCard } from '../components/AppCard';
@@ -38,6 +39,14 @@ export function ServiceDetail() {
 
   const [service, setService] = useState<ApiService | null>(null);
   const [professional, setProfessional] = useState<ApiProfessional | null>(null);
+
+  useSEO({
+    title: service ? `${service.title} · ${professional?.professionalName ?? ''}` : 'Service beauté',
+    description: service
+      ? `${service.title} par ${professional?.professionalName ?? 'un professionnel'} à ${professional?.city ?? 'Paris'} — ${service.duration} min · ${service.price}€. Réservez en ligne sur LocBeauté.`
+      : 'Découvrez ce service beauté sur LocBeauté.',
+    canonical: id ? `https://locbeaute.app/services/${id}` : undefined,
+  });
   const [reviews, setReviews] = useState<ApiReview[]>([]);
   const [relatedServices, setRelatedServices] = useState<ApiService[]>([]);
   const [loading, setLoading] = useState(true);

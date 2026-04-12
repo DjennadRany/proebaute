@@ -256,6 +256,7 @@ export function ProServicesPage() {
         onOpenChange={setFormOpen}
         mode={formMode}
         service={editingService}
+        professionalId={professionalId}
         onSubmit={handleFormSubmit}
       />
 

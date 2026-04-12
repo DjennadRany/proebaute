@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
+import { useSEO } from '../hooks/useSEO';
 import { AppHeader } from '../components/AppHeader';
 import { EmptyState } from '../components/EmptyState';
 import { ServiceCard } from '../components/ServiceCard';
@@ -19,6 +20,11 @@ import {
 } from '../components/ui/sheet';
 
 export function ServicesHub() {
+  useSEO({
+    title: 'Services beauté & bien-être Paris',
+    description: 'Coupe, coloration, manucure, massage, soin visage… Trouvez la prestation beauté idéale près de chez vous et réservez instantanément.',
+    canonical: 'https://locbeaute.app/services',
+  });
   const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('Tous');
   const [searchQuery, setSearchQuery] = useState('');

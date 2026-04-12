@@ -572,11 +572,11 @@ export function LoginPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="firstName">Prénom</Label>
-              <Input id="firstName" value={signupForm.firstName} onChange={(e) => setField('firstName', e.target.value)} required />
+              <Input id="firstName" value={signupForm.firstName} onChange={(e) => setField('firstName', e.target.value)} autoComplete="given-name" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Nom</Label>
-              <Input id="lastName" value={signupForm.lastName} onChange={(e) => setField('lastName', e.target.value)} required />
+              <Input id="lastName" value={signupForm.lastName} onChange={(e) => setField('lastName', e.target.value)} autoComplete="family-name" required />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="signupEmail">Email</Label>
@@ -584,11 +584,11 @@ export function LoginPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Téléphone</Label>
-              <Input id="phone" type="tel" value={signupForm.phone} onChange={(e) => setField('phone', e.target.value)} placeholder="06 12 34 56 78" />
+              <Input id="phone" type="tel" value={signupForm.phone} onChange={(e) => setField('phone', e.target.value)} placeholder="06 12 34 56 78" autoComplete="tel" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="birthDate">Date de naissance</Label>
-              <Input id="birthDate" type="date" value={signupForm.birthDate} onChange={(e) => setField('birthDate', e.target.value)} />
+              <Input id="birthDate" type="date" value={signupForm.birthDate} onChange={(e) => setField('birthDate', e.target.value)} autoComplete="bday" />
             </div>
           </div>
         );
@@ -597,16 +597,16 @@ export function LoginPage() {
           <div className="grid gap-4">
             <div className="space-y-2">
               <Label htmlFor="streetAddress">Adresse</Label>
-              <Input id="streetAddress" value={signupForm.streetAddress} onChange={(e) => setField('streetAddress', e.target.value)} placeholder="12 rue de la Beauté" required />
+              <Input id="streetAddress" value={signupForm.streetAddress} onChange={(e) => setField('streetAddress', e.target.value)} placeholder="12 rue de la Beauté" autoComplete="street-address" required />
             </div>
             <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
               <div className="space-y-2">
                 <Label htmlFor="city">Ville</Label>
-                <Input id="city" value={signupForm.city} onChange={(e) => setField('city', e.target.value)} required />
+                <Input id="city" value={signupForm.city} onChange={(e) => setField('city', e.target.value)} autoComplete="address-level2" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="postalCode">Code postal</Label>
-                <Input id="postalCode" value={signupForm.postalCode} onChange={(e) => setField('postalCode', e.target.value)} required />
+                <Input id="postalCode" value={signupForm.postalCode} onChange={(e) => setField('postalCode', e.target.value)} autoComplete="postal-code" required />
               </div>
             </div>
           </div>
@@ -714,19 +714,19 @@ export function LoginPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="proFirstName">Prénom</Label>
-              <Input id="proFirstName" value={proSignupForm.firstName} onChange={(e) => setProField('firstName', e.target.value)} required />
+              <Input id="proFirstName" value={proSignupForm.firstName} onChange={(e) => setProField('firstName', e.target.value)} autoComplete="given-name" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="proLastName">Nom</Label>
-              <Input id="proLastName" value={proSignupForm.lastName} onChange={(e) => setProField('lastName', e.target.value)} required />
+              <Input id="proLastName" value={proSignupForm.lastName} onChange={(e) => setProField('lastName', e.target.value)} autoComplete="family-name" required />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="proEmail">Email professionnel</Label>
-              <Input id="proEmail" type="email" value={proSignupForm.email} onChange={(e) => setProField('email', e.target.value)} required />
+              <Input id="proEmail" type="email" value={proSignupForm.email} onChange={(e) => setProField('email', e.target.value)} autoComplete="email" required />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="proPhone">Téléphone</Label>
-              <Input id="proPhone" type="tel" value={proSignupForm.phone} onChange={(e) => setProField('phone', e.target.value)} placeholder="06 12 34 56 78" />
+              <Input id="proPhone" type="tel" value={proSignupForm.phone} onChange={(e) => setProField('phone', e.target.value)} placeholder="06 12 34 56 78" autoComplete="tel" />
             </div>
           </div>
         );
@@ -805,16 +805,16 @@ export function LoginPage() {
           <div className="grid gap-4">
             <div className="space-y-2">
               <Label htmlFor="proStreetAddress">Adresse professionnelle</Label>
-              <Input id="proStreetAddress" value={proSignupForm.streetAddress} onChange={(e) => setProField('streetAddress', e.target.value)} placeholder="45 rue de la Beauté" required />
+              <Input id="proStreetAddress" value={proSignupForm.streetAddress} onChange={(e) => setProField('streetAddress', e.target.value)} placeholder="45 rue de la Beauté" autoComplete="street-address" required />
             </div>
             <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
               <div className="space-y-2">
                 <Label htmlFor="proCity">Ville</Label>
-                <Input id="proCity" value={proSignupForm.city} onChange={(e) => setProField('city', e.target.value)} required />
+                <Input id="proCity" value={proSignupForm.city} onChange={(e) => setProField('city', e.target.value)} autoComplete="address-level2" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="proPostalCode">Code postal</Label>
-                <Input id="proPostalCode" value={proSignupForm.postalCode} onChange={(e) => setProField('postalCode', e.target.value)} required />
+                <Input id="proPostalCode" value={proSignupForm.postalCode} onChange={(e) => setProField('postalCode', e.target.value)} autoComplete="postal-code" required />
               </div>
             </div>
             <div className="space-y-2">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
+import { useSEO } from '../hooks/useSEO';
 import { MapPin, Star, BadgeCheck, Calendar, MessageCircle, Heart, Bookmark } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AppCard } from '../components/AppCard';
@@ -34,6 +35,16 @@ export function ProfessionalProfile() {
   }, [user, navigate]);
 
   const [professional, setProfessional] = useState<ApiProfessional | null>(null);
+
+  useSEO({
+    title: professional
+      ? `${professional.professionalName} · ${professional.specialty}`
+      : 'Profil professionnel',
+    description: professional
+      ? `${professional.professionalName}, ${professional.specialty} à ${professional.city ?? professional.location}. Note ${professional.ratingAverage}/5 · Réservation en ligne sur LocBeauté.`
+      : 'Découvrez ce professionnel beauté sur LocBeauté.',
+    canonical: id ? `https://locbeaute.app/professionals/${id}` : undefined,
+  });
   const [services, setServices] = useState<ApiService[]>([]);
   const [reviews, setReviews] = useState<ApiReview[]>([]);
   const [loading, setLoading] = useState(true);

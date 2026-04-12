@@ -133,6 +133,9 @@ export function ProWalletPage() {
   const availableAmountEur = availableBookings.reduce((sum, b) => sum + proAmount(b.booking.amount ?? 0), 0);
   const totalEarnedEur = completedBookings.reduce((sum, b) => sum + proAmount(b.booking.amount ?? 0), 0);
 
+  // Réservations confirmées à venir (pas encore terminées)
+  const confirmedBookings = bookings.filter((b) => b.booking.status === 'confirmed');
+
   // Déjà versé = somme des payouts paid
   const alreadyPaidEur = payouts
     .filter((p) => p.status === 'paid')

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
+import { useSEO } from '../hooks/useSEO';
 import { AppHeader } from '../components/AppHeader';
 import { EmptyState } from '../components/EmptyState';
 import { ProfessionalCard } from '../components/ProfessionalCard';
@@ -20,6 +21,11 @@ const specialties = [
 ];
 
 export function ProfessionalsHub() {
+  useSEO({
+    title: 'Professionnels de la beauté à Paris',
+    description: 'Découvrez 150+ coiffeurs, barbiers, esthéticiennes et nail artists vérifiés en Île-de-France. Réservez en ligne, à domicile ou en salon.',
+    canonical: 'https://locbeaute.app/professionals',
+  });
   const { user } = useAuth();
   const [selectedSpecialty, setSelectedSpecialty] = useState('Tous');
   const [searchQuery, setSearchQuery] = useState('');
