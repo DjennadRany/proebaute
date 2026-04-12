@@ -225,6 +225,24 @@ async function upsertUserProfile(payload: {
   });
 }
 
+// Géocode une adresse via Nominatim (gratuit, pas de clé API)
+async function geocodeAddress(streetAddress: string, city: string, postalCode: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const query = encodeURIComponent(`${streetAddress}, ${postalCode} ${city}, France`);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&countrycodes=fr`,
+      { headers: { 'Accept-Language': 'fr', 'User-Agent': 'LocBeaute/1.0' } }
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!Array.isArray(json) || json.length === 0) return null;
+    const { lat, lon } = json[0];
+    return { lat: parseFloat(lat), lng: parseFloat(lon) };
+  } catch {
+    return null;
+  }
+}
+
 async function upsertProfessionalProfile(payload: {
   authId: string;
   companyName: string;
@@ -238,6 +256,13 @@ async function upsertProfessionalProfile(payload: {
   const location = [payload.streetAddress.trim(), `${payload.postalCode.trim()} ${payload.city.trim()}`]
     .filter(Boolean)
     .join(', ');
+
+  // Géocodage de l'adresse → coordonnées GPS pour la map
+  const coords = await geocodeAddress(
+    payload.streetAddress,
+    payload.city,
+    payload.postalCode
+  );
 
   const { error } = await supabase.from('professionals').upsert(
     {
@@ -254,6 +279,8 @@ async function upsertProfessionalProfile(payload: {
       reviews_count: 0,
       verified: false,
       gallery: [],
+      // Coordonnées pour la map (null si géocodage impossible)
+      ...(coords ? { coordinates: coords } : {}),
     },
     { onConflict: 'user_id' },
   );
@@ -1389,6 +1416,12 @@ export async function fetchProfessionals(location?: string, specialty?: string):
     gallery: p.gallery,
     postalCode: p.postal_code,
     city: p.city,
+    // Coordonnées GPS : colonne JSONB {lat, lng} ou colonnes séparées lat/lng
+    coordinates: p.coordinates
+      ? p.coordinates
+      : p.lat != null && p.lng != null
+        ? { lat: p.lat, lng: p.lng }
+        : null,
   })) as ApiProfessional[];
 }
 
