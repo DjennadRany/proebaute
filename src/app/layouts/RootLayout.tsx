@@ -253,13 +253,13 @@ export function RootLayout() {
         <>
           {/* Backdrop transparent pour fermer en cliquant dehors */}
           <div
-            className="fixed inset-0 z-[34] md:hidden"
+            className="fixed inset-0 z-[1001] md:hidden"
             aria-hidden="true"
             onClick={() => setMobileMenuOpen(false)}
           />
-          {/* Panneau du menu, ancré sous le header (top-14 = 56px = h-14) */}
+          {/* Panneau du menu — z-[1002] pour passer au-dessus des contrôles Leaflet (z-1000) */}
           <div
-            className="fixed left-0 right-0 top-14 z-[35] md:hidden border-b border-border bg-card shadow-xl max-h-[calc(100dvh-56px)] overflow-y-auto"
+            className="fixed left-0 right-0 top-14 z-[1002] md:hidden border-b border-border bg-card shadow-xl max-h-[calc(100dvh-56px)] overflow-y-auto"
             role="dialog"
             aria-modal="true"
             aria-label="Menu de navigation"
