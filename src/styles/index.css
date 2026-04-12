@@ -2,46 +2,126 @@
 @import './tailwind.css';
 @import './theme.css';
 
-/* Custom scrollbar styles */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
+/* ══════════════════════════════════════════════════════════════
+   Scrollbar
+══════════════════════════════════════════════════════════════ */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Smooth transitions */
+/* ══════════════════════════════════════════════════════════════
+   Transitions globales douces
+══════════════════════════════════════════════════════════════ */
 * {
-  transition-property: background-color, border-color, color, fill, stroke;
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
 
-/* Premium gradient backgrounds - ProBeauté */
-.gradient-premium {
-  background: linear-gradient(135deg, #e8c1b7 0%, #d9a5a5 40%, #f7f7ff 75%, #6c5ce7 100%);
+/* ══════════════════════════════════════════════════════════════
+   ANIMATIONS OR — Shimmer dégradé
+══════════════════════════════════════════════════════════════ */
+
+/* Shimmer lent (fond au repos) */
+@keyframes goldShimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* Liseré lumineux très léger pour les bannières (effet miroir) */
+/* Pulse glow doux pour éléments en or */
+@keyframes goldGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(201,168,76,0.2), 0 0 16px rgba(201,168,76,0.08); }
+  50%       { box-shadow: 0 0 16px rgba(201,168,76,0.4), 0 0 32px rgba(201,168,76,0.15); }
+}
+
+/* Glow hover (plus intense) */
+@keyframes goldGlowHover {
+  0%, 100% { box-shadow: 0 0 16px rgba(201,168,76,0.5), 0 0 32px rgba(201,168,76,0.25); }
+  50%       { box-shadow: 0 0 28px rgba(201,168,76,0.7), 0 0 56px rgba(201,168,76,0.35); }
+}
+
+/* Pulse point notification */
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.5); opacity: 0.6; }
+}
+
+/* Liseré lumineux (effet miroir sur bannières) */
 @keyframes subtle-sheen {
-  0% {
-    transform: translateX(-130%) skewX(-12deg);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.3;
-  }
-  80% {
-    opacity: 0.3;
-  }
-  100% {
-    transform: translateX(130%) skewX(-12deg);
-    opacity: 0;
-  }
+  0%   { transform: translateX(-130%) skewX(-12deg); opacity: 0; }
+  20%  { opacity: 0.4; }
+  80%  { opacity: 0.4; }
+  100% { transform: translateX(130%) skewX(-12deg); opacity: 0; }
 }
 
+/* Zoom hero */
+@keyframes hero-zoom {
+  0%   { transform: scale(1.02); }
+  100% { transform: scale(1.1); }
+}
+
+/* Pulse localisation carte */
+@keyframes locpulse {
+  0%   { transform: scale(1); opacity: 0.25; }
+  70%  { transform: scale(2.5); opacity: 0; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CLASSES UTILITAIRES OR
+══════════════════════════════════════════════════════════════ */
+
+/* Texte dégradé or animé */
+.gold-text {
+  background: linear-gradient(90deg,
+    #8B6914 0%, #C9A84C 25%, #F5D58B 50%, #C9A84C 75%, #8B6914 100%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: goldShimmer 6s ease infinite;
+  display: inline-block;
+}
+
+/* Fond dégradé or animé (boutons, badges) */
+.gold-bg {
+  background: linear-gradient(90deg,
+    #8B6914 0%, #C9A84C 25%, #F5D58B 50%, #C9A84C 75%, #8B6914 100%);
+  background-size: 300% 100%;
+  animation: goldShimmer 4s ease infinite;
+}
+.gold-bg:hover {
+  animation-duration: 1.8s;
+  box-shadow: 0 4px 20px rgba(201,168,76,0.45);
+}
+
+/* Bordure or */
+.gold-border {
+  border: 1px solid rgba(201, 168, 76, 0.3);
+}
+.gold-border:hover {
+  border-color: rgba(201, 168, 76, 0.6);
+}
+
+/* Glow avatar / icône or */
+.gold-glow {
+  animation: goldGlow 3.5s ease-in-out infinite;
+}
+.gold-glow:hover {
+  animation: goldGlowHover 2s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GRADIENT PREMIUM (Hero/bannières)
+══════════════════════════════════════════════════════════════ */
+.gradient-premium {
+  background: linear-gradient(135deg,
+    #080808 0%, #1A150A 40%, #2A2010 70%, #C9A84C 100%);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SHEEN (reflet miroir sur bannières)
+══════════════════════════════════════════════════════════════ */
 .sheen-light {
   position: absolute;
   inset-block: 0;
@@ -49,48 +129,43 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.6) 50%,
+    rgba(245, 213, 139, 0.35) 50%,
     transparent 100%
   );
-  opacity: 0.25;
+  opacity: 0.2;
   pointer-events: none;
-  animation: subtle-sheen 3s linear infinite;
+  animation: subtle-sheen 3.5s linear infinite;
   animation-delay: 1.2s;
 }
 
-@keyframes hero-zoom {
-  0% {
-    transform: scale(1.02);
-  }
-  100% {
-    transform: scale(1.1);
-  }
-}
-
+/* ══════════════════════════════════════════════════════════════
+   HERO ZOOM
+══════════════════════════════════════════════════════════════ */
 .hero-slide-zoom {
   animation: hero-zoom 9s ease-in-out infinite alternate;
 }
 
-@layer utilities {
-  @media (min-width: 64rem) {
-    .lg\:h-16 {
-      height: calc(var(--spacing) * 24);
-    }
-
-    .lg\:px-8 {
-      padding-inline: calc(var(--spacing) * 0);
-    }
-  }
+/* ══════════════════════════════════════════════════════════════
+   NOTIFICATION DOT PULSE
+══════════════════════════════════════════════════════════════ */
+.notif-dot {
+  animation: dotPulse 2.5s ease-in-out infinite;
 }
 
-/* Animation pulse pour la localisation utilisateur */
-@keyframes locpulse {
-  0%   { transform: scale(1); opacity: 0.25; }
-  70%  { transform: scale(2.5); opacity: 0; }
-  100% { transform: scale(2.5); opacity: 0; }
+/* ══════════════════════════════════════════════════════════════
+   DIVIDER OR
+══════════════════════════════════════════════════════════════ */
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent, rgba(201,168,76,0.5), rgba(245,213,139,0.7), rgba(201,168,76,0.5), transparent);
+  background-size: 200% 100%;
+  animation: goldShimmer 5s ease infinite;
 }
 
-/* Leaflet pin custom - neutralise le background par defaut */
+/* ══════════════════════════════════════════════════════════════
+   LEAFLET (Carte)
+══════════════════════════════════════════════════════════════ */
 .locbeaute-pin {
   background: transparent !important;
   border: none !important;
@@ -100,7 +175,20 @@
   display: block;
   overflow: visible;
 }
-/* Cache les markers Leaflet par defaut */
 .leaflet-default-icon-path {
   display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LAYOUT RESPONSIVE
+══════════════════════════════════════════════════════════════ */
+@layer utilities {
+  @media (min-width: 64rem) {
+    .lg\:h-16 {
+      height: calc(var(--spacing) * 24);
+    }
+    .lg\:px-8 {
+      padding-inline: calc(var(--spacing) * 0);
+    }
+  }
 }
