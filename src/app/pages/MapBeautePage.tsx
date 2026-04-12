@@ -286,7 +286,9 @@ export function MapBeautePage() {
     : proName.charAt(0).toUpperCase();
 
   return (
-    <div className="relative w-full bg-black" style={{ height: 'calc(100dvh - 56px)' }}>
+    /* position:fixed ancré sous le header (top-14=56px mobile, sm:top-16=64px tablet)
+       → immune aux changements de viewport, jamais affecté par le menu ou le layout */
+    <div className="fixed inset-0 top-14 sm:top-16 bg-black" style={{ zIndex: 0 }}>
       {/* Barre flottante haut */}
       <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2">
         <div className="flex gap-2">
