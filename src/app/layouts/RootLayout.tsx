@@ -23,9 +23,9 @@ import { pageview } from '../lib/gtag';
 
 const navigationMain = [
   { name: 'Accueil', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'MapBeautÃ©', href: '/map', icon: MapPin },
+  { name: 'MapBeauté', href: '/map', icon: MapPin },
   { name: 'GlamFeed', href: '/glamfeed', icon: Sparkles },
-  { name: 'RÃ©servations', href: '/reservations', icon: Calendar },
+  { name: 'Réservations', href: '/reservations', icon: Calendar },
 ];
 
 const navigationAccount = [
@@ -34,7 +34,7 @@ const navigationAccount = [
   { name: 'Favoris', href: '/favorites', icon: Heart },
   { name: 'Avis', href: '/reviews', icon: Star },
   { name: 'Profil', href: '/profile', icon: User },
-  { name: 'ParamÃ¨tres', href: '/settings', icon: Settings },
+  { name: 'Paramètres', href: '/settings', icon: Settings },
 ];
 
 const guestNavigation = [
@@ -51,7 +51,7 @@ export function RootLayout() {
 
   useEffect(() => {
     if (!user) {
-      // L'accueil marketing reste accessible mÃªme sans connexion
+      // L'accueil marketing reste accessible même sans connexion
       if (location.pathname !== '/' && location.pathname !== '/login') {
         navigate('/login', { replace: true });
       }
@@ -111,11 +111,11 @@ export function RootLayout() {
               <img
                 src={BRANDED_LOGO_SRC}
                 alt="LocBeauté"
-                className="h-10 w-auto object-contain sm:h-12 lg:h-16"
+                className="h-7 w-auto object-contain sm:h-8"
               />
               <span className="sr-only">LocBeauté</span>
               <p className="hidden sm:block text-[11px] text-muted-foreground leading-snug">
-                RÃ©servez vos soins en un clic
+                Réservez vos soins en un clic
               </p>
             </Link>
 
@@ -210,7 +210,7 @@ export function RootLayout() {
                           className="mt-1 flex w-full items-center gap-2 border-t border-border/70 px-3 pt-2 pb-2 text-xs lg:text-sm text-destructive hover:bg-destructive/5"
                         >
                           <LogOut className="h-4 w-4" />
-                          <span>DÃ©connexion</span>
+                          <span>Déconnexion</span>
                         </button>
                       </div>
                     </div>
@@ -316,7 +316,7 @@ export function RootLayout() {
                 </>
               )}
 
-              {/* Connexion / DÃ©connexion in mobile menu */}
+              {/* Connexion / Déconnexion in mobile menu */}
               <div className="pt-1 border-t border-border/70 mt-2">
                 {user ? (
                   <button
@@ -329,7 +329,7 @@ export function RootLayout() {
                     className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   >
                     <LogOut className="w-4 h-4" />
-                    DÃ©connexion
+                    Déconnexion
                   </button>
                 ) : (
                   <Link

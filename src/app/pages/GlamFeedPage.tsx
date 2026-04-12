@@ -20,7 +20,7 @@ import { supabase } from '../api/supabaseClient';
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function getAccent(id: string): string {
-  const p = ['#7c3aed','#ec4899','#f59e0b','#0ea5e9','#ef4444','#10b981','#8b5cf6','#f97316'];
+  const p = ['#C9A84C','#ec4899','#f59e0b','#0ea5e9','#ef4444','#10b981','#F5D58B','#f97316'];
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   return p[h % p.length];
@@ -182,7 +182,7 @@ function ReelCard({
   const proName = item.pro?.professionalName ?? 'Pro LocBeaute';
   const proWords = proName.trim().split(/\s+/);
   const proInitials = (proWords[0]?.[0] ?? '') + (proWords[1]?.[0] ?? '');
-  const proColor = item.pro ? getAccent(item.pro._id) : '#7c3aed';
+  const proColor = item.pro ? getAccent(item.pro._id) : '#C9A84C';
   const proPhoto = item.pro?.gallery?.[0] ?? null;
   const fallback = BEAUTY_IMGS[Math.abs((item.id.charCodeAt(0) || 0) + (item.id.charCodeAt(1) || 0)) % BEAUTY_IMGS.length];
   const mediaUrl = mediaBroken ? fallback : item.image;

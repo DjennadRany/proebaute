@@ -184,9 +184,6 @@
 ══════════════════════════════════════════════════════════════ */
 @layer utilities {
   @media (min-width: 64rem) {
-    .lg\:h-16 {
-      height: calc(var(--spacing) * 24);
-    }
     .lg\:px-8 {
       padding-inline: calc(var(--spacing) * 0);
     }

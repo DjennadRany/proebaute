@@ -7,18 +7,18 @@ import { fetchProfessionals, type ApiProfessional } from '../api/client';
 // Couleur par specialty
 function getColor(specialty: string): string {
   const s = specialty.toLowerCase();
-  if (s.includes('coiff')) return '#7c3aed';
+  if (s.includes('coiff')) return '#C9A84C';
   if (s.includes('esth')) return '#ec4899';
   if (s.includes('ongl') || s.includes('nail')) return '#f59e0b';
   if (s.includes('barb')) return '#0ea5e9';
   if (s.includes('maquil') || s.includes('makeup')) return '#ef4444';
   if (s.includes('mass')) return '#10b981';
-  return '#6b7280';
+  return '#8B6914';
 }
 
 // Couleur unique par pro (hash sur l'id)
 function getProAccent(id: string): string {
-  const palette = ['#7c3aed','#ec4899','#f59e0b','#0ea5e9','#ef4444','#10b981','#8b5cf6','#f97316','#06b6d4','#84cc16'];
+  const palette = ['#C9A84C','#ec4899','#f59e0b','#0ea5e9','#ef4444','#10b981','#F5D58B','#f97316','#06b6d4','#8B6914'];
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
   return palette[hash % palette.length];
@@ -278,7 +278,7 @@ export function MapBeautePage() {
   const proPhoto = selected?.gallery?.[0] ?? null;
   const proColor = selected
     ? (proPhoto ? getColor(selected.specialty) : getProAccent(selected._id))
-    : '#7c3aed';
+    : '#C9A84C';
   const proName = selected?.professionalName ?? '';
   const proWords = proName.trim().split(/\s+/);
   const proInitial = proWords.length >= 2
