@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { Instagram } from 'lucide-react';
 import { BRANDED_LOGO_SRC } from '../constants/branding';
 
-const INSTAGRAM_URL = 'https://www.instagram.com/p/DWzufCAiARb/?utm_source=ig_web_copy_link';
+const INSTAGRAM_URL = 'https://www.instagram.com/locbeaute.app?igsh=MXcwYjZrdzd0NTZ5dA==';
 
 const NAV_APP = [
   { label: 'Accueil', href: '/' },
