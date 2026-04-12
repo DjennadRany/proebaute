@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSEO } from '../hooks/useSEO';
 import { Bell, Calendar, Heart, MessageCircle, Sparkles, Star, TrendingUp, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
@@ -25,6 +26,7 @@ import {
 import { openOrCreateConversation } from '../utils/messaging';
 
 export function Dashboard() {
+  useSEO({ title: 'Mon tableau de bord', noindex: true });
   const { user } = useAuth();
   const navigate = useNavigate();
   const [upcomingBookings, setUpcomingBookings] = useState<ApiBookingSummary[]>([]);

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSEO } from '../hooks/useSEO';
 import { useNavigate, useSearchParams } from 'react-router';
 import {
   ArrowLeft,
@@ -167,6 +168,7 @@ function Stepper({
 }
 
 export function LoginPage() {
+  useSEO({ title: 'Connexion', noindex: true });
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();

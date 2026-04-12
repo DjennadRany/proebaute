@@ -31,6 +31,11 @@ export function ServiceDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) navigate('/login', { replace: true });
+  }, [user, navigate]);
+
   const [service, setService] = useState<ApiService | null>(null);
   const [professional, setProfessional] = useState<ApiProfessional | null>(null);
   const [reviews, setReviews] = useState<ApiReview[]>([]);

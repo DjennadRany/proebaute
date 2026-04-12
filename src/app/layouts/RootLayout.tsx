@@ -51,8 +51,8 @@ export function RootLayout() {
 
   useEffect(() => {
     if (!user) {
-      // L'accueil marketing reste accessible même sans connexion
-      if (location.pathname !== '/' && location.pathname !== '/login') {
+      const PUBLIC_EXACT = ['/', '/login', '/email-confirmed', '/professionals', '/services', '/map'];
+      if (!PUBLIC_EXACT.includes(location.pathname)) {
         navigate('/login', { replace: true });
       }
     }

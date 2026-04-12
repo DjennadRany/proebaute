@@ -28,6 +28,11 @@ export function ProfessionalProfile() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) navigate('/login', { replace: true });
+  }, [user, navigate]);
+
   const [professional, setProfessional] = useState<ApiProfessional | null>(null);
   const [services, setServices] = useState<ApiService[]>([]);
   const [reviews, setReviews] = useState<ApiReview[]>([]);

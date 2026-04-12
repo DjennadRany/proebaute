@@ -1,71 +1,17 @@
-# Robots.txt pour LocBeauté - Réservation beauté à domicile
-# Site: https://locbeaute.com
-
-# Règles générales - Tous les robots
 User-agent: *
 Allow: /
-
-# Pages importantes à indexer en priorité
-Allow: /$
-Allow: /login$
-Allow: /dashboard$
-Allow: /map$
-Allow: /glamfeed$
-Allow: /reservations$
-Allow: /profile$
-Allow: /services$
-Allow: /favorites$
-Allow: /reviews$
-
-# Bloquer les chemins sensibles et API
-Disallow: /api/
-Disallow: /admin/
+Allow: /professionals
+Allow: /services
+Allow: /map
 Disallow: /pro/
-Disallow: /settings$
-Disallow: /notifications$
-Disallow: /messages$
+Disallow: /dashboard
+Disallow: /reservations
+Disallow: /messages
+Disallow: /settings
+Disallow: /profile
+Disallow: /booking
+Disallow: /notifications
+Disallow: /favorites
+Disallow: /reviews
 
-# Bloquer les paramètres d'URL inutiles pour le SEO
-Disallow: /*?*
-Disallow: /*&*
-Disallow: /*utm_*
-Disallow: /*fbclid*
-Disallow: /*gclid*
-
-# Bloquer les fichiers temporaires et de développement
-Disallow: /_next/
-Disallow: /assets/
-Disallow: /*.json$
-Disallow: /*.map$
-
-# Crawl-delay pour éviter la surcharge
-Crawl-delay: 1
-
-# Sitemap principal
 Sitemap: https://locbeaute.com/sitemap.xml
-
-# Host directive (directive historique mais encore utilisée par certains robots)
-Host: https://locbeaute.com
-
-# Règles spécifiques pour les moteurs de recherche majeurs
-
-# Googlebot
-User-agent: Googlebot
-Allow: /
-
-# Bingbot
-User-agent: Bingbot
-Allow: /
-
-# Robots d'images
-User-agent: Googlebot-Image
-Allow: /assets/
-Allow: /public/
-
-# Robots mobiles
-User-agent: Googlebot-Mobile
-Allow: /
-
-# Robots d'actualité (si applicable)
-User-agent: Googlebot-News
-Allow: /
