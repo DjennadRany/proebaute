@@ -419,7 +419,7 @@ export async function signUpClientAccount(payload: ClientSignupPayload): Promise
     email,
     password: payload.password,
     options: {
-      emailRedirectTo: `${appUrl}/login?confirmed=true`,
+      emailRedirectTo: `${appUrl}/email-confirmed`,
       data: {
         role: 'client',
         first_name: firstName,
@@ -507,7 +507,7 @@ export async function signUpProfessionalAccount(payload: ProfessionalSignupPaylo
     email,
     password: payload.password,
     options: {
-      emailRedirectTo: `${appUrlPro}/login?confirmed=true&role=pro`,
+      emailRedirectTo: `${appUrlPro}/email-confirmed`,
       data: {
         role: 'professional',
         first_name: firstName,
