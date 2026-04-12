@@ -183,8 +183,39 @@
    GLASSMORPHISM (cartes premium)
 ══════════════════════════════════════════════════════════════ */
 .glass-dark {
-  background: rgba(10, 13, 18, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(201, 168, 76, 0.12);
+  background: rgba(10, 13, 20, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(201, 168, 76, 0.1);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BLEU ROI FONCÉ — utilitaires
+══════════════════════════════════════════════════════════════ */
+
+/* Fond bleu roi mat */
+.royal-bg {
+  background: linear-gradient(135deg, #0f1a2e 0%, #162355 60%, #1e3479 100%);
+}
+
+/* Bordure bleu roi */
+.royal-border {
+  border: 1px solid rgba(30, 52, 121, 0.5);
+}
+.royal-border:hover {
+  border-color: rgba(42, 74, 159, 0.7);
+}
+
+/* Glow bleu roi */
+@keyframes royalGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(30,52,121,0.25), 0 0 16px rgba(30,52,121,0.1); }
+  50%       { box-shadow: 0 0 16px rgba(30,52,121,0.45), 0 0 32px rgba(30,52,121,0.2); }
+}
+.royal-glow {
+  animation: royalGlow 3.5s ease-in-out infinite;
+}
+
+/* Texte bleu roi clair */
+.royal-text {
+  color: #93b4ff;
 }
