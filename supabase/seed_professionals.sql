@@ -2,8 +2,14 @@
 -- LocBeauté — Seed 150 professionnels réalistes Paris / Île-de-France
 -- Ces pros sont des comptes de démonstration (user_id fictif, non liés auth).
 -- Exécuter dans Supabase → SQL Editor (une seule fois).
--- SIRET : format légal français (14 chiffres) mais fictifs.
 -- ═══════════════════════════════════════════════════════════════════════════
+
+-- ── Pré-requis : s'assurer que les colonnes nécessaires existent ─────────
+ALTER TABLE public.professionals
+  ADD COLUMN IF NOT EXISTS coordinates JSONB DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS address     TEXT  DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS siren       TEXT  DEFAULT NULL;
+-- ────────────────────────────────────────────────────────────────────────
 
 DO $$
 DECLARE
@@ -192,9 +198,9 @@ BEGIN
     INSERT INTO professionals (
       id, user_id,
       professional_name, specialty, bio,
-      location, city, postal_code,
+      address, location, city, postal_code,
       coordinates, gallery,
-      siret, verified,
+      siren, verified,
       rating_average, reviews_count
     ) VALUES (
       pid, gen_random_uuid(),
@@ -208,6 +214,7 @@ BEGIN
         WHEN 'massage'    THEN 'Masseur thérapeute diplômé d''État. Massage suédois, californien, drainage, shiatsu. Détente et bien-être garantis. Huiles essentielles bio.'
       END,
       num_rue::TEXT || ' ' || streets[street_i],
+      num_rue::TEXT || ' ' || streets[street_i] || ', ' || postcodes[coord_i] || ' ' || cities[coord_i],
       cities[coord_i], postcodes[coord_i],
       jsonb_build_object('lat', lats[coord_i] + (random() - 0.5) * 0.008,
                          'lng', lngs[coord_i] + (random() - 0.5) * 0.012),
