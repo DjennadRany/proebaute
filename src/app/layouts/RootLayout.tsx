@@ -97,6 +97,8 @@ export function RootLayout() {
   const initials = user
     ? `${safeFirstName.charAt(0)}${safeLastName.charAt(0)}`.trim() || 'U'
     : '';
+  // Pages plein écran : pas de padding, pas de footer
+  const isFullscreen = location.pathname === '/map' || location.pathname.startsWith('/glamfeed');
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Top navigation bar - mobile first */}
@@ -348,17 +350,23 @@ export function RootLayout() {
         )}
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 bg-background pb-28 md:pb-0">
-        <div className="mx-auto max-w-6xl px-4 pt-4 pb-6 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8 lg:pb-10">
+      {/* Main Content — fullscreen mode for /map and /glamfeed (no padding, no footer) */}
+      {isFullscreen ? (
+        <main className="flex-1 bg-background overflow-hidden">
           <Outlet />
-        </div>
-      </main>
-
-      {/* Footer — hidden on mobile when user is connected (BottomTabBar takes over) */}
-      <div className={user ? 'hidden md:block' : 'block'}>
-        <AppFooter />
-      </div>
+        </main>
+      ) : (
+        <>
+          <main className="flex-1 bg-background pb-28 md:pb-0">
+            <div className="mx-auto max-w-6xl px-4 pt-4 pb-6 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8 lg:pb-10">
+              <Outlet />
+            </div>
+          </main>
+          <div className={user ? 'hidden md:block' : 'block'}>
+            <AppFooter />
+          </div>
+        </>
+      )}
       {user && <BottomTabBar />}
     </div>
   );

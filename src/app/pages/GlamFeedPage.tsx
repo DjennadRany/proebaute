@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Heart, MessageCircle, Bookmark, Share2, X, Send,
-  ChevronUp, Camera,
+  Camera,
 } from 'lucide-react';
 import {
   fetchProfessionals,
@@ -17,10 +17,10 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../api/supabaseClient';
 
-// ─── helpers ────────────────────────────────────────────────────────────────
+// ─── helpers ─────────────────────────────────────────────────────────────────
 
 function getAccent(id: string): string {
-  const p = ['#C9A84C','#ec4899','#f59e0b','#0ea5e9','#ef4444','#10b981','#F5D58B','#f97316'];
+  const p = ['#C9A84C', '#ec4899', '#f59e0b', '#0ea5e9', '#ef4444', '#10b981', '#F5D58B', '#f97316'];
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   return p[h % p.length];
@@ -41,13 +41,13 @@ const BEAUTY_IMGS = [
   'https://images.pexels.com/photos/6621461/pexels-photo-6621461.jpeg?auto=compress&cs=tinysrgb&w=800',
 ];
 
-// ─── types ──────────────────────────────────────────────────────────────────
+// ─── types ───────────────────────────────────────────────────────────────────
 
 type Comment = { id: string; author: string; text: string; createdAt: string };
 
 type FeedItem = {
   id: string;
-  service: ApiService | null;       // null pour les posts clients
+  service: ApiService | null;
   pro: ApiProfessional | undefined;
   image: string;
   liked: boolean;
@@ -61,7 +61,7 @@ type FeedItem = {
   caption?: string;
 };
 
-// ─── CommentDrawer ───────────────────────────────────────────────────────────
+// ─── CommentDrawer ────────────────────────────────────────────────────────────
 
 function CommentDrawer({
   item,
@@ -71,7 +71,7 @@ function CommentDrawer({
 }: {
   item: FeedItem;
   onClose: () => void;
-  onAddComment: (serviceId: string, text: string) => Promise<void>;
+  onAddComment: (id: string, text: string) => Promise<void>;
   user: { _id: string; firstName: string; lastName: string } | null;
 }) {
   const [text, setText] = useState('');
@@ -92,25 +92,18 @@ function CommentDrawer({
 
   return (
     <div className="fixed inset-0 z-[2000] flex flex-col justify-end">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-
       <div className="relative bg-card rounded-t-3xl flex flex-col max-h-[70vh] shadow-2xl">
-        {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
         </div>
-
-        {/* Header */}
         <div className="flex items-center justify-between px-4 pb-3 border-b border-border">
           <h3 className="font-semibold text-sm">{item.comments} commentaire{item.comments !== 1 ? 's' : ''}</h3>
           <button onClick={onClose}><X className="h-5 w-5 text-muted-foreground" /></button>
         </div>
-
-        {/* Liste */}
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
           {item.commentList.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground py-8">Soyez le premier a commenter !</p>
+            <p className="text-center text-sm text-muted-foreground py-8">Soyez le premier à commenter !</p>
           ) : (
             item.commentList.map((c) => (
               <div key={c.id} className="flex gap-3">
@@ -129,8 +122,6 @@ function CommentDrawer({
           )}
           <div ref={bottomRef} />
         </div>
-
-        {/* Input */}
         <div className="px-4 py-3 border-t border-border flex items-center gap-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B6914] to-[#C9A84C] flex items-center justify-center text-white text-xs font-bold shrink-0">
             {user ? (user.firstName.charAt(0) + user.lastName.charAt(0)).toUpperCase() : '?'}
@@ -159,27 +150,49 @@ function CommentDrawer({
   );
 }
 
-// ─── ReelCard ────────────────────────────────────────────────────────────────
+// ─── ReelCard — performance optimisée via IntersectionObserver ────────────────
 
 function ReelCard({
   item,
+  index,
   onLike,
   onSave,
   onComment,
   user,
 }: {
   item: FeedItem;
+  index: number;
   onLike: (id: string) => void;
   onSave: (id: string) => void;
   onComment: (item: FeedItem) => void;
   user: { _id: string; firstName: string; lastName: string } | null;
 }) {
   const navigate = useNavigate();
+  const cardRef = useRef<HTMLDivElement>(null);
   const [mediaBroken, setMediaBroken] = useState(false);
   const [likeAnim, setLikeAnim] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  // Les 2 premières cartes chargent immédiatement, les autres attendent la visibilité
+  const [shouldLoad, setShouldLoad] = useState(index < 2);
   const lastTap = useRef(0);
 
-  const proName = item.pro?.professionalName ?? 'Pro LocBeaute';
+  // IntersectionObserver : charger l'image quand la carte est proche du viewport
+  useEffect(() => {
+    if (shouldLoad) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200% 0px' }, // précharge 2 cartes à l'avance
+    );
+    if (cardRef.current) observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [shouldLoad]);
+
+  const proName = item.pro?.professionalName ?? 'Pro LocBeauté';
   const proWords = proName.trim().split(/\s+/);
   const proInitials = (proWords[0]?.[0] ?? '') + (proWords[1]?.[0] ?? '');
   const proColor = item.pro ? getAccent(item.pro._id) : '#C9A84C';
@@ -194,15 +207,17 @@ function ReelCard({
     if (now - lastTap.current < 300) {
       onLike(item.id);
       setLikeAnim(true);
-      setTimeout(() => setLikeAnim(false), 800);
+      setTimeout(() => setLikeAnim(false), 700);
     }
     lastTap.current = now;
   }, [item.id, onLike]);
 
   const handleShare = () => {
-    const url = window.location.origin + '/services/' + item.service._id;
+    const url = item.service
+      ? window.location.origin + '/services/' + item.service._id
+      : window.location.origin + '/glamfeed';
     if (navigator.share) {
-      navigator.share({ title: item.service.title, text: item.service.description, url });
+      navigator.share({ title: item.service?.title ?? 'LocBeauté', url });
     } else {
       navigator.clipboard?.writeText(url);
     }
@@ -210,40 +225,53 @@ function ReelCard({
 
   return (
     <div
+      ref={cardRef}
       className="relative w-full bg-black select-none"
-      style={{ height: 'calc(100svh - 116px)', minHeight: 500 }}
+      style={{ height: '100%', minHeight: 500 }}
       onClick={handleTap}
     >
-      {/* Media */}
-      {isVid ? (
-        <video
-          src={mediaUrl}
-          className="absolute inset-0 w-full h-full object-cover"
-          autoPlay loop muted playsInline
-          onError={() => setMediaBroken(true)}
-        />
-      ) : (
-        <img
-          src={mediaUrl}
-          alt={item.service.title}
-          className="absolute inset-0 w-full h-full object-cover"
-          onError={() => setMediaBroken(true)}
-          loading="lazy"
-        />
+      {/* Skeleton pendant le chargement */}
+      {!imgLoaded && (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0d0f16] to-[#07080c] animate-pulse" />
+      )}
+
+      {/* Media — ne charge que quand shouldLoad = true */}
+      {shouldLoad && (
+        isVid ? (
+          <video
+            src={mediaUrl}
+            className="absolute inset-0 w-full h-full object-cover"
+            autoPlay loop muted playsInline
+            onError={() => setMediaBroken(true)}
+            onLoadedData={() => setImgLoaded(true)}
+          />
+        ) : (
+          <img
+            src={mediaUrl}
+            alt={item.service?.title ?? 'Post beauté'}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => setImgLoaded(true)}
+            onError={() => { setMediaBroken(true); setImgLoaded(true); }}
+            fetchPriority={index < 2 ? 'high' : 'low'}
+          />
+        )
       )}
 
       {/* Gradients */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent pointer-events-none" />
-      <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
 
       {/* Animation coeur double-tap */}
       {likeAnim && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <Heart className="h-24 w-24 text-white fill-white drop-shadow-2xl animate-ping" style={{ animationDuration: '0.6s', animationIterationCount: 1 }} />
+          <Heart
+            className="h-28 w-28 text-white fill-white drop-shadow-2xl"
+            style={{ animation: 'heartPop 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards' }}
+          />
         </div>
       )}
 
-      {/* Pro info haut gauche — cliquable */}
+      {/* Pro info haut gauche */}
       <button
         className="absolute top-4 left-4 flex items-center gap-2.5 z-10"
         onClick={(e) => {
@@ -251,71 +279,104 @@ function ReelCard({
           if (item.pro) navigate('/professionals/' + item.pro._id);
         }}
       >
-        <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-lg shrink-0">
+        <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white/80 shadow-lg shrink-0 ring-2 ring-black/20">
           {proPhoto ? (
             <img
               src={proPhoto}
               alt={proName}
               className="w-full h-full object-cover"
-              onError={(ev) => { (ev.currentTarget.parentElement as HTMLElement).style.backgroundColor = proColor; ev.currentTarget.remove(); }}
+              onError={(ev) => {
+                (ev.currentTarget.parentElement as HTMLElement).style.backgroundColor = proColor;
+                ev.currentTarget.remove();
+              }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold"
-              style={{ backgroundColor: proColor }}>
+            <div
+              className="w-full h-full flex items-center justify-center text-white text-sm font-bold"
+              style={{ backgroundColor: proColor }}
+            >
               {proInitials.toUpperCase() || '?'}
             </div>
           )}
         </div>
-        <div className="text-left">
-          <p className="text-white text-sm font-bold leading-tight drop-shadow">{proName}</p>
+        <div className="text-left drop-shadow-lg">
+          <p className="text-white text-sm font-bold leading-tight">{proName}</p>
           {item.pro?.city && (
-            <p className="text-white/75 text-[11px] leading-tight">{item.pro.city}</p>
+            <p className="text-white/70 text-[11px] leading-tight">{item.pro.city}</p>
           )}
         </div>
       </button>
 
-      {/* Actions droite */}
+      {/* Actions droite — style Instagram */}
       <div
-        className="absolute right-3 bottom-36 flex flex-col items-center gap-5 z-10"
+        className="absolute right-3 bottom-32 flex flex-col items-center gap-6 z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Like */}
-        <button onClick={() => onLike(item.id)} className="flex flex-col items-center gap-1">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 ${item.liked ? 'bg-red-500 scale-110' : 'bg-white/20 border border-white/30 backdrop-blur-sm'}`}>
-            <Heart className={`h-6 w-6 transition-all ${item.liked ? 'fill-white text-white scale-110' : 'text-white'}`} />
+        <button
+          onClick={() => onLike(item.id)}
+          className="flex flex-col items-center gap-1.5 group"
+        >
+          <div
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-150 active:scale-75 ${
+              item.liked ? 'scale-110' : 'group-active:scale-90'
+            }`}
+          >
+            <Heart
+              className={`h-7 w-7 drop-shadow-lg transition-all duration-200 ${
+                item.liked ? 'fill-red-500 text-red-500 scale-110' : 'text-white'
+              }`}
+            />
           </div>
-          <span className="text-white text-xs font-semibold drop-shadow">{item.likes > 999 ? (item.likes / 1000).toFixed(1) + 'k' : item.likes}</span>
+          <span className="text-white text-xs font-semibold drop-shadow text-center">
+            {item.likes > 999 ? (item.likes / 1000).toFixed(1) + 'k' : item.likes}
+          </span>
         </button>
 
         {/* Commentaire */}
-        <button onClick={() => onComment(item)} className="flex flex-col items-center gap-1">
-          <div className="w-12 h-12 rounded-full bg-white/20 border border-white/30 backdrop-blur-sm flex items-center justify-center shadow-lg active:scale-90 transition-all">
-            <MessageCircle className="h-6 w-6 text-white" />
+        <button
+          onClick={() => onComment(item)}
+          className="flex flex-col items-center gap-1.5"
+        >
+          <div className="w-11 h-11 rounded-full flex items-center justify-center active:scale-75 transition-transform duration-150">
+            <MessageCircle className="h-7 w-7 text-white drop-shadow-lg" />
           </div>
           <span className="text-white text-xs font-semibold drop-shadow">{item.comments}</span>
         </button>
 
         {/* Sauvegarder */}
-        <button onClick={() => onSave(item.id)} className="flex flex-col items-center gap-1">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 ${item.saved ? 'bg-primary scale-110' : 'bg-white/20 border border-white/30 backdrop-blur-sm'}`}>
-            <Bookmark className={`h-6 w-6 ${item.saved ? 'fill-white text-white' : 'text-white'}`} />
+        <button
+          onClick={() => onSave(item.id)}
+          className="flex flex-col items-center gap-1.5"
+        >
+          <div className="w-11 h-11 rounded-full flex items-center justify-center active:scale-75 transition-transform duration-150">
+            <Bookmark
+              className={`h-7 w-7 drop-shadow-lg transition-all duration-200 ${
+                item.saved ? 'fill-primary text-primary scale-110' : 'text-white'
+              }`}
+            />
           </div>
         </button>
 
         {/* Partage */}
-        <button onClick={handleShare} className="flex flex-col items-center gap-1">
-          <div className="w-12 h-12 rounded-full bg-white/20 border border-white/30 backdrop-blur-sm flex items-center justify-center shadow-lg active:scale-90 transition-all">
-            <Share2 className="h-6 w-6 text-white" />
+        <button
+          onClick={handleShare}
+          className="flex flex-col items-center gap-1.5"
+        >
+          <div className="w-11 h-11 rounded-full flex items-center justify-center active:scale-75 transition-transform duration-150">
+            <Share2 className="h-7 w-7 text-white drop-shadow-lg" />
           </div>
         </button>
       </div>
 
       {/* Infos bas */}
-      <div className="absolute bottom-4 left-4 right-16 z-10" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="absolute bottom-6 left-4 right-16 z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
         {item.isClientPost ? (
-          /* Post client */
           <div>
-            <span className="inline-block mb-2 px-3 py-0.5 rounded-full text-[11px] font-bold text-white shadow bg-primary/90">
+            <span className="inline-block mb-2 px-3 py-0.5 rounded-full text-[11px] font-bold text-black shadow gold-bg">
               ✨ Post client
             </span>
             {item.caption && (
@@ -323,7 +384,6 @@ function ReelCard({
             )}
           </div>
         ) : item.service ? (
-          /* Service pro */
           <>
             <span
               className="inline-block mb-2 px-3 py-0.5 rounded-full text-[11px] font-bold text-white shadow"
@@ -335,30 +395,26 @@ function ReelCard({
               {item.service.title}
             </h3>
             {item.service.description && (
-              <p className="text-white/80 text-xs leading-snug mb-3 line-clamp-2">{item.service.description}</p>
+              <p className="text-white/75 text-xs leading-snug mb-3 line-clamp-2">{item.service.description}</p>
             )}
             <div className="flex items-center gap-3">
               <div>
                 <span className="text-white font-black text-2xl drop-shadow-lg">{item.service.price} €</span>
                 {item.service.duration > 0 && (
-                  <span className="text-white/60 text-xs ml-1">{item.service.duration}min</span>
+                  <span className="text-white/55 text-xs ml-1">{item.service.duration}min</span>
                 )}
               </div>
               <button
-                onClick={() => navigate('/booking?serviceId=' + item.service!._id + (item.pro ? '&proId=' + item.pro._id : ''))}
-                className="ml-auto px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-xl active:scale-95 transition-all"
-                style={{ background: `linear-gradient(135deg, ${proColor}, #ec4899)` }}
+                onClick={() => navigate(
+                  '/booking?serviceId=' + item.service!._id + (item.pro ? '&proId=' + item.pro._id : '')
+                )}
+                className="ml-auto px-5 py-2.5 rounded-full text-sm font-bold text-black shadow-xl active:scale-95 transition-all gold-bg"
               >
-                Reserver
+                Réserver
               </button>
             </div>
           </>
         ) : null}
-      </div>
-
-      {/* Scroll hint */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-40 pointer-events-none">
-        <ChevronUp className="h-4 w-4 text-white animate-bounce" />
       </div>
     </div>
   );
@@ -399,7 +455,6 @@ export function GlamFeedPage() {
       const proMap: Record<string, ApiProfessional> = {};
       proList.forEach((p) => { proMap[p._id] = p; });
 
-      // Items services (pros)
       const serviceItems: FeedItem[] = serviceList
         .map((s) => {
           const pro = proMap[s.professionalId];
@@ -424,7 +479,6 @@ export function GlamFeedPage() {
         })
         .filter((x): x is FeedItem => x !== null);
 
-      // Items posts clients (glamfeed_posts)
       const clientItems: FeedItem[] = (clientPosts as any[]).map((p) => ({
         id: 'gp_' + p.id,
         service: null,
@@ -441,23 +495,18 @@ export function GlamFeedPage() {
         caption: p.caption ?? '',
       }));
 
-      // Mélanger : 1 post client tous les 4 services
       const mixed: FeedItem[] = [];
       let ci = 0;
       serviceItems.forEach((item, i) => {
         mixed.push(item);
-        if ((i + 1) % 4 === 0 && ci < clientItems.length) {
-          mixed.push(clientItems[ci++]);
-        }
+        if ((i + 1) % 4 === 0 && ci < clientItems.length) mixed.push(clientItems[ci++]);
       });
-      // Ajouter les posts clients restants
       while (ci < clientItems.length) mixed.push(clientItems[ci++]);
 
       setFeed(mixed);
     }).catch(() => setFeed([])).finally(() => setLoading(false));
   }, [user]);
 
-  // Charger commentaires depuis Supabase
   const loadComments = async (serviceId: string) => {
     const { data } = await supabase
       .from('reviews')
@@ -479,22 +528,20 @@ export function GlamFeedPage() {
   };
 
   const handleOpenComment = async (item: FeedItem) => {
-    if (!item.commentsLoaded) await loadComments(item.id);
+    if (!item.commentsLoaded && !item.id.startsWith('gp_')) await loadComments(item.id);
     setCommentItem((prev) => (prev?.id === item.id ? null : feed.find((f) => f.id === item.id) ?? item));
   };
 
-  // Sync commentItem avec feed
   useEffect(() => {
     if (commentItem) {
       const updated = feed.find((f) => f.id === commentItem.id);
       if (updated) setCommentItem(updated);
     }
-  }, [feed]);
+  }, [feed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleAddComment = async (serviceId: string, text: string) => {
+  const handleAddComment = async (id: string, text: string) => {
     if (!user) return;
-    // Pour les posts clients, on ne fait pas de reviews Supabase (pas de service_id)
-    if (serviceId.startsWith('gp_')) {
+    if (id.startsWith('gp_')) {
       const newComment: Comment = {
         id: Date.now().toString(),
         author: `${user.firstName} ${user.lastName}`.trim(),
@@ -502,19 +549,13 @@ export function GlamFeedPage() {
         createdAt: new Date().toISOString(),
       };
       setFeed((prev) => prev.map((p) =>
-        p.id === serviceId ? { ...p, commentList: [...p.commentList, newComment], comments: p.comments + 1 } : p
+        p.id === id ? { ...p, commentList: [...p.commentList, newComment], comments: p.comments + 1 } : p
       ));
       return;
     }
-
     const { data } = await supabase
       .from('reviews')
-      .insert({
-        service_id: serviceId,
-        client_id: user._id,
-        comment: text,
-        rating: 5,
-      })
+      .insert({ service_id: id, client_id: user._id, comment: text, rating: 5 })
       .select('id, created_at')
       .single();
 
@@ -526,42 +567,46 @@ export function GlamFeedPage() {
         createdAt: data.created_at,
       };
       setFeed((prev) => prev.map((p) =>
-        p.id === serviceId
-          ? { ...p, commentList: [...p.commentList, newComment], comments: p.comments + 1 }
-          : p
+        p.id === id ? { ...p, commentList: [...p.commentList, newComment], comments: p.comments + 1 } : p
       ));
-      // Sync reviews_count en base
-      await supabase.rpc('increment_reviews_count', { p_service_id: serviceId }).catch(() => {
-        // RPC optionnel — fail silently
-      });
+      await supabase.rpc('increment_reviews_count', { p_service_id: id }).catch(() => {});
     }
   };
 
-  const toggleLike = (id: string) => {
+  const toggleLike = useCallback((id: string) => {
+    // Optimistic update
     setFeed((prev) => prev.map((p) =>
-      p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p
+      p.id === id
+        ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 }
+        : p
     ));
     if (user && !id.startsWith('gp_')) {
       apiToggleLike(user._id, id).catch(() => {
+        // Rollback on error
         setFeed((prev) => prev.map((p) =>
-          p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 } : p
+          p.id === id
+            ? { ...p, liked: !p.liked, likes: p.liked ? Math.max(0, p.likes - 1) : p.likes + 1 }
+            : p
         ));
       });
     }
-  };
+  }, [user]);
 
-  const toggleSave = (id: string) => {
+  const toggleSave = useCallback((id: string) => {
     setFeed((prev) => prev.map((p) => p.id === id ? { ...p, saved: !p.saved } : p));
     if (user && !id.startsWith('gp_')) {
       apiToggleFavorite({ userId: user._id, targetId: id, targetType: 'service' }).catch(() => {
         setFeed((prev) => prev.map((p) => p.id === id ? { ...p, saved: !p.saved } : p));
       });
     }
-  };
+  }, [user]);
 
   if (loading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black z-50">
+      <div
+        className="flex items-center justify-center bg-black"
+        style={{ height: '100dvh' }}
+      >
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
           <p className="text-white/60 text-sm">Chargement du GlamFeed...</p>
@@ -572,31 +617,61 @@ export function GlamFeedPage() {
 
   if (feed.length === 0) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-black gap-6 z-50">
+      <div
+        className="flex flex-col items-center justify-center bg-black gap-6"
+        style={{ height: '100dvh' }}
+      >
         <Camera className="h-16 w-16 text-white/20" />
         <p className="text-white/50 text-sm text-center px-8">
-          Aucun contenu disponible.<br />Les pros peuvent publier leurs photos depuis leur espace pro.
+          Aucun contenu disponible.<br />Les pros peuvent publier depuis leur espace pro.
         </p>
+        <button
+          onClick={() => navigate('/pro/services')}
+          className="px-5 py-2.5 rounded-full text-sm font-semibold text-black gold-bg"
+        >
+          Publier du contenu
+        </button>
       </div>
     );
   }
 
+  // Hauteur = viewport - header (56px mobile / 64px sm+)
+  // On utilise CSS custom property via style pour éviter le bug dvh/svh sur certains navigateurs
   return (
     <>
-      {/* Feed plein ecran, scroll snap vertical */}
+      {/* Animation coeur */}
+      <style>{`
+        @keyframes heartPop {
+          0%   { transform: scale(0.5); opacity: 1; }
+          50%  { transform: scale(1.4); opacity: 1; }
+          80%  { transform: scale(1.1); opacity: 0.8; }
+          100% { transform: scale(1);   opacity: 0; }
+        }
+      `}</style>
+
+      {/* Container scroll-snap plein écran */}
       <div
-        className="-mx-4 -mt-4 sm:-mx-6 lg:-mx-8 overflow-y-scroll"
+        className="w-full overflow-y-scroll bg-black"
         style={{
-          height: 'calc(100svh - 56px)',
+          height: 'calc(100dvh - 56px)',
           scrollSnapType: 'y mandatory',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
-        {feed.map((item) => (
-          <div key={item.id} style={{ scrollSnapAlign: 'start' }}>
+        {feed.map((item, index) => (
+          <div
+            key={item.id}
+            style={{
+              scrollSnapAlign: 'start',
+              scrollSnapStop: 'always',
+              height: 'calc(100dvh - 56px)',
+            }}
+          >
             <ReelCard
               item={item}
+              index={index}
               onLike={toggleLike}
               onSave={toggleSave}
               onComment={handleOpenComment}
@@ -606,7 +681,6 @@ export function GlamFeedPage() {
         ))}
       </div>
 
-      {/* Drawer commentaires */}
       {commentItem && (
         <CommentDrawer
           item={commentItem}

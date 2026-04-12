@@ -286,7 +286,7 @@ export function MapBeautePage() {
     : proName.charAt(0).toUpperCase();
 
   return (
-    <div className="fixed inset-0" style={{ top: 0, zIndex: 0 }}>
+    <div className="relative w-full bg-black" style={{ height: 'calc(100dvh - 56px)' }}>
       {/* Barre flottante haut */}
       <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2">
         <div className="flex gap-2">

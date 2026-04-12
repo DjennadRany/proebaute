@@ -121,23 +121,25 @@ export function ServiceDetail() {
 
   const handleToggleLike = () => {
     if (!user || !id) return;
-    toggleLike(user._id, id)
-      .then((res) => {
-        setIsLiked(res.liked);
-        setLikesCount((prev) => {
-          const baseFromService =
-            service && typeof service.likesCount === 'number' ? service.likesCount : 0;
-          const current = typeof prev === 'number' ? prev : baseFromService;
-          return current + (res.liked ? 1 : -1);
-        });
-        setLikedServiceIds((prev) => {
-          const next = new Set(prev);
-          if (res.liked) next.add(id);
-          else next.delete(id);
-          return next;
-        });
-      })
-      .catch((e) => console.error(e));
+    // Optimistic update immédiat
+    const wasLiked = isLiked;
+    setIsLiked(!wasLiked);
+    setLikesCount((prev) => Math.max(0, (prev ?? 0) + (wasLiked ? -1 : 1)));
+    setLikedServiceIds((prev) => {
+      const next = new Set(prev);
+      if (!wasLiked) next.add(id); else next.delete(id);
+      return next;
+    });
+    // Sync API avec rollback
+    toggleLike(user._id, id).catch(() => {
+      setIsLiked(wasLiked);
+      setLikesCount((prev) => Math.max(0, (prev ?? 0) + (wasLiked ? 1 : -1)));
+      setLikedServiceIds((prev) => {
+        const next = new Set(prev);
+        if (wasLiked) next.add(id); else next.delete(id);
+        return next;
+      });
+    });
   };
 
   const handleToggleFavoriteRelated = (serviceId: string) => {
