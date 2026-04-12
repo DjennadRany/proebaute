@@ -246,9 +246,24 @@ export function RootLayout() {
           </div>
         </div>
 
-        {/* Mobile / tablet dropdown menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-card">
+      </header>
+
+      {/* ── Menu mobile : overlay FIXE — ne repousse pas le contenu (map, etc.) ── */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop transparent pour fermer en cliquant dehors */}
+          <div
+            className="fixed inset-0 z-[34] md:hidden"
+            aria-hidden="true"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          {/* Panneau du menu, ancré sous le header (top-14 = 56px = h-14) */}
+          <div
+            className="fixed left-0 right-0 top-14 z-[35] md:hidden border-b border-border bg-card shadow-xl max-h-[calc(100dvh-56px)] overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu de navigation"
+          >
             <div className="mx-auto max-w-6xl px-4 py-3 space-y-2">
               {user && (
                 <div className="mb-3 rounded-xl border border-border bg-accent/40 px-3 py-3">
@@ -319,7 +334,7 @@ export function RootLayout() {
                 </>
               )}
 
-              {/* Connexion / Déconnexion in mobile menu */}
+              {/* Connexion / Déconnexion */}
               <div className="pt-1 border-t border-border/70 mt-2">
                 {user ? (
                   <button
@@ -347,8 +362,8 @@ export function RootLayout() {
               </div>
             </div>
           </div>
-        )}
-      </header>
+        </>
+      )}
 
       {/* Main Content — fullscreen mode for /map and /glamfeed (no padding, no footer) */}
       {isFullscreen ? (
