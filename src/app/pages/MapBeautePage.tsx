@@ -359,7 +359,7 @@ export function MapBeautePage() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-3 text-sm mb-4 flex-wrap">
+              <div className="flex items-center gap-3 text-sm mb-3 flex-wrap">
                 {selected.ratingAverage > 0 && (
                   <span className="flex items-center gap-1 font-medium">
                     <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -375,21 +375,40 @@ export function MapBeautePage() {
                 )}
               </div>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => navigate('/professionals/' + selected._id)}
-                  className="flex-1 py-2 rounded-xl text-sm font-medium border border-border hover:bg-muted transition-colors"
-                >
-                  Voir profil
-                </button>
-                <button
-                  onClick={() => navigate('/booking?proId=' + selected._id)}
-                  className="flex-1 py-2 rounded-xl text-sm font-medium text-white"
-                  style={{ background: `linear-gradient(to right, ${proColor}, #ec4899)` }}
-                >
-                  Reserver
-                </button>
-              </div>
+              {/* Images des services du pro — cliquables → profil */}
+              {selected.gallery && selected.gallery.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
+                  {selected.gallery.slice(0, 6).map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => navigate('/professionals/' + selected._id)}
+                      className="shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden border-2 hover:opacity-80 active:scale-95 transition-all"
+                      style={{ borderColor: '#C9A84C' }}
+                      title="Voir le profil"
+                    >
+                      <img
+                        src={img}
+                        alt={`Service ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Bouton Voir profil — charte Or */}
+              <button
+                onClick={() => navigate('/professionals/' + selected._id)}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold tracking-wide transition-opacity hover:opacity-90 active:scale-[0.98]"
+                style={{
+                  background: '#C9A84C',
+                  border: '2px solid #C9A84C',
+                  color: '#07080c',
+                }}
+              >
+                Voir le profil
+              </button>
             </div>
           </div>
         </div>
