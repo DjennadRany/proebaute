@@ -88,7 +88,7 @@ export function ServiceCard({
           {professional && (
             <div className="mb-3 flex items-center gap-2 border-b border-border pb-3">
               <EntityAvatar
-                name={professional.professionalName || (professional as any).firstName || 'P'}
+                name={professional.professionalName || 'P'}
                 size="sm"
               />
               <div className="flex-1 min-w-0">

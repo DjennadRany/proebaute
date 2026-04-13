@@ -62,44 +62,51 @@ export function BookingPage() {
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState<string | null>(null);
+  const [serviceLoading, setServiceLoading] = useState(false);
+  const [serviceError, setServiceError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      if (selectedService) {
-        try {
+      if (!selectedService && !professionalIdFromQuery) return;
+
+      setServiceLoading(true);
+      setServiceError(null);
+
+      try {
+        if (selectedService) {
           const detail = await fetchServiceDetails(selectedService);
           if (cancelled) return;
           setService(detail.service);
           setProfessional(detail.professional);
           setAllServices([detail.service]);
-        } catch (e) {
-          console.error('Erreur chargement service pour booking', e);
+          return;
         }
-        return;
-      }
 
-      if (professionalIdFromQuery) {
-        try {
+        if (professionalIdFromQuery) {
           const { professional: pro, services } = await fetchProfessionalById(professionalIdFromQuery);
           if (cancelled) return;
           setProfessional(pro);
           setAllServices(services);
+          // Pas d'assertion ! — vérification explicite avant accès
           if (services.length > 0) {
-            setSelectedService(services[0]!._id);
-            setService(services[0]!);
+            const first = services[0];
+            setSelectedService(first._id);
+            setService(first);
           } else {
             setService(null);
           }
-        } catch (e) {
-          console.error('Erreur chargement services du professionnel', e);
         }
+      } catch (e) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : 'Impossible de charger le service';
+        setServiceError(msg);
+      } finally {
+        if (!cancelled) setServiceLoading(false);
       }
     }
     load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [selectedService, professionalIdFromQuery]);
 
   useEffect(() => {
@@ -181,7 +188,7 @@ export function BookingPage() {
         amount: service.price,
       });
 
-      const bookingId: string = (booking as any)?._id ?? 'booking_' + Date.now();
+      const bookingId: string = booking?.bookingId ?? 'booking_' + Date.now();
       setCreatedBookingId(bookingId);
 
       // 2. Creer le PaymentIntent (simulation ou Edge Function en prod)
@@ -308,7 +315,23 @@ export function BookingPage() {
               Choisir un service
             </h3>
 
-            {professional || allServices.length > 0 ? (
+            {/* Skeleton chargement service */}
+            {serviceLoading && (
+              <div className="animate-pulse space-y-3">
+                <div className="h-10 rounded-xl bg-muted" />
+                <div className="h-24 rounded-2xl bg-muted" />
+              </div>
+            )}
+
+            {/* Erreur chargement service */}
+            {!serviceLoading && serviceError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{serviceError}</AlertDescription>
+              </Alert>
+            )}
+
+            {!serviceLoading && !serviceError && (professional || allServices.length > 0) ? (
               <Select value={selectedService} onValueChange={setSelectedService}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selectionnez un service" />
@@ -321,11 +344,11 @@ export function BookingPage() {
                   ))}
                 </SelectContent>
               </Select>
-            ) : (
+            ) : !serviceLoading && !serviceError ? (
               <p className="text-sm text-muted-foreground">
                 Veuillez d&apos;abord selectionner un service depuis la page des services
               </p>
-            )}
+            ) : null}
 
             {service && (
               <div className="mt-4 rounded-2xl border border-border/70 bg-background/70 p-4">

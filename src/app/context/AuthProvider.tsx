@@ -1,7 +1,7 @@
 import { ReactNode, useState, useCallback, useEffect } from 'react';
 import { login as apiLogin } from '../api/client';
 import { supabase } from '../api/supabaseClient';
-import type { User } from '../data/mockData';
+import type { User } from '../types/user';
 import { AuthContext, STORAGE_KEY, loadStoredUser } from './auth-context';
 import { useNotifications } from '../hooks/useNotifications';
 import { trackLogin } from '../lib/gtag';

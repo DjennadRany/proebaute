@@ -244,20 +244,29 @@ async function upsertUserProfile(payload: {
 }
 
 // Géocode une adresse via Nominatim (gratuit, pas de clé API)
+// Timeout 8 s via AbortController pour ne jamais bloquer indéfiniment
 async function geocodeAddress(streetAddress: string, city: string, postalCode: string): Promise<{ lat: number; lng: number } | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
   try {
     const query = encodeURIComponent(`${streetAddress}, ${postalCode} ${city}, France`);
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&countrycodes=fr`,
-      { headers: { 'Accept-Language': 'fr', 'User-Agent': 'LocBeaute/1.0' } }
+      {
+        headers: { 'Accept-Language': 'fr', 'User-Agent': 'LocBeaute/1.0' },
+        signal: controller.signal,
+      }
     );
     if (!res.ok) return null;
-    const json = await res.json();
+    const json = await res.json() as Array<{ lat: string; lon: string }>;
     if (!Array.isArray(json) || json.length === 0) return null;
     const { lat, lon } = json[0];
     return { lat: parseFloat(lat), lng: parseFloat(lon) };
   } catch {
+    // AbortError (timeout) ou erreur réseau → null sans bloquer
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 

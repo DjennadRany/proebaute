@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { User } from '../data/mockData';
+import type { User } from '../types/user';
 
 export const STORAGE_KEY = 'beautyhub_user';
 

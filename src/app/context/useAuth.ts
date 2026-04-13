@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { login as apiLogin } from '../api/client';
-import type { User } from '../data/mockData';
+import type { User } from '../types/user';
 import { AuthContext, STORAGE_KEY, type AuthContextType } from './auth-context';
 
 export function useAuth(): AuthContextType {

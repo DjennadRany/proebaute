@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSEO } from '../hooks/useSEO';
-import { Bell, Calendar, Heart, MessageCircle, Sparkles, Star, TrendingUp, Clock } from 'lucide-react';
+import { AlertCircle, Bell, Calendar, Heart, MessageCircle, Sparkles, Star, TrendingUp, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { AppCard } from '../components/AppCard';
@@ -11,6 +11,7 @@ import { StatCard } from '../components/StatCard';
 import { ServiceCard } from '../components/ServiceCard';
 import { StatusBadge } from '../components/StatusBadge';
 import { Button } from '../components/ui/button';
+import { Alert, AlertDescription } from '../components/ui/alert';
 import {
   ApiBookingSummary,
   ApiService,
@@ -36,9 +37,16 @@ export function Dashboard() {
   const [reviewsCount, setReviewsCount] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const nextBooking = upcomingBookings[0] ?? null;
 
   useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(null);
+
     async function loadData() {
       try {
         const [services, bookings, favorites, likes, conversations, reviews] = await Promise.all([
@@ -50,11 +58,14 @@ export function Dashboard() {
           fetchReviewsByClient(user._id).catch(() => []),
         ]);
 
+        if (cancelled) return;
+
         setRecentServices(services.slice(0, 4));
         setFavoritesCount(favorites.length);
         setFavoriteIds(
           new Set(favorites.filter((f) => f.targetType === 'service').map((f) => f.targetId))
         );
+        // Likes : source de vérité = table likes Supabase
         setLikedIds(
           new Set(likes.map((l) => l.serviceId).filter((id): id is string => Boolean(id)))
         );
@@ -64,14 +75,47 @@ export function Dashboard() {
         const confirmed = bookings.filter((b) => b.booking.status === 'confirmed');
         setUpcomingBookings(confirmed);
       } catch (e) {
-        console.error('Erreur chargement dashboard', e);
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : 'Erreur lors du chargement du tableau de bord';
+        setLoadError(msg);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
 
-    if (user) loadData();
+    loadData();
+    return () => { cancelled = true; };
   }, [user?._id]);
 
   if (!user) return null;
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-6 animate-pulse">
+        <div className="h-10 w-64 rounded-xl bg-muted" />
+        <div className="h-40 rounded-2xl bg-muted" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => <div key={i} className="h-28 rounded-2xl bg-muted" />)}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => <div key={i} className="h-72 rounded-2xl bg-muted" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {loadError} — <button onClick={() => window.location.reload()} className="underline">Réessayer</button>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -301,9 +345,12 @@ export function Dashboard() {
                       Math.max(0, prev + (res.favorited ? 1 : -1))
                     );
                   })
-                  .catch(console.error);
+                  .catch((err: unknown) => {
+                    console.error('[Dashboard] toggleFavorite error:', err);
+                  });
               }}
               onToggleLike={(serviceId) => {
+                // Mise à jour optimiste — clampée à 0 (jamais négatif)
                 toggleLike(user._id, serviceId)
                   .then((res) => {
                     setLikedIds((prev) => {
@@ -315,12 +362,17 @@ export function Dashboard() {
                     setRecentServices((prev) =>
                       prev.map((s) =>
                         s._id === serviceId
-                          ? { ...s, likesCount: (s.likesCount ?? 0) + (res.liked ? 1 : -1) }
+                          ? {
+                              ...s,
+                              likesCount: Math.max(0, (s.likesCount ?? 0) + (res.liked ? 1 : -1)),
+                            }
                           : s
                       )
                     );
                   })
-                  .catch(console.error);
+                  .catch((err: unknown) => {
+                    console.error('[Dashboard] toggleLike error:', err);
+                  });
               }}
             />
           ))}
