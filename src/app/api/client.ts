@@ -1,11 +1,29 @@
 import type { User as AuthUser } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient';
+import type {
+  ServiceRow,
+  ProfessionalRow,
+  BookingWithJoin,
+  BookingSlotRow,
+  ServiceDurationRow,
+  ConversationRow,
+  MessageRow,
+  ReviewRow,
+  FavoriteRow,
+  LikeRow,
+  AvailabilitySlotRow,
+  UserProfileRow,
+  ProfessionalNameRow,
+  AvailabilityWindowRow,
+} from './supabaseTypes';
 
 // Helper: certaines tables ne sont pas encore créées en local.
 // Quand Supabase renvoie PGRST205 ("table not in schema cache"),
 // on renvoie simplement des listes vides pour ne pas casser l'UI.
 function isMissingTableError(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && (error as any).code === 'PGRST205';
+  if (typeof error !== 'object' || error === null) return false;
+  const e = error as { code?: string };
+  return e.code === 'PGRST205';
 }
 
 function isRlsOrPermissionError(error: unknown): boolean {
@@ -646,20 +664,67 @@ export async function updateAccountPassword(password: string): Promise<void> {
   if (error) throw error;
 }
 
-export function mapServiceRow(s: Record<string, unknown>): ApiService {
-  const row = s as any;
+export function mapServiceRow(row: ServiceRow): ApiService {
   return {
     _id: row.id,
-    professionalId: row.professional_id ?? row.professionalId ?? '',
+    professionalId: row.professional_id ?? '',
     title: row.title ?? '',
     description: row.description ?? '',
     category: row.category ?? '',
     price: Number(row.price ?? 0),
     duration: Number(row.duration ?? 0),
     media: Array.isArray(row.media) ? row.media : [],
-    ratingAverage: Number(row.rating_average ?? row.ratingAverage ?? 0),
-    likesCount: Number(row.likes_count ?? row.likesCount ?? 0),
-    reviewsCount: Number(row.reviews_count ?? row.reviewsCount ?? 0),
+    ratingAverage: Number(row.rating_average ?? 0),
+    likesCount: Number(row.likes_count ?? 0),
+    reviewsCount: Number(row.reviews_count ?? 0),
+  };
+}
+
+function mapProfessionalRow(p: ProfessionalRow): ApiProfessional {
+  return {
+    _id: p.id,
+    userId: p.user_id ?? undefined,
+    professionalName: p.professional_name,
+    specialty: p.specialty,
+    bio: p.bio ?? undefined,
+    location: p.location ?? '',
+    ratingAverage: Number(p.rating_average ?? 0),
+    reviewsCount: Number(p.reviews_count ?? 0),
+    verified: p.verified ?? false,
+    gallery: p.gallery ?? [],
+    postalCode: p.postal_code,
+    city: p.city,
+    coordinates: p.coordinates
+      ? p.coordinates
+      : p.lat != null && p.lng != null
+        ? { lat: p.lat, lng: p.lng }
+        : null,
+  };
+}
+
+function mapReviewRow(r: ReviewRow): ApiReview {
+  return {
+    _id: r.id,
+    bookingId: r.booking_id ?? undefined,
+    clientId: r.client_id ?? undefined,
+    professionalId: r.professional_id ?? undefined,
+    serviceId: r.service_id ?? undefined,
+    rating: r.rating,
+    comment: r.comment,
+    createdAt: r.created_at,
+    clientName: r.client_name ?? null,
+  };
+}
+
+function mapMessageRow(m: MessageRow): ApiMessage {
+  return {
+    _id: m.id,
+    conversationId: m.conversation_id,
+    senderId: m.sender_id,
+    receiverId: m.receiver_id,
+    content: m.content,
+    createdAt: m.created_at,
+    readStatus: m.read_status,
   };
 }
 
@@ -672,7 +737,7 @@ export async function fetchServices(professionalId?: string): Promise<ApiService
     if (isMissingTableError(error)) return [];
     throw error;
   }
-  return (data ?? []).map((s: any) => mapServiceRow(s));
+  return (data as ServiceRow[] ?? []).map(mapServiceRow);
 }
 
 export async function createProService(payload: {
@@ -742,53 +807,39 @@ export async function fetchServicesByCategory(category: string): Promise<ApiServ
     if (isMissingTableError(error)) return [];
     throw error;
   }
-  return (data ?? []).map((s: any) => mapServiceRow(s));
+  return (data as ServiceRow[] ?? []).map(mapServiceRow);
 }
 
 export async function fetchServiceDetails(id: string): Promise<{
   service: ApiService;
   professional: ApiProfessional | null;
-  reviews: any[];
+  reviews: ApiReview[];
 }> {
-  const { data: service, error: serviceError } = await supabase
+  const { data: serviceData, error: serviceError } = await supabase
     .from('services')
     .select('*')
     .eq('id', id)
     .single();
-  if (serviceError || !service) throw serviceError ?? new Error('Service not found');
+  if (serviceError || !serviceData) throw serviceError ?? new Error('Service not found');
+  const service = serviceData as ServiceRow;
 
-  const { data: professional, error: proError } = await supabase
+  const { data: professionalData, error: proError } = await supabase
     .from('professionals')
     .select('*')
-    .eq('id', (service as any).professional_id)
+    .eq('id', service.professional_id)
     .single();
   if (proError && proError.code !== 'PGRST116') throw proError;
 
-  const { data: reviews, error: reviewsError } = await supabase
+  const { data: reviewsData, error: reviewsError } = await supabase
     .from('reviews')
     .select('*')
     .eq('service_id', id);
   if (reviewsError) throw reviewsError;
 
   return {
-    service: mapServiceRow({ ...(service as any), id: (service as any).id }),
-    professional: professional
-      ? ({
-          _id: (professional as any).id,
-          userId: (professional as any).user_id,
-          professionalName: (professional as any).professional_name,
-          specialty: (professional as any).specialty,
-          bio: (professional as any).bio,
-          location: (professional as any).location,
-          ratingAverage: (professional as any).rating_average,
-          reviewsCount: (professional as any).reviews_count,
-          verified: (professional as any).verified,
-          gallery: (professional as any).gallery,
-          postalCode: (professional as any).postal_code,
-          city: (professional as any).city,
-        } as ApiProfessional)
-      : null,
-    reviews: (reviews ?? []) as any[],
+    service: mapServiceRow(service),
+    professional: professionalData ? mapProfessionalRow(professionalData as ProfessionalRow) : null,
+    reviews: (reviewsData as ReviewRow[] ?? []).map(mapReviewRow),
   };
 }
 
@@ -841,7 +892,7 @@ export async function fetchAvailabilitySlotsByProId(proId: string): Promise<ApiA
     throw error;
   }
 
-  return (data ?? []).map((row: any) => ({
+  return (data as AvailabilitySlotRow[] ?? []).map((row) => ({
     id: row.id,
     proId: row.pro_id,
     dayOfWeek: row.day_of_week,
@@ -904,8 +955,8 @@ export async function fetchAvailableBookingTimeSlots(params: {
     throw slotErr;
   }
 
-  const windows = (slotRows ?? [])
-    .map((row: any) => ({
+  const windows = (slotRows as AvailabilityWindowRow[] ?? [])
+    .map((row) => ({
       start: parseTimeToMinutes(formatTimeSlotFromDb(row.start_time)),
       end: parseTimeToMinutes(formatTimeSlotFromDb(row.end_time)),
     }))
@@ -918,15 +969,15 @@ export async function fetchAvailableBookingTimeSlots(params: {
     .eq('booking_date', params.bookingDate)
     .not('status', 'eq', 'cancelled');
 
-  let bookingsData: any[] = [];
+  let bookingsData: BookingSlotRow[] = [];
   if (bookErr) {
     if (!isMissingTableError(bookErr)) throw bookErr;
   } else {
-    bookingsData = bookingRows ?? [];
+    bookingsData = (bookingRows as BookingSlotRow[]) ?? [];
   }
 
   const serviceIds = Array.from(
-    new Set(bookingsData.map((b: any) => b.service_id).filter(Boolean)),
+    new Set(bookingsData.map((b) => b.service_id).filter(Boolean)),
   ) as string[];
 
   const durationByServiceId = new Map<string, number>();
@@ -936,15 +987,15 @@ export async function fetchAvailableBookingTimeSlots(params: {
       .select('id, duration')
       .in('id', serviceIds);
     if (!svcErr && svcRows) {
-      for (const s of svcRows as any[]) {
+      for (const s of svcRows as ServiceDurationRow[]) {
         durationByServiceId.set(s.id, Math.max(5, Math.floor(Number(s.duration) || 60)));
       }
     }
   }
 
   const busy = bookingsData
-    .map((b: any) => {
-      const dur = durationByServiceId.get(b.service_id) ?? 60;
+    .map((b) => {
+      const dur = durationByServiceId.get(b.service_id ?? '') ?? 60;
       const start = parseTimeToMinutes(formatTimeSlotFromDb(b.time_slot));
       return { start, end: start + dur };
     })
@@ -988,7 +1039,7 @@ export async function fetchBookingsByClient(clientId: string): Promise<ApiBookin
     throw error;
   }
 
-  return (data ?? []).map((row: any) => ({
+  return (data as BookingWithJoin[] ?? []).map((row) => ({
     booking: {
       _id: row.id,
       clientId: row.client_id,
@@ -999,23 +1050,8 @@ export async function fetchBookingsByClient(clientId: string): Promise<ApiBookin
       status: row.status,
       amount: row.amount,
     },
-    service: row.services ? mapServiceRow(row.services as any) : null,
-    professional: row.professionals
-      ? ({
-          _id: row.professionals.id,
-          userId: row.professionals.user_id,
-          professionalName: row.professionals.professional_name,
-          specialty: row.professionals.specialty,
-          bio: row.professionals.bio,
-          location: row.professionals.location,
-          ratingAverage: row.professionals.rating_average,
-          reviewsCount: row.professionals.reviews_count,
-          verified: row.professionals.verified,
-          gallery: row.professionals.gallery,
-          postalCode: row.professionals.postal_code,
-          city: row.professionals.city,
-        } as ApiProfessional)
-      : null,
+    service: row.services ? mapServiceRow(row.services) : null,
+    professional: row.professionals ? mapProfessionalRow(row.professionals) : null,
   }));
 }
 
@@ -1032,21 +1068,7 @@ export async function fetchProfessionalByUserId(userId: string): Promise<ApiProf
   }
   if (!data) return null;
 
-  const p = data as any;
-  return {
-    _id: p.id,
-    userId: p.user_id,
-    professionalName: p.professional_name,
-    specialty: p.specialty,
-    bio: p.bio,
-    location: p.location,
-    ratingAverage: p.rating_average,
-    reviewsCount: p.reviews_count,
-    verified: p.verified,
-    gallery: p.gallery,
-    postalCode: p.postal_code,
-    city: p.city,
-  } as ApiProfessional;
+  return mapProfessionalRow(data as ProfessionalRow);
 }
 
 export async function fetchBookingsByProfessional(professionalId: string): Promise<ApiBookingSummary[]> {
@@ -1074,7 +1096,7 @@ export async function fetchBookingsByProfessional(professionalId: string): Promi
     throw error;
   }
 
-  const rows = (data ?? []) as any[];
+  const rows = (data as BookingWithJoin[]) ?? [];
   const clientIds = Array.from(new Set(rows.map((r) => r.client_id).filter(Boolean)));
 
   let nameByClientId = new Map<string, string>();
@@ -1085,7 +1107,7 @@ export async function fetchBookingsByProfessional(professionalId: string): Promi
       .in('id', clientIds);
     if (!usersError && usersRows) {
       nameByClientId = new Map(
-        (usersRows as any[]).map((u) => [
+        (usersRows as UserProfileRow[]).map((u) => [
           u.id,
           `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || 'Client',
         ]),
@@ -1093,7 +1115,7 @@ export async function fetchBookingsByProfessional(professionalId: string): Promi
     }
   }
 
-  return rows.map((row: any) => ({
+  return rows.map((row) => ({
     booking: {
       _id: row.id,
       clientId: row.client_id,
@@ -1104,23 +1126,8 @@ export async function fetchBookingsByProfessional(professionalId: string): Promi
       status: row.status,
       amount: row.amount,
     },
-    service: row.services ? mapServiceRow(row.services as any) : null,
-    professional: row.professionals
-      ? ({
-          _id: row.professionals.id,
-          userId: row.professionals.user_id,
-          professionalName: row.professionals.professional_name,
-          specialty: row.professionals.specialty,
-          bio: row.professionals.bio,
-          location: row.professionals.location,
-          ratingAverage: row.professionals.rating_average,
-          reviewsCount: row.professionals.reviews_count,
-          verified: row.professionals.verified,
-          gallery: row.professionals.gallery,
-          postalCode: row.professionals.postal_code,
-          city: row.professionals.city,
-        } as ApiProfessional)
-      : null,
+    service: row.services ? mapServiceRow(row.services) : null,
+    professional: row.professionals ? mapProfessionalRow(row.professionals) : null,
     clientDisplayName: nameByClientId.get(row.client_id) ?? 'Client',
   }));
 }
@@ -1190,25 +1197,16 @@ export async function fetchConversations(userId: string): Promise<ApiConversatio
 
   if (error) throw error;
 
-  const rows = (data ?? []) as any[];
+  const rows = (data as ConversationRow[]) ?? [];
   const otherUserIds = Array.from(
     new Set(
       rows
-        .flatMap((c) => (c.participants ?? []).filter((participantId: string) => participantId !== userId))
+        .flatMap((c) => (c.participants ?? []).filter((participantId) => participantId !== userId))
         .filter(Boolean),
     ),
   );
 
-  const profileMap = new Map<
-    string,
-    {
-      id: string;
-      first_name: string;
-      last_name: string;
-      role: 'client' | 'professional';
-      phone?: string | null;
-    }
-  >();
+  const profileMap = new Map<string, UserProfileRow>();
   const professionalNameMap = new Map<string, string>();
 
   if (otherUserIds.length > 0) {
@@ -1223,16 +1221,16 @@ export async function fetchConversations(userId: string): Promise<ApiConversatio
         .in('user_id', otherUserIds),
     ]);
 
-    (profiles ?? []).forEach((profile: any) => {
+    (profiles as UserProfileRow[] ?? []).forEach((profile) => {
       profileMap.set(profile.id, profile);
     });
 
-    (professionalProfiles ?? []).forEach((professional: any) => {
+    (professionalProfiles as ProfessionalNameRow[] ?? []).forEach((professional) => {
       professionalNameMap.set(professional.user_id, professional.professional_name);
     });
   }
 
-  return rows.map((c: any) => {
+  return rows.map((c) => {
     const participants = c.participants ?? [];
     const otherUserId =
       participants.find((participantId: string) => participantId !== userId) ?? null;
@@ -1290,15 +1288,7 @@ export async function fetchMessages(conversationId: string): Promise<ApiMessage[
 
   if (error) throw error;
 
-  return (data ?? []).map((m: any) => ({
-    _id: m.id,
-    conversationId: m.conversation_id,
-    senderId: m.sender_id,
-    receiverId: m.receiver_id,
-    content: m.content,
-    createdAt: m.created_at,
-    readStatus: m.read_status,
-  }));
+  return (data as MessageRow[] ?? []).map(mapMessageRow);
 }
 
 export async function sendMessage(conversationId: string, payload: {
@@ -1403,26 +1393,7 @@ export async function fetchProfessionals(location?: string, specialty?: string):
     throw error;
   }
 
-  return (data ?? []).map((p: any) => ({
-    _id: p.id,
-    userId: p.user_id,
-    professionalName: p.professional_name,
-    specialty: p.specialty,
-    bio: p.bio,
-    location: p.location,
-    ratingAverage: p.rating_average,
-    reviewsCount: p.reviews_count,
-    verified: p.verified,
-    gallery: p.gallery,
-    postalCode: p.postal_code,
-    city: p.city,
-    // Coordonnées GPS : colonne JSONB {lat, lng} ou colonnes séparées lat/lng
-    coordinates: p.coordinates
-      ? p.coordinates
-      : p.lat != null && p.lng != null
-        ? { lat: p.lat, lng: p.lng }
-        : null,
-  })) as ApiProfessional[];
+  return (data as ProfessionalRow[] ?? []).map(mapProfessionalRow);
 }
 
 export async function fetchProfessionalById(id: string): Promise<{
@@ -1450,22 +1421,9 @@ export async function fetchProfessionalById(id: string): Promise<{
   if (reviewsError) throw reviewsError;
 
   return {
-    professional: {
-      _id: (professional as any).id,
-      userId: (professional as any).user_id,
-      professionalName: (professional as any).professional_name,
-      specialty: (professional as any).specialty,
-      bio: (professional as any).bio,
-      location: (professional as any).location,
-      ratingAverage: (professional as any).rating_average,
-      reviewsCount: (professional as any).reviews_count,
-      verified: (professional as any).verified,
-      gallery: (professional as any).gallery,
-      postalCode: (professional as any).postal_code,
-      city: (professional as any).city,
-    } as ApiProfessional,
-    services: (services ?? []).map((s: any) => mapServiceRow(s)),
-    reviews: (reviews ?? []).map((r: any) => ({ ...r, _id: r.id })) as ApiReview[],
+    professional: mapProfessionalRow(professional as ProfessionalRow),
+    services: (services as ServiceRow[] ?? []).map(mapServiceRow),
+    reviews: (reviews as ReviewRow[] ?? []).map(mapReviewRow),
   };
 }
 
@@ -1480,7 +1438,7 @@ export async function fetchFavorites(userId: string): Promise<ApiFavorite[]> {
     throw error;
   }
 
-  return (data ?? []).map((f: any) => ({
+  return (data as FavoriteRow[] ?? []).map((f) => ({
     _id: f.id,
     targetType: f.target_type,
     targetId: f.target_id,
@@ -1559,7 +1517,7 @@ export async function fetchLikes(userId: string): Promise<ApiLike[]> {
     throw error;
   }
 
-  return (data ?? []).map((l: any) => ({
+  return (data as LikeRow[] ?? []).map((l) => ({
     _id: l.id,
     serviceId: l.service_id,
   }));
@@ -1601,23 +1559,9 @@ export async function getBookingDetail(bookingId: string): Promise<BookingDetail
     penaltyApplied: data.penalty_applied,
   };
 
-  const service = data.services ? mapServiceRow(data.services as any) : null;
-  const professional = data.professionals
-    ? ({
-        _id: data.professionals.id,
-        userId: data.professionals.user_id,
-        professionalName: data.professionals.professional_name,
-        specialty: data.professionals.specialty,
-        bio: data.professionals.bio,
-        location: data.professionals.location,
-        ratingAverage: data.professionals.rating_average,
-        reviewsCount: data.professionals.reviews_count,
-        verified: data.professionals.verified,
-        gallery: data.professionals.gallery,
-        postalCode: data.professionals.postal_code,
-        city: data.professionals.city,
-      } as ApiProfessional)
-    : null;
+  const joinedData = data as BookingWithJoin;
+  const service = joinedData.services ? mapServiceRow(joinedData.services) : null;
+  const professional = joinedData.professionals ? mapProfessionalRow(joinedData.professionals) : null;
 
   return { booking, service, professional };
 }
@@ -1645,10 +1589,7 @@ export async function fetchReviewsByClient(clientId: string): Promise<ApiReview[
     throw error;
   }
 
-  return (data ?? []).map((r: any) => ({
-    ...r,
-    _id: r.id,
-  })) as ApiReview[];
+  return (data as ReviewRow[] ?? []).map(mapReviewRow);
 }
 
 export async function createReview(payload: {

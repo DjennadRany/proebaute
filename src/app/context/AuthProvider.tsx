@@ -51,8 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const stored = loadStoredUser();
         if (!stored || stored._id !== session.user.id) {
           const u = buildUserFromSession(session);
+          // Stocker sans phone (PII sensible — lisible via session Supabase si besoin)
+          const toStore: User = {
+            _id: u._id,
+            role: u.role,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            email: u.email,
+          };
           setUser(u);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
           trackLogin(u.role === 'professional' ? 'professional' : 'client', 'email');
         }
       }
@@ -71,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         firstName: apiUser.firstName,
         lastName: apiUser.lastName,
         email: apiUser.email,
+        // phone volontairement exclu du localStorage (PII — disponible via session Supabase)
       };
       setUser(u);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
